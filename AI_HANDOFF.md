@@ -13,24 +13,38 @@ Kaynak sözlük sitesi: https://bilisimde.ozenliturkce.org.tr/
 
 - Python 3.9+ ile çalışır.
 - Yerel model sağlayıcısı Ollama'dır.
-- Varsayılan model `qwen:latest`; model adı CLI veya `OLLAMA_MODEL` ile değişebilir.
+- Varsayılan model `qwen3.5:2b`; model adı CLI, web arayüzü veya `OLLAMA_MODEL`
+  ile değişebilir.
 - Yerel web arayüzü `python3 run.py` ile açılır.
 - CLI: `python3 run.py scan <pdf-veya-klasör>`.
 - CSV ve JSON raporları `output/` altında oluşturulur.
 - PDF sayfa numaraları ve terim geçiş sayıları korunur.
 - Bulunan, olası, eksik ve elenen adaylar ayrı raporlanır.
-- Model iki geçişli aday çıkarımı yapar; çok sözcüklü sözlük terimleri ayrıca
-  deterministik taranır.
+- Üretim akışı varsayılan olarak tek geçişli model aday çıkarımı yapar;
+  `OllamaClient` deneyler için iki geçişi destekler ancak CLI ve web arayüzü bu
+  seçeneği henüz açmaz. Çok sözcüklü sözlük terimleri ayrıca deterministik taranır.
+- Sözlükte olmayan tek sözcükler ve teknik kısaltmalar sessizce elenmez; düşük
+  öncelikli inceleme adayı olarak korunur.
+- Modelin kaçırdığı kontrollü teknik baş kalıpları ve açıkça tanımlanan
+  kısaltma açılımları deterministik olarak geri kazanılır; ham n-gram üretilmez.
+- Düşünme destekli Ollama modellerinde yapılandırılmış JSON yanıtının boş
+  kalmaması için `think: false` gönderilir.
+- Başarısız model parçaları `failed` veya `partial` analiz durumuyla görünür;
+  başarısız tarama kullanıcıya “0 eksik” sonucu olarak sunulmaz.
+- Güvenli tire ve düzenli tekil/çoğul farkları sözlük tarafından kapsanan biçim
+  değişkeleri sayılır; tanımlı kısaltmalar **olası** eşleşme olarak gösterilir.
+- Kod değişkenleri (`num_heads`, `assume_bos`), pseudo-code satırları, İngilizce tanımlıklar (`the ...`) ve ticari model/sürüm isimleri (`GPT-4`, `GPT-3.5`) otomatik süzülür.
+- Çoğul kısaltmalar (`LLMs`) otomatik olarak tekil kök haline (`LLM`) dönüştürülür.
 - Test takımı Ollama kullanmaz.
 
 ## Mimari
 
-- `pdf_reader.py`: PDF metnini sayfa bazında çıkarır ve gürültüyü temizler.
+- `pdf_reader.py`: PDF metnini sayfa bazında çıkarır, drop-cap baş harflerini korur ve kod bloklarını temizler.
 - `chunker.py`: Metni modele gönderilecek parçalara böler.
 - `ollama_client.py`: Ollama durumu, model kontrolü ve yapılandırılmış çıkarım.
 - `dictionary.py`: Sözlük yükleme, normalizasyon ve eşleştirme.
 - `term_extractor.py`: Aday temizliği, ayırma ve kaynak metinde doğrulama.
-- `pipeline.py`: Tüm analiz akışını ve sonuç gruplarını birleştirir.
+- `pipeline.py`: Tüm analiz akışını ve sonuç gruplarını birleştirir; marka/model süzgeçlerini uygular.
 - `reporting.py`: Terminal, CSV ve JSON çıktıları.
 - `web_app.py`: Bağımlılıksız yerel HTTP arayüzü.
 - `cli.py`: Komut satırı giriş noktası.
@@ -38,10 +52,10 @@ Kaynak sözlük sitesi: https://bilisimde.ozenliturkce.org.tr/
 ## Doğrulama komutu
 
 ```bash
-PYTHONPATH=src python3 -m unittest discover -s tests -v
+PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
 ```
 
-Son temizlemede 15 test başarılıydı. Yeni değişikliklerden sonra bu komut yeniden
+Son temizlemede 33 test başarılıydı. Yeni değişikliklerden sonra bu komut yeniden
 çalıştırılmalıdır.
 
 ## Bilinen kararlar ve sınırlar

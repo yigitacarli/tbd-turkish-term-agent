@@ -14,7 +14,8 @@ class Settings:
     dictionary_path: Path = PROJECT_ROOT / "data" / "tbd_dictionary_2026_coordinate.json"
     output_dir: Path = PROJECT_ROOT / "output"
     ollama_url: str = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
-    model: str = os.environ.get("OLLAMA_MODEL", "qwen:latest")
-    chunk_size: int = 3_000
-    chunk_overlap: int = 200
+    # Apple Silicon'da serin ve hızlı çalışacak, JSON çıktısı güçlü hafif model.
+    model: str = os.environ.get("OLLAMA_MODEL", "qwen3.5:2b")
+    chunk_size: int = 6_000
+    chunk_overlap: int = 100
     timeout_seconds: int = 240

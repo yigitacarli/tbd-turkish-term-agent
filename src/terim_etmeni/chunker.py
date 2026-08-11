@@ -12,13 +12,20 @@ def _safe_end(text: str, start: int, target: int) -> int:
         return len(text)
     lower_bound = start + max(1, (target - start) // 2)
     window = text[lower_bound:target]
+    # Her ayırıcı türü için (konum, ofset) çifti. Ofset, ayırıcıdan sonra
+    # kesmek için eklenen karakter sayısıdır.
+    paragraph = window.rfind("\n\n")
+    sentence = max(window.rfind(". "), window.rfind("? "), window.rfind("! "))
+    space = window.rfind(" ")
     candidates = [
-        window.rfind("\n\n"),
-        max(window.rfind(". "), window.rfind("? "), window.rfind("! ")),
-        window.rfind(" "),
+        (paragraph, 2),   # "\n\n" → 2 karakter sonra kes
+        (sentence, 2),    # ". " → nokta + boşluk sonra kes
+        (space, 1),       # " " → boşluk sonra kes
     ]
-    boundary = next((item for item in candidates if item >= 0), -1)
-    return lower_bound + boundary + (2 if boundary >= 0 else len(window))
+    for position, offset in candidates:
+        if position >= 0:
+            return lower_bound + position + offset
+    return target
 
 
 def chunk_pages(

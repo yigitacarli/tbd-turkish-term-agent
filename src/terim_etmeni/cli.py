@@ -88,6 +88,14 @@ def run_scan(args: argparse.Namespace) -> int:
                     **counts
                 )
             )
+            warnings = result.get("processing_warnings", [])
+            if warnings:
+                print(
+                    "  uyarı: {}/{} parça model yanıtı olmadan atlandı".format(
+                        len(warnings), result.get("chunk_count", 0)
+                    ),
+                    file=sys.stderr,
+                )
             print(format_terminal_report(result))
             print("  raporlar: {}, {}".format(json_path, csv_path))
         except (PDFReadError, OllamaError, ValueError, OSError) as error:

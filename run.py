@@ -13,6 +13,6 @@ from terim_etmeni.cli import main  # noqa: E402
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        sys.argv.append("serve")
+    if len(sys.argv) == 1 or (len(sys.argv) > 1 and sys.argv[1] not in ("scan", "serve", "-h", "--help")):
+        sys.argv.insert(1, "serve")
     raise SystemExit(main())

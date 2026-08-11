@@ -17,6 +17,17 @@ Natural language processing in a cited title.
         self.assertNotIn("battlefield", cleaned)
         self.assertNotIn("cited title", cleaned)
 
+    def test_low_quality_formula_and_compacted_lines_are_removed(self):
+        text = (
+            "Diffusionmodelshaveemergedasapowerfulnewfamilyofdeepgenerativemodelswithrecordbreakingperformance\n"
+            "𝛼¯𝑡 = sigmoid(𝛾 𝜂(𝑡)) | x 0 = N(𝛼𝑡x 0)\n"
+            "Valid technical paragraph with normal word spacing."
+        )
+        self.assertEqual(
+            clean_extracted_text(text),
+            "Valid technical paragraph with normal word spacing.",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

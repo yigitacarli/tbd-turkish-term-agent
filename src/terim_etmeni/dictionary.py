@@ -19,7 +19,7 @@ def normalized_key(value: str) -> str:
 
 def relaxed_key(value: str) -> str:
     value = normalized_key(value)
-    value = re.sub("[{}-]+".format(_DASHES), " ", value)
+    value = re.sub("[{}\\-]+".format(_DASHES), " ", value)
     return " ".join(value.split())
 
 

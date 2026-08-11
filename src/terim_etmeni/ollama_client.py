@@ -5,21 +5,27 @@ import json
 import re
 import urllib.error
 import urllib.request
+from typing import Optional
 
 from .models import ExtractedTerm
 
 
-SYSTEM_PROMPT = """You extract English information-technology terms from academic text.
-Return only terms that occur explicitly in the supplied text.
-Include computing, software, artificial intelligence, data, networking, security,
-and digital-technology concepts. Preserve multi-word terms as phrases. Exclude
-ordinary words, author names, institutions, journal metadata, headings, and
-bibliography entries. Do not translate and do not invent or infer terms.
-Include newly coined or experimental technical phrases when they occur explicitly;
-dictionary membership is decided later by the application, not by you.
-Return JSON matching the requested schema. Use the spelling found in the text.
-If an abbreviation and its expansion are both explicit, use the expansion as
-the term."""
+SYSTEM_PROMPT = """You are a precise English technical-terminology extractor for academic PDFs.
+Return only English technical noun phrases that occur verbatim in the supplied text.
+Select 5 to 15 high-confidence concepts from computing, software, AI, data,
+networking, security, or digital systems. A short accurate list is better than an
+exhaustive list. When the supplied text contains at least five eligible concepts,
+return at least five; do not stop after one or two examples.
+
+CRITICAL EXCLUSIONS:
+- NEVER extract programming code, code variables, hyperparameters, or pseudo-code functions (e.g. num_heads, batch_size, assume_bos, ema_decay).
+- NEVER extract dataset class names, image categories, or benchmark labels (e.g. Siberian husky, space shuttle, coral reef).
+- NEVER extract long clauses or phrases longer than 5 words.
+- Exclude ordinary words; complete clauses; author, person, company, institution, and publication metadata; references and citation keys; conference names; dataset, product, and named model names; figure/table/equation labels; formulas; experiment settings; table column headers and benchmark rows; and image-editing prompts.
+
+Retain established technical abbreviations when they are used as concepts in the text (e.g. machine learning, latent diffusion models, neural network, BERT, RBAC). If an abbreviation and its expansion both occur, return only the expansion.
+Do not translate, infer, normalize, or invent terms. Preserve the spelling and number found in the text.
+Return only JSON matching the requested schema."""
 
 
 OUTPUT_SCHEMA = {
@@ -35,11 +41,14 @@ OUTPUT_SCHEMA = {
 
 
 USER_TASK = """TASK
-Extract noun phrases from the text that name technologies, software methods,
-algorithms, systems, or technical components. Include both established terms and
-newly coined terms. Be exhaustive and inspect every sentence. Do not return the document title, section headings, labels,
-complete sentences, or explanatory prose.
-Return the shortest canonical noun phrase, never a clause containing an action verb.
+Extract 5 to 15 high-confidence noun phrases that name technologies, software
+methods, algorithms, systems, or technical components. Include established and
+newly coined technical phrases only when they occur exactly in the text.
+When at least five such phrases occur, return at least five distinct phrases.
+Do not return document titles, section headings, labels, complete sentences,
+explanatory prose, names, citations, models, products, datasets, formulas, or
+Prefer specific multi-word phrases, but include a technical single word or
+abbreviation when omitting it would lose a distinct concept.
 
 Example text: The service uses machine learning and a semantic signal router.
 Example result: {{"terms":["machine learning","semantic signal router"]}}
@@ -50,15 +59,34 @@ TEXT END"""
 
 
 DISCOVERY_TASK = """INDEPENDENT SECOND REVIEW
-Scan the text again for domain-specific multi-word terminology that a first review
-might miss. Focus on artificial intelligence, data, cloud, networking, security,
-software, automation, and computing phrases. Include plural forms and explicit new
-compound terms. Exclude companies, industries, application domains, headings,
-ordinary words, and clauses containing verbs. Return concise noun phrases only.
+Select only additional high-confidence multi-word terminology that the first review
+may have missed. Apply every exclusion in the system instructions. Return concise
+noun phrases only; do not expand the list with generic, named, or ambiguous items.
 
 TEXT START
 {text}
 TEXT END"""
+
+
+TERM_REVIEW_SYSTEM = """You are a conservative technical-terminology reviewer.
+From a supplied candidate list, retain only terms that genuinely name a technical
+concept, method, algorithm, model component, data representation, mathematical or
+statistical concept, or computing system. A candidate can be new or absent from a
+dictionary. Reject prose fragments, ordinary contextual descriptions, person names,
+benchmark rows, experimental labels, dataset/model names, and generic word groups.
+When uncertain, reject the candidate. Rejected candidates remain visible to the
+human reviewer, while this queue must prioritize precision over list length.
+Return only JSON matching the requested schema."""
+
+
+TERM_REVIEW_TASK = """TECHNICAL TERM REVIEW
+Review the exact candidate strings below. Return only the candidates that should
+remain in a technical dictionary review queue. Preserve each selected string exactly
+as written. Do not add, translate, shorten, normalize, or infer terms.
+
+CANDIDATES
+{candidates}
+"""
 
 
 class OllamaError(RuntimeError):
@@ -86,10 +114,15 @@ def _json_from_text(raw: str) -> dict[str, object]:
 
 
 class OllamaClient:
-    def __init__(self, base_url: str, model: str, timeout: int = 240) -> None:
+    def __init__(
+        self, base_url: str, model: str, timeout: int = 240, review_passes: int = 1
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.timeout = timeout
+        if review_passes not in (1, 2):
+            raise ValueError("İnceleme geçişi sayısı 1 veya 2 olmalı.")
+        self.review_passes = review_passes
 
     def _request(self, endpoint: str, payload=None) -> dict[str, object]:
         data = None if payload is None else json.dumps(payload).encode("utf-8")
@@ -138,7 +171,8 @@ class OllamaClient:
     def extract(self, text: str) -> list[ExtractedTerm]:
         output: list[ExtractedTerm] = []
         seen = set()
-        for template in (USER_TASK, DISCOVERY_TASK):
+        templates = (USER_TASK, DISCOVERY_TASK) if self.review_passes == 2 else (USER_TASK,)
+        for template in templates:
             user_prompt = template.format(text=text)
             for extracted in self._extract_prompt(user_prompt):
                 key = extracted.term.casefold()
@@ -147,28 +181,72 @@ class OllamaClient:
                     output.append(extracted)
         return output
 
-    def _extract_prompt(self, user_prompt: str) -> list[ExtractedTerm]:
+    def validate_terms(self, terms: list[str]) -> list[str]:
+        """Yerel modelle adayların teknik terim niteliğini temkinli doğrular."""
+        unique = list(dict.fromkeys(term for term in terms if term.strip()))
+        accepted: list[str] = []
+        # Çok uzun anketlerde tek istemin bağlamını taşırmamak için küçük gruplar.
+        for start in range(0, len(unique), 60):
+            batch = unique[start : start + 60]
+            prompt = TERM_REVIEW_TASK.format(
+                candidates="\n".join("- " + term for term in batch)
+            )
+            returned = self._extract_prompt(
+                prompt,
+                system=TERM_REVIEW_SYSTEM,
+                num_predict=1024,
+                retry_max_terms=None,
+            )
+            allowed = {term.casefold(): term for term in batch}
+            for item in returned:
+                exact = allowed.get(item.term.casefold())
+                if exact and exact not in accepted:
+                    accepted.append(exact)
+        return accepted
+
+    def _extract_prompt(
+        self,
+        user_prompt: str,
+        system: str = SYSTEM_PROMPT,
+        num_predict: int = 256,
+        retry_max_terms: Optional[int] = 10,
+    ) -> list[ExtractedTerm]:
         payload = {
             "model": self.model,
-            "system": SYSTEM_PROMPT,
+            "system": system,
             "prompt": user_prompt,
             "format": OUTPUT_SCHEMA,
             "stream": False,
-            "options": {"temperature": 0, "num_predict": 768},
+            # Qwen 3/3.5 gibi düşünme modelleri yapılandırılmış nesneyi bazen
+            # ``thinking`` alanına yazıp ``response`` alanını boş bırakır.
+            # Terim çıkarımı akıl yürütme izi gerektirmez; kapatmak hem doğru
+            # alanı hem de daha kısa/kararlı yanıtı sağlar.
+            "think": False,
+            # Kısa terim listesi, daha az ısı ve daha az yarım JSON yanıtı.
+            "options": {"temperature": 0, "num_predict": num_predict},
         }
         last_error = None
         parsed = None
         for attempt in range(2):
+            retry_instruction = "Return one complete JSON object only. Do not add commentary."
+            if retry_max_terms is not None:
+                retry_instruction = (
+                    "Return one complete JSON object only, with at most {} terms. "
+                    "Do not add commentary."
+                ).format(retry_max_terms)
             payload["prompt"] = (
-                user_prompt
-                if not attempt
-                else "Return one complete JSON object only. Do not add commentary.\n\n"
-                + user_prompt
+                user_prompt if not attempt else retry_instruction + "\n\n" + user_prompt
             )
             result = self._request("/api/generate", payload)
             response_text = result.get("response")
             if not isinstance(response_text, str):
                 last_error = OllamaError("Ollama yanıtında 'response' alanı bulunamadı.")
+                continue
+            if not response_text.strip():
+                last_error = OllamaError(
+                    "Model boş yanıt döndürdü. 'think' parametresi kapalıyken "
+                    "model çıktıyı 'thinking' alanına yazmış olabilir."
+                )
                 continue
             try:
                 parsed = _json_from_text(response_text)
