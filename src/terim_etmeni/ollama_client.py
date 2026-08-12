@@ -12,10 +12,10 @@ from .models import ExtractedTerm
 
 SYSTEM_PROMPT = """You are a precise English technical-terminology extractor for academic PDFs.
 Return only English technical noun phrases that occur verbatim in the supplied text.
-Select 5 to 15 high-confidence concepts from computing, software, AI, data,
+Select ONLY high-confidence concepts from computing, software, AI, data,
 networking, security, or digital systems. A short accurate list is better than an
-exhaustive list. When the supplied text contains at least five eligible concepts,
-return at least five; do not stop after one or two examples.
+exhaustive list. If the supplied text does not contain any eligible technical concepts,
+return an empty list. Do not force or invent terms just to return something.
 
 CRITICAL EXCLUSIONS:
 - NEVER extract programming code, code variables, hyperparameters, or pseudo-code functions (e.g. num_heads, batch_size, assume_bos, ema_decay).
@@ -41,10 +41,10 @@ OUTPUT_SCHEMA = {
 
 
 USER_TASK = """TASK
-Extract 5 to 15 high-confidence noun phrases that name technologies, software
+Extract high-confidence noun phrases that name technologies, software
 methods, algorithms, systems, or technical components. Include established and
 newly coined technical phrases only when they occur exactly in the text.
-When at least five such phrases occur, return at least five distinct phrases.
+If no such phrases exist in the text, return an empty list for "terms".
 Do not return document titles, section headings, labels, complete sentences,
 explanatory prose, names, citations, models, products, datasets, formulas, or
 Prefer specific multi-word phrases, but include a technical single word or

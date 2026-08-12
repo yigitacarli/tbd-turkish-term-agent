@@ -1,4 +1,4 @@
-# Yapay Zekâ Sohbeti İçin Proje Devir Notu
+# İleride Yapay Zekâ Geliştirmeleri İçin Proje Notu
 
 ## Görev
 

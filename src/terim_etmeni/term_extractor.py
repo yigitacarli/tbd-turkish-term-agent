@@ -85,6 +85,11 @@ _GENERIC_LEADING_MODIFIERS = {
     "different", "multiple", "new", "novel", "proposed", "several", "various",
 }
 
+_REFERENCE_NOISE_PATTERN = re.compile(
+    r"\b(?:proceedings|et al|arxiv|preprint|journal of|conference on)\b",
+    re.IGNORECASE,
+)
+
 
 def _is_tabular_line(line: str) -> bool:
     """Sayısal deney tablosu satırlarını, düz metinden ayırır.
@@ -160,6 +165,11 @@ def _plausible_term(term: str) -> bool:
     if re.match(r"^\d+(?:\.\d+)?[a-z]", term):
         return False
     if re.match(r"^(?:the|a|an|this|these|those|their|our|its)\s+", term, re.IGNORECASE):
+        return False
+    # "cybersecurity- or privacy-supporting capability" gibi koordinasyonlu
+    # cümle parçaları bağımsız terim değildir. Terim çıkarıcı bunları bölmek
+    # yerine zaten ayrı teknik isim öbeklerini yakalamalıdır.
+    if re.search(r"\bor\b", term, re.IGNORECASE):
         return False
     # Kod değişkenleri (num_heads, batch_size vb.) ve pseudo-code yapıları
     if "_" in term:
@@ -298,6 +308,14 @@ def _ngram_candidates(pages: list[PageText]) -> list[tuple[str, str]]:
                     # Tüm kelimeler boundary ise atla
                     if all(w.casefold() in _PHRASE_BOUNDARIES for w in gram):
                         continue
+                    # Koordinasyonun iki yanından kesilmiş n-gramlar (ör.
+                    # "or privacy-supporting") teknik terim değil, cümle
+                    # parçasıdır.
+                    if (
+                        any(w.casefold() == "or" for w in gram)
+                        or (i > 0 and words[i - 1].casefold() == "or")
+                    ):
+                        continue
                     # Genel niteleyiciyle başlıyorsa atla
                     if gram[0].casefold() in _GENERIC_LEADING_MODIFIERS:
                         continue
@@ -384,6 +402,7 @@ def _deterministic_candidates(pages: list[PageText]) -> list[tuple[str, str]]:
                 term = " ".join(words)
                 if (
                     not any(word.isdigit() or len(word) > 28 for word in words)
+                    and not _REFERENCE_NOISE_PATTERN.search(term)
                     and _plausible_term(term)
                 ):
                     key = normalized_key(term)

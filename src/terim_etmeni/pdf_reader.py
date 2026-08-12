@@ -45,7 +45,7 @@ def clean_extracted_text(text: str) -> str:
         stripped = line.strip()
         if _is_low_quality_line(stripped):
             continue
-        if re.fullmatch(r"(?:references|bibliography)\s*[-:]?", stripped, re.IGNORECASE):
+        if re.match(r"^\s*(?:references?|bibliography|works cited)\s*[-:]?$", stripped, re.IGNORECASE):
             break
         if re.search(r"(?:ISSN|International Journal for Research|©\s*\d{4})", stripped, re.IGNORECASE):
             continue

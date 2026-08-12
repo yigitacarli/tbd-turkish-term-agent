@@ -29,7 +29,7 @@ def _safe_end(text: str, start: int, target: int) -> int:
 
 
 def chunk_pages(
-    pages: list[PageText], size: int = 5_000, overlap: int = 250
+    pages: list[PageText], size: int = 2_500, overlap: int = 250
 ) -> list[TextChunk]:
     if size < 200:
         raise ValueError("Parça boyutu en az 200 karakter olmalı.")

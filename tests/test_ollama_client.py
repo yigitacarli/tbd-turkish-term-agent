@@ -55,13 +55,23 @@ class OllamaParserTests(unittest.TestCase):
         self.assertEqual(request.call_count, 2)
         self.assertIn("at most 10 terms", request.call_args_list[1].args[1]["prompt"])
 
-    def test_prompt_prioritizes_high_confidence_terms_and_exclusions(self):
-        self.assertIn("5 to 15 high-confidence", SYSTEM_PROMPT)
-        self.assertIn("return at least five", SYSTEM_PROMPT)
+    def test_prompt_allows_an_empty_precise_result_and_keeps_exclusions(self):
+        self.assertIn("Select ONLY high-confidence", SYSTEM_PROMPT)
+        self.assertIn("return an empty list", SYSTEM_PROMPT)
+        self.assertIn("Do not force or invent terms", SYSTEM_PROMPT)
         self.assertIn("dataset,", SYSTEM_PROMPT)
         self.assertIn("table column headers", SYSTEM_PROMPT)
         self.assertIn("established technical abbreviations", SYSTEM_PROMPT)
+        self.assertNotIn("at least five", SYSTEM_PROMPT)
+        self.assertIn("If no such phrases exist", USER_TASK)
         self.assertNotIn("Be exhaustive", USER_TASK)
+
+    def test_empty_model_result_is_a_valid_extraction(self):
+        client = OllamaClient("http://localhost:11434", "fake")
+        with patch.object(client, "_request", return_value={"response": '{"terms":[]}'}) as request:
+            terms = client.extract("The authors thank the reviewers.")
+        self.assertEqual(terms, [])
+        self.assertEqual(request.call_count, 1)
 
     def test_term_review_keeps_only_exact_returned_candidates(self):
         client = OllamaClient("http://localhost:11434", "fake")

@@ -395,6 +395,30 @@ class PipelineTests(unittest.TestCase):
         # Kaynak "ngram_scan" olmalı
         self.assertEqual(candidate_sources["ssl certificate"], "ngram_scan")
 
+    def test_ngram_scan_excludes_or_coordinated_fragments(self):
+        """Koordinasyonlu sıfat dizileri ayrı terim adayları üretmemeli."""
+        from terim_etmeni.term_extractor import _ngram_candidates
+
+        pages = [
+            PageText(
+                1,
+                "Cybersecurity- or privacy-supporting capability is available. "
+                "Cybersecurity- or privacy-supporting capability is required.",
+            )
+        ]
+
+        candidates = {term.casefold() for term, _ in _ngram_candidates(pages)}
+        self.assertFalse(
+            candidates
+            & {
+                "cybersecurity or privacy-supporting",
+                "or privacy-supporting",
+                "or privacy-supporting capability",
+                "privacy-supporting capability",
+                "privacy-supporting capability is",
+            }
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

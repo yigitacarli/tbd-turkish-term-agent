@@ -31,13 +31,24 @@ def _load_common_english_words() -> frozenset[str]:
     return frozenset(words)
 
 
+_TECHNICAL_COMPOUND_WHITELIST = frozenset({
+    "forward process", "reverse process", "score function",
+    "score matching", "time step", "noise estimation",
+    "sampling method", "image translation",
+    "standard normal distribution",
+})
+
 def _is_common_english(term: str) -> bool:
     """Terimin tamamen genel İngilizce kelimelerden oluşup oluşmadığını kontrol eder.
 
     Tek kelimelik terimler doğrudan kontrol edilir.
     Çok kelimelik terimler, tüm kelimeleri genel ise elenir.
     Kısaltmalar (tümü büyük harf) bu filtreden muaftır.
+    Bilinen bazı bileşik teknik terimler beyaz liste ile korunur.
     """
+    if term.casefold() in _TECHNICAL_COMPOUND_WHITELIST:
+        return False
+        
     common_words = _load_common_english_words()
     if not common_words:
         return False

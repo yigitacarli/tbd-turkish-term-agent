@@ -14,7 +14,7 @@ Ollama modeline sınıflandırma/doğrulama için gönderilir.
 
 - Python 3.9+
 - [Ollama](https://ollama.com/)
-- Ollama içinde `qwen3.5:2b` modeli (Windows ve macOS için önerilen hafif varsayılan)
+- Ollama içinde `qwen3.5:2b` modeli
 - Metin seçilebilen bir PDF
 
 ```bash
@@ -24,8 +24,7 @@ ollama pull qwen3.5:2b
 ## Yapay zekâ motoru ve platform desteği
 
 Bu teslim sürümü **yerel Ollama** ile çalışır: PDF ve terim sonuçları bilgisayardan
-çıkmaz. `qwen3.5:2b` günlük kullanım için önerilen varsayılandır; bilgisayarda
-yüklü başka bir Ollama modeli arayüzden seçilebilir.
+çıkmaz. Varsayılan model `qwen3.5:2b`'dir; bilgisayarda yüklü başka bir Ollama modeli arayüzden seçilebilir.
 
 OpenAI, Azure OpenAI veya başka bir kurum API'si bu sürümde henüz uygulanmamıştır.
 Bu tür bir entegrasyon için kurumun sağlayıcı, anahtar yönetimi, maliyet ve veri
@@ -99,7 +98,7 @@ python3 run.py scan /dosya/yolu/pdf-klasoru
 Başka bir Ollama modeli kullanmak için:
 
 ```bash
-python3 run.py scan makale.pdf --model qwen3:4b
+python3 run.py scan makale.pdf --model qwen3.5:2b
 ```
 
 Varsayılan model `OLLAMA_MODEL`, Ollama adresi `OLLAMA_URL` ortam değişkeniyle de
