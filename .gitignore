@@ -6,4 +6,6 @@ __pycache__/
 tmp/
 output/*
 !output/.gitkeep
+pdfs/*
+!pdfs/.gitkeep
 test_clean.csv
