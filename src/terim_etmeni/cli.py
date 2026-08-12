@@ -1,4 +1,4 @@
-"""TBD Dictionary Control komut satırı arayüzü."""
+"""Türkçe Terim Etmeni komut satırı arayüzü."""
 from __future__ import annotations
 
 import argparse

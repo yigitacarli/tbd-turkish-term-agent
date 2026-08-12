@@ -1,12 +1,14 @@
-# TBD Dictionary Control (Türkçe Terim Etmeni)
+# Türkçe Terim Etmeni
 
-TBD Dictionary Control (Türkçe Terim Etmeni), metin katmanı bulunan PDF belgelerindeki İngilizce bilişim
+Türkçe Terim Etmeni, metin katmanı bulunan PDF belgelerindeki İngilizce bilişim
 terimlerini çıkarır ve Bilişimde Özenli Türkçe sitesinden hazırlanmış yerel
 İngilizce–Türkçe sözlükle karşılaştırır. Sözlükte bulunmayan adayları sayfa ve
 geçiş bilgileriyle gösterir; CSV ve JSON raporu üretir.
 
-PDF içeriği ve model çalışması yerel bilgisayarda kalır. Qwen yalnızca aday terim
-çıkarır; sözlük üyeliğine Python kodu karar verir.
+PDF içeriği ve model çalışması yerel bilgisayarda kalır. Sistem NLP-first hibrit 
+bir mimari kullanır: Aday terimler önce kural tabanlı algoritmalar ve N-Gram taramasıyla 
+bulunur, genel İngilizce kelimeler filtrelenir ve yalnızca kalan adaylar yerel 
+Ollama modeline sınıflandırma/doğrulama için gönderilir.
 
 ## Gereksinimler
 

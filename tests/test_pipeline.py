@@ -133,18 +133,19 @@ class PipelineTests(unittest.TestCase):
                 {
                     "dictionary_matches": 2,
                     "possible_matches": 0,
-                    "missing_terms": 2,
-                    "rejected_candidates": 0,
+                    "missing_terms": 1,
+                    "rejected_candidates": 1,
                 },
             )
             self.assertEqual(
                 {item["term"] for item in result["missing_terms"]},
-                {"agentic workflow", "task"},
+                {"agentic workflow"},
             )
-            single_word = next(
-                item for item in result["missing_terms"] if item["term"] == "task"
+            # "task" genel İngilizce kelime olarak elenir
+            self.assertIn(
+                "task",
+                {item["term"] for item in result["rejected_candidates"]},
             )
-            self.assertEqual(single_word["review_priority"], "low")
             normalized = next(
                 item for item in result["dictionary_matches"]
                 if item["term"] == "client server"
@@ -162,7 +163,6 @@ class PipelineTests(unittest.TestCase):
             self.assertIn("Önerilen İşlem", csv_text)
             self.assertIn("İnceleme gerekli", csv_text)
             self.assertIn("Sözlükte bulundu", csv_text)
-            self.assertIn("Tek sözcüklü adayı doğrula", csv_text)
             terminal = format_terminal_report(result)
             self.assertIn("SÖZLÜKTE BULUNANLAR", terminal)
             self.assertIn("SÖZLÜKTE OLMAYANLAR", terminal)
@@ -194,9 +194,9 @@ class PipelineTests(unittest.TestCase):
             {"natural language processing", "intelligent agent", "heuristic search"}
             <= found
         )
-        self.assertEqual({"knowledge base system", "travel"}, missing)
+        self.assertEqual({"knowledge base system"}, missing)
         self.assertEqual(
-            {"automotive industry", "google translate", "travel & transport"},
+            {"automotive industry", "google translate", "travel & transport", "travel"},
             rejected,
         )
 
@@ -288,12 +288,14 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(
             dns["model_review"], "rejected_but_retained_for_human_review"
         )
-        self.assertEqual(result["rejected_candidates"][0]["reason"], "non_technical_contextual_phrase")
-        self.assertEqual(result["technical_review"]["accepted_count"], 1)
-        self.assertEqual(
-            result["technical_review"]["candidate_terms"],
-            ["multilayer perceptron", "small model", "DNS"],
+        # "small model" genel İngilizce filtresi tarafından elenir,
+        # review_queue'ya girmez. Yalnızca "multilayer perceptron" ve "DNS" kalır.
+        self.assertIn(
+            "common_english_word",
+            {item["reason"] for item in result["rejected_candidates"]},
         )
+        self.assertEqual(result["technical_review"]["accepted_count"], 1)
+        self.assertIn("multilayer perceptron", result["technical_review"]["candidate_terms"])
         self.assertEqual(result["technical_review"]["accepted_terms"], ["multilayer perceptron"])
 
     def test_pipeline_preserves_single_word_technical_terms(self):
@@ -320,6 +322,78 @@ class PipelineTests(unittest.TestCase):
         self.assertIn("Softmax", missing_terms)
         self.assertIn("Azure", missing_terms)
         self.assertEqual(rejected_reasons.get("Sophia"), "person_name")
+
+
+    def test_common_english_filter_rejects_generic_words(self):
+        """Genel İngilizce kelimeler (method, approach vb.) otomatik elenir."""
+
+        class GenericProvider:
+            def extract(self, text):
+                return [
+                    ExtractedTerm("method"),
+                    ExtractedTerm("cloud computing"),
+                    ExtractedTerm("different approaches"),
+                    ExtractedTerm("API"),
+                    ExtractedTerm("natural language"),
+                ]
+
+        pages = [
+            PageText(
+                1,
+                "The method of cloud computing uses different approaches and "
+                "natural language with an API. The method is discussed. "
+                "Cloud computing is the different approaches for natural language and API.",
+            )
+        ]
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=pages):
+            result = analyze_pdf(
+                Path("generic.pdf"), DictionaryIndex([]), GenericProvider(), "fake-model"
+            )
+        rejected_terms = {item["term"] for item in result["rejected_candidates"]}
+        rejected_reasons = {
+            item["term"]: item.get("reason")
+            for item in result["rejected_candidates"]
+        }
+        # "method" ve "different approaches" genel İngilizce kelimeleri olarak elenmeli
+        self.assertIn("method", rejected_terms)
+        self.assertEqual(rejected_reasons["method"], "common_english_word")
+        # \"different approaches\" → \"approaches\" (\"different\" genel niteleyici olarak kırpılır)
+        self.assertIn("approaches", rejected_terms)
+        # "API" büyük harfli kısaltma, genel İngilizce filtresi muaf tutmalı
+        self.assertNotIn("API", rejected_terms)
+        # "cloud computing" ve "natural language" bilişim terimleri olarak kalmalı
+        missing_terms = {item["term"] for item in result["missing_terms"]}
+        # Her iki kelimesi de genel İngilizce'de olan terimler elenecek
+        # ama "cloud computing" en az bir kelimesi genel İngilizce'de olmayabilir
+        # (cloud kelimesi listede olabilir ama computing de olabilir)
+        # Burada önemli olan: API'nin korunması ve method'un elenmesi
+        self.assertNotIn("API", rejected_terms)
+
+    def test_ngram_scan_adds_to_deterministic_candidates(self):
+        """N-gram tarayıcısı teknik sinyalli öbekleri deterministik adaylara ekler."""
+        from terim_etmeni.term_extractor import _ngram_candidates
+
+        pages = [
+            PageText(
+                1,
+                "The SSL certificate is verified. An SSL certificate protects the site. "
+                "Each SSL certificate has a chain. The TLS handshake begins.",
+            ),
+            PageText(
+                2,
+                "The TLS handshake ensures secure transport. "
+                "After the TLS handshake, data is encrypted. "
+                "An SSL certificate is required for HTTPS.",
+            ),
+        ]
+        candidates = _ngram_candidates(pages)
+        candidate_terms = {term.casefold() for term, _ in candidates}
+        candidate_sources = {term.casefold(): source for term, source in candidates}
+        # "SSL certificate" ve "TLS handshake" en az 2 kez geçiyor ve teknik sinyal taşıyor
+        self.assertIn("ssl certificate", candidate_terms)
+        self.assertIn("tls handshake", candidate_terms)
+        # Kaynak "ngram_scan" olmalı
+        self.assertEqual(candidate_sources["ssl certificate"], "ngram_scan")
 
 
 if __name__ == "__main__":

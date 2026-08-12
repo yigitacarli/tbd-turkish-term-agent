@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded',()=>{const form=document.querySelec
 
 
 def _document(content: str) -> str:
-    return """<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TBD Dictionary Control</title><style>{}</style></head><body><header class="top"><div class="top-inner"><div class="eyebrow">Yerel PDF Analizi</div><h1>TBD Dictionary Control</h1><p>İngilizce teknik terimleri çıkarır, İngilizce-Türkçe sözlükle karşılaştırır ve eksik terimleri kanıtlarıyla raporlar.</p></div></header><main class="main">{}<div class="footer">Veriler bu bilgisayarda işlenir. Sunucu yalnızca 127.0.0.1 adresinde çalışır.</div></main><script>{}</script></body></html>""".format(STYLE, content, SCRIPT)
+    return """<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Türkçe Terim Etmeni</title><style>{}</style></head><body><header class="top"><div class="top-inner"><div class="eyebrow">Yerel PDF Analizi</div><h1>Türkçe Terim Etmeni</h1><p>İngilizce teknik terimleri çıkarır, İngilizce-Türkçe sözlükle karşılaştırır ve eksik terimleri kanıtlarıyla raporlar.</p></div></header><main class="main">{}<div class="footer">Veriler bu bilgisayarda işlenir. Sunucu yalnızca 127.0.0.1 adresinde çalışır.</div></main><script>{}</script></body></html>""".format(STYLE, content, SCRIPT)
 
 
 def _item_html(item: dict[str, object], group: str) -> str:
@@ -500,7 +500,7 @@ def serve(host: str = "127.0.0.1", port: int = 8765, open_browser: bool = True) 
     application = WebApplication()
     server = ApplicationServer((host, port), application)
     url = "http://{}:{}".format(host, port)
-    print("TBD Dictionary Control arayüzü: {}".format(url), flush=True)
+    print("Türkçe Terim Etmeni arayüzü: {}".format(url), flush=True)
     print("Durdurmak için Control-C tuşlarına basın.", flush=True)
     if open_browser:
         threading.Timer(0.6, webbrowser.open, args=(url,)).start()

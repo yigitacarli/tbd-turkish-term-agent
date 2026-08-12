@@ -4,13 +4,48 @@ from __future__ import annotations
 import re
 from collections import OrderedDict
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 
 from .chunker import chunk_pages
+from .config import PROJECT_ROOT
 from .dictionary import DictionaryIndex, normalized_key, relaxed_key, term_tokens
 from .models import TermEvidence
 from .pdf_reader import read_pdf
 from .term_extractor import TermProvider, evidence_for, extract_verified_terms
+
+
+@lru_cache(maxsize=1)
+def _load_common_english_words() -> frozenset[str]:
+    """Genel İngilizce kelime listesini yükler (bilişim terimi olmayanlar)."""
+    path = PROJECT_ROOT / "data" / "common_english_words.txt"
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return frozenset()
+    words = set()
+    for line in text.splitlines():
+        line = line.strip()
+        if line and not line.startswith("#"):
+            words.add(line.casefold())
+    return frozenset(words)
+
+
+def _is_common_english(term: str) -> bool:
+    """Terimin tamamen genel İngilizce kelimelerden oluşup oluşmadığını kontrol eder.
+
+    Tek kelimelik terimler doğrudan kontrol edilir.
+    Çok kelimelik terimler, tüm kelimeleri genel ise elenir.
+    Kısaltmalar (tümü büyük harf) bu filtreden muaftır.
+    """
+    common_words = _load_common_english_words()
+    if not common_words:
+        return False
+    words = term.split()
+    # Büyük harfli kısaltmalar (API, TCP vb.) genel kelime değildir
+    if len(words) == 1 and words[0].isupper() and len(words[0]) >= 2:
+        return False
+    return all(w.casefold() in common_words for w in words)
 
 
 _GENERIC_SINGLE_WORDS = {
@@ -347,6 +382,12 @@ def analyze_pdf(
                 base["reason"] = metadata_reason
                 rejected.append(base)
                 continue
+            # Genel İngilizce kelime filtresi: sıradan İngilizce kelimeler
+            # (method, approach, result vb.) bilişim terimi değildir.
+            if _is_common_english(item.term):
+                base["reason"] = "common_english_word"
+                rejected.append(base)
+                continue
             if len(item.term.split()) == 1:
                 # Tek sözcük ve kısaltmaların gürültü olma olasılığı daha
                 # yüksektir; yine de gerçek yeni terimleri kaybetmemek için
@@ -359,7 +400,7 @@ def analyze_pdf(
                 and item.candidate_sources
                 & {
                     "defined_term", "technical_pattern", "repeated_abbreviation",
-                    "quoted_phrase",
+                    "quoted_phrase", "ngram_scan",
                 }
             ):
                 # Modelin hiç önermediği fakat kontrollü bir deterministik

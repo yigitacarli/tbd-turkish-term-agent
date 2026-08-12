@@ -15,17 +15,59 @@ _MODEL_PRODUCT_PATTERN = re.compile(
 )
 
 _TECHNICAL_HEADS = {
-    "algorithm", "architecture", "authentication", "cache", "classifier",
-    "compiler", "controller", "database", "decoder", "detection", "embedding",
-    "encryption", "encoder", "framework", "gateway", "graph", "index",
-    "interface", "learning", "optimization", "protocol", "recognition",
-    "representation", "router", "routing", "schema", "security", "server",
-    "storage", "topology", "tree", "virtualization", "workflow",
+    # Core CS / Software
+    "algorithm", "architecture", "abstraction", "automation", "analytics",
+    "api", "authentication", "authorization",
+    # Data & AI
+    "cache", "classifier", "clustering", "computation", "compiler",
+    "containerization", "controller", "convergence",
+    # Databases & Storage
+    "database", "datastore", "decoder", "deployment", "detection",
+    # ML / Deep Learning
+    "diffusion", "distillation", "embedding", "encoder", "encryption",
+    "estimation", "extraction",
+    # Infrastructure
+    "failover", "firewall", "firmware", "framework",
+    # Networking
+    "gateway", "generation", "graph",
+    # Data structures & indexing
+    "hashing", "hypervisor",
+    "index", "inference", "instrumentation", "integration", "interface",
+    "interoperability",
+    # AI/ML continued
+    "kernel", "learning", "lifecycle", "linearization", "localization",
+    # Distributed systems
+    "mesh", "microservice", "middleware", "migration", "model",
+    "monitoring", "multiplexing",
+    # Networking & orchestration
+    "network", "normalization",
+    "observability", "offloading", "optimization", "orchestration",
+    # Data processing
+    "parallelism", "parser", "partitioning", "pipeline", "pooling",
+    "processor", "profiling", "protocol", "provisioning", "proxy",
+    # ML / NLP
+    "quantization",
+    "recognition", "regression", "regularization", "replication",
+    "representation", "resolution", "retrieval", "router", "routing", "runtime",
+    # Security & systems
+    "sandbox", "scalability", "scheduler", "schema", "security",
+    "segmentation", "serialization", "server", "sharding",
+    "simulator", "specification", "stack", "storage", "streaming",
+    "synchronization",
+    # Web & infra
+    "telemetry", "tokenization", "topology", "tracing", "transformer",
+    "tree", "tunneling",
+    # Misc
+    "validation", "virtualization", "vulnerability",
+    "workflow",
 }
 
 _STRONG_TECHNICAL_HEADS = {
-    "authentication", "encryption", "protocol", "recognition", "router", "schema",
-    "topology", "tree",
+    "authentication", "authorization", "blockchain", "containerization",
+    "encryption", "firewall", "hypervisor", "inference", "interoperability",
+    "microservice", "middleware", "orchestration", "protocol", "quantization",
+    "recognition", "router", "schema", "serialization", "sharding",
+    "tokenization", "topology", "tree", "virtualization", "vulnerability",
 }
 
 _PHRASE_BOUNDARIES = {
@@ -217,12 +259,73 @@ def evidence_for(
     return evidence
 
 
+def _ngram_candidates(pages: list[PageText]) -> list[tuple[str, str]]:
+    """Metindeki 2-gram ve 3-gram İngilizce kelime öbeklerini sistematik olarak tarar.
+
+    Sadece en az bir kelimesinde teknik sinyal (büyük harf kısaltma, bilinen
+    teknik sözcük veya tire/rakam içeren bileşik ad) bulunan öbekler alınır.
+    Bu fonksiyon spaCy yerine saf regex ile çalışır.
+    """
+    ngram_recovered: "OrderedDict[str, tuple[str, str]]" = OrderedDict()
+    ngram_counts: Counter[str] = Counter()
+    word_pattern = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:[-][A-Za-z0-9]+)*")
+
+    # Teknik sinyal taşıyan kelimeler: büyük harfli kısaltma veya tire/rakam
+    # içeren bileşik ad olup olmadığını kontrol eder.
+    def _has_technical_signal(word: str) -> bool:
+        if word.isupper() and len(word) >= 2:
+            return True  # Kısaltma: API, TCP, LLM
+        if re.search(r"[0-9]", word):
+            return True  # Sürüm/nesil: Wi-Fi, 5G, H.264
+        if "-" in word and len(word) >= 4:
+            return True  # Bileşik: end-to-end, pre-trained
+        if word[0].isupper() and word.casefold() in _TECHNICAL_HEADS:
+            return True  # Büyük harfle başlayan teknik terim
+        return False
+
+    for page in pages:
+        for line in page.text.splitlines():
+            if _is_tabular_line(line) or _is_structured_table_row(line):
+                continue
+            words = word_pattern.findall(line)
+            # 2-gram ve 3-gram tarama
+            for n in (2, 3):
+                for i in range(len(words) - n + 1):
+                    gram = words[i : i + n]
+                    # En az bir kelimede teknik sinyal olmalı
+                    if not any(_has_technical_signal(w) for w in gram):
+                        continue
+                    # Tüm kelimeler boundary ise atla
+                    if all(w.casefold() in _PHRASE_BOUNDARIES for w in gram):
+                        continue
+                    # Genel niteleyiciyle başlıyorsa atla
+                    if gram[0].casefold() in _GENERIC_LEADING_MODIFIERS:
+                        continue
+                    term = " ".join(gram)
+                    if not _plausible_term(term):
+                        continue
+                    if any(len(w) > 28 for w in gram):
+                        continue
+                    key = normalized_key(term)
+                    ngram_recovered.setdefault(key, (term, "ngram_scan"))
+                    ngram_counts[key] += 1
+
+    # Sadece en az 2 kez geçen n-gramları döndür (gürültüyü azaltmak için)
+    return [
+        (term, source)
+        for key, (term, source) in ngram_recovered.items()
+        if ngram_counts[key] >= 2
+    ]
+
+
 def _deterministic_candidates(pages: list[PageText]) -> list[tuple[str, str]]:
     """Modelin atladığı yüksek sinyalli kısa teknik ad öbeklerini geri kazanır.
 
-    Ham 1-6 n-gram üretmek yerine yalnız kontrollü teknik baş sözcüklerden geriye
-    doğru yürür. Tek başına kısaltmalar ise ancak belgede en az iki kez geçiyorsa
-    eklenir. Son karar yine sözlük ve insan/model inceleme aşamalarındadır.
+    İki yöntemle çalışır:
+    1. Kontrollü teknik baş sözcüklerden geriye doğru yürüyerek isim öbekleri bulur.
+    2. Sistematik N-gram tarayıcısıyla teknik sinyalli 2-3 kelimelik öbekleri toplar.
+    Tek başına kısaltmalar ise ancak belgede en az iki kez geçiyorsa eklenir.
+    Son karar yine sözlük ve insan/model inceleme aşamalarındadır.
     """
     recovered: "OrderedDict[str, tuple[str, str]]" = OrderedDict()
     phrase_candidates: "OrderedDict[str, str]" = OrderedDict()
@@ -302,6 +405,11 @@ def _deterministic_candidates(pages: list[PageText]) -> list[tuple[str, str]]:
         is_generation_name = bool(re.fullmatch(r"\dG", acronym))
         if (acronym in defined_acronyms or (is_generation_name and count >= 2)) and _plausible_term(acronym):
             recovered.setdefault(normalized_key(acronym), (acronym, "repeated_abbreviation"))
+
+    # N-gram tarayıcısı sonuçlarını birleştir (mevcut adayların üzerine yazmaz)
+    for term, source in _ngram_candidates(pages):
+        recovered.setdefault(normalized_key(term), (term, source))
+
     return list(recovered.values())
 
 
