@@ -219,7 +219,7 @@ def _preferred_installed_model(models: list[str], configured: str) -> str:
 
 def _setup_html() -> str:
     """Model seçimi ve her bilgisayarda görünen kısa kurulum yönergesi."""
-    return """<section class="card setup"><h2>Yapay zeka modeli</h2>
+    return """<section class="card setup"><h2>Önerilen Yapay Zeka Modeli</h2>
 <div class="model-grid"><div class="model-card"><b><code>qwen3.5:9b</code></b><p>Güçlü bilgisayarlar için</p></div>
 <div class="model-card"><b><code>qwen3.5:4b</code></b><p>Orta seviye bilgisayarlar için</p></div>
 <div class="model-card recommended"><b><code>qwen3.5:2b</code></b><p>Hafif bilgisayarlar için</p></div></div>
