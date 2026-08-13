@@ -1,6 +1,35 @@
-# İleride Yapay Zekâ Geliştirmeleri İçin Proje Notu
+# Yapay Zekâ / Geliştirici Devir Notu
 
-## Görev
+> **Önce `PROJECT_CONTEXT.md`, `DECISIONS.md` ve `V2_ROADMAP.md` dosyalarını oku.**
+> Bu dosya yalnız güncel çalışma durumunu ve pratik komutları taşır. Ürün amacı ve
+> kalıcı kararlar yukarıdaki dosyalardadır.
+
+## Güncel çalışma yönü — V2
+
+- V1 korunmuştur: `src/terim_etmeni/`, `run.py`, `tests/`.
+- V2 etkin geliştirmedir: `src/terim_etmeni_v2/`, `run_v2.py`, `tests_v2/`.
+- V2 dalı: `codex/v2`.
+- V1'e yeni V2 özelliği ekleme; geçiş uyumluluğu için V2'nin V1 modüllerini
+  içe aktarması kabul edilebilir.
+- Sohbet içinde alınan kalıcı bir karar aynı turda `DECISIONS.md` veya
+  `PROJECT_CONTEXT.md` içine yazılmalıdır.
+
+### 2026-08-13 V2.0 durumu
+
+- `codex/v2` dalı oluşturuldu; `main` üzerindeki V1 korunuyor.
+- V2 etkin sözlük deposu ve `dictionary status/import/check` komutları çalışıyor.
+- Gerçek TBD sayfasındaki WordPress PDF Poster yapılandırmasından resmî
+  İngilizce–Türkçe PDF bağlantısı bulunuyor.
+- Canlı otomatik kontrol, 599 sayfalık 2026-07-20 PDF'sini indirip 30.247 kayıt ve
+  28.492 benzersiz İngilizce terim olarak doğruladı ve etkinleştirdi.
+- Başarısız ağ/ayrıştırma durumunda son sağlam sözlük korunuyor.
+- V2 ana ekranı makale analizini, ayrı `/dictionary` ekranı sözlük yönetimini
+  sunuyor. Yerel geliştirme adresi `http://127.0.0.1:8876`.
+- 10 V2 testi ve 47 V1 testi geçiyor. Gerçek uzman etiketli kabul kümesi henüz
+  yok; V2 analiz kalitesinin V1'den üstün olduğu iddia edilmemelidir.
+- Sonraki öncelik: gerçek makalelerden küçük kabul kümesi ve V1/V2 ölçüm aracı.
+
+## V1 referans bilgisi
 
 Projenin adı **TBD Dictionary Control**. Metin katmanlı PDF'lerdeki İngilizce bilişim
 terimlerini çıkarır, `data/tbd_dictionary_2026_coordinate.json` içindeki
@@ -9,7 +38,7 @@ listeler.
 
 Kaynak sözlük sitesi: https://bilisimde.ozenliturkce.org.tr/
 
-## Mevcut durum
+### V1 durumu
 
 - Python 3.9+ ile çalışır.
 - Yerel model sağlayıcısı Ollama'dır.

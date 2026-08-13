@@ -1,5 +1,33 @@
 # Türkçe Terim Etmeni
 
+> **V2 geliştirmesi başladı.** Çalışan V1 bu dosyalarla birlikte korunmaktadır.
+> Yeni geliştirme bağlamı için önce [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md),
+> [DECISIONS.md](DECISIONS.md) ve [V2_ROADMAP.md](V2_ROADMAP.md) okunmalıdır.
+
+## V2'yi çalıştırma
+
+V2, V1'i değiştirmeden ayrı paket ve giriş noktası kullanır:
+
+```bash
+python3 run_v2.py
+```
+
+Arayüz `http://127.0.0.1:8876` adresinde açılır. Ana sayfada makale analizi,
+`/dictionary` sayfasında ise etkin sözlük sürümü, TBD sitesini kontrol etme ve
+resmî sözlük PDF'sini elle doğrulama bulunur.
+
+Sözlük durumunu terminalden görmek için:
+
+```bash
+python3 run_v2.py dictionary status
+```
+
+V2'nin sözlük güncellemesi yeni PDF'yi önce geçici alanda dönüştürür ve kayıt
+sayılarını doğrular. Başarısız bir indirme veya PDF düzeni değişikliği son sağlam
+sözlüğü bozmaz. V2 raporları `output_v2/`, yönetilen sözlük sürümleri ise
+`data/v2_runtime/` altında tutulur; her ikisi de çalışma zamanı verisidir ve Git'e
+eklenmez.
+
 Türkçe Terim Etmeni, metin katmanı bulunan PDF belgelerindeki İngilizce bilişim
 terimlerini çıkarır ve Bilişimde Özenli Türkçe sitesinden hazırlanmış yerel
 İngilizce–Türkçe sözlükle karşılaştırır. Sözlükte bulunmayan adayları sayfa ve

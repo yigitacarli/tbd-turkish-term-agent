@@ -15,7 +15,8 @@ dependencies = [
 
 [project.scripts]
 tbd-dictionary-control = "terim_etmeni.cli:main"
+turkce-terim-etmeni-v2 = "terim_etmeni_v2.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["terim_etmeni*"]
+include = ["terim_etmeni*", "terim_etmeni_v2*"]
