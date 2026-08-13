@@ -15,37 +15,33 @@ artırmaz; günlük kullanımda yalnızca uygun Ollama modelini seçmek gerekir.
 Model dosyası boyutu tek başına yeterli bellek ölçüsü değildir. Ollama ayrıca
 çalışma belleği ve bağlam önbelleği kullanır; tabloda baş boşluğu bırakılmıştır.
 
-| Profil | Yaklaşık donanım | İlk aday | Alternatif | Amaç |
-|---|---|---|---|---|
-| Hafif | 8 GB Apple Silicon | `qwen3.5:2b` | `granite4.1:3b` | Günlük hızlı tarama |
-| Mac kalite deneyi | 8 GB Apple Silicon | `qwen3.5:4b` | `gemma3:4b` | Daha yavaş, olası kalite artışı |
-| Dengeli masaüstü | 12–16 GB VRAM | `qwen3.5:9b` | `granite4.1:8b` | Hız/kalite dengesi |
-| Kalite masaüstü | 24 GB VRAM | `qwen3.5:27b` | `gpt-oss:20b` | Daha güçlü çıkarım ve ikinci aile kontrolü |
-| Üst seviye | 32 GB+ VRAM | `qwen3.6:35b` | `qwen3.6:27b` | Deneysel en yüksek yerel kapasite |
+| Profil | Yaklaşık donanım | Önerilen model | Amaç |
+|---|---|---|---|
+| Hafif | 8 GB bellek / Apple Silicon | `qwen3.5:2b` | Günlük hızlı tarama |
+| Orta seviye | 12–16 GB bellek veya VRAM | `qwen3.5:4b` | Hız ve terim bulma dengesi |
+| Güçlü | 16 GB+ bellek veya VRAM | `qwen3.5:9b` | Daha güçlü terim çıkarımı |
 
 8 GB M2 MacBook Air için önerilen ilk kurulum:
 
 ```bash
 ollama pull qwen3.5:2b
-ollama pull granite4.1:3b
 ```
 
-Güçlü masaüstünde ekran kartı belleği doğrulandıktan sonra önerilen başlangıç:
+Orta seviye bilgisayarda:
+
+```bash
+ollama pull qwen3.5:4b
+```
+
+Güçlü bilgisayarda:
 
 ```bash
 ollama pull qwen3.5:9b
 ```
 
-24 GB VRAM varsa kalite adayları ayrıca kurulabilir:
-
-```bash
-ollama pull qwen3.5:27b
-ollama pull gpt-oss:20b
-```
-
 Kurulan modeller uygulamanın web arayüzündeki model listesinde otomatik görünür.
-Arayüz okunabilir model adını ve parantez içinde gerçek Ollama etiketini birlikte
-gösterir. Terminalden model kaldırmak için gerçek etiket kullanılır:
+Arayüz doğrudan Ollama model etiketini gösterir. Terminalden model kaldırmak için
+aynı etiketi kullanın:
 
 ```bash
 ollama list
@@ -61,14 +57,14 @@ Bu sıralama genel model tanıtımlarına, yapılandırılmış çıktı desteğ
 boyutuna ve projenin İngilizce terim çıkarma gereksinimine göre hazırlanmış bir
 **kısa listedir**; kabul kümesi ölçümü yapılmadan nihai kalite sıralaması değildir.
 
-1. `qwen3.5:9b` — güçlü masaüstü için ilk hız/kalite adayı
-2. `qwen3.5:2b` — 8 GB M2 için günlük kullanım adayı
-3. `granite4.1:3b` — metin çıkarma ve yapılandırılmış JSON odaklı hafif karşılaştırma modeli
-4. `qwen3.5:27b` — 24 GB VRAM sınıfında kalite adayı
-5. `gpt-oss:20b` — farklı model ailesinden yapılandırılmış çıktı destekli doğrulayıcı
-6. `mistral-small3.2:24b` — talimat takibi güçlü ikinci karşılaştırma modeli
-7. `qwen3.6:27b` / `qwen3.6:35b` — daha yeni fakat öncelikle ajan/kod yetenekleriyle
-   tanıtıldığı için bu çıkarım görevinde ölçülmeden varsayılan yapılmamalı
+1. `qwen3.5:9b` — güçlü bilgisayarlar için en yüksek önerilen Qwen 3.5 profili
+2. `qwen3.5:4b` — orta seviye bilgisayarlar için dengeli profil
+3. `qwen3.5:2b` — hafif bilgisayarlar için varsayılan profil
+
+Gemma ve Granite, bu projedeki terim çıkarma denemelerinde Qwen 3.5 modellerinden
+daha zayıf sonuç verdiği için önerilen modeller arasında yer almaz. `gpt-oss` ve
+diğer model aileleri bu görevde henüz ölçülmediğinden varsayılan veya öneri olarak
+kullanılmamalıdır.
 
 Önceki `qwen2.5:1.5b` modeli çalışmaya devam eder; yeni varsayılan ölçülürken
 karşılaştırma tabanı olarak tutulabilir.
@@ -99,8 +95,4 @@ göre model seçilmemelidir.
 ## Kaynaklar
 
 - [Ollama Qwen 3.5 model ve boyutları](https://ollama.com/library/qwen3.5/tags)
-- [Ollama Qwen 3.6 model ve boyutları](https://ollama.com/library/qwen3.6)
-- [Ollama Granite 4.1 model ve boyutları](https://ollama.com/library/granite4.1/tags)
-- [Ollama gpt-oss model ve boyutları](https://ollama.com/library/gpt-oss)
-- [Ollama Mistral Small 3.2](https://ollama.com/library/mistral-small3.2)
 - [Ollama yapılandırılmış çıktı belgeleri](https://docs.ollama.com/capabilities/structured-outputs)
