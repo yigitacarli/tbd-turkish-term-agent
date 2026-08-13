@@ -189,6 +189,13 @@
   iki-sözcüklü `tree` kazanımı tek GFS örneğindedir; belgeler arası kanıt olmadığı
   için yeni filtre eklenmedi. Denetim
   `evaluation/five_snapshot_residual_technical_pattern_audit.json` içindedir.
+- 2026-08-14 devir: GPT 5.6 SOL'un Codex worktree'lerinde commit edilmeden kalmış
+  iş kurtarıldı ve `codex/v2`'ye `50d4c06` commit'iyle eklendi (başlatıcılar V2'ye
+  yönlendirildi, README V2 birincil yapıldı, `KISISSEL_BILGISAYAR_KABUL.md` ve
+  `tests_v2/test_launchers.py` eklendi). Depo `codex/v2` dalına geçirildi.
+  Sözlük verisinin Git'te düz izlenmesi, LFS ve geçmiş yeniden yazmanın ertelenmesi
+  ADR-024 olarak kaydedildi. Eski `7a76` ve `f4ef` Codex worktree'leri bayat kalmış
+  ve temizlenebilir.
 
 ## V1 referans bilgisi
 

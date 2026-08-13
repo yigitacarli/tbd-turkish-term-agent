@@ -293,3 +293,19 @@ Bu kayıt append-only mantığıyla kullanılmalıdır. Eski karar silinmez; de�
 - Gerekçe: Kullanıcının önceliği dağıtım mimarisi değil, PDF içindeki gerçek
   teknik terimleri doğru ve güvenilir biçimde bulmaktır. Belirsiz kurumsal
   gereksinimlere erken yatırım ana ürün kalitesinden uzaklaştırır.
+
+## ADR-024 — Sözlük verisini Git'te düz izlemek, LFS ve geçmiş yeniden yazmayı erteleme
+
+- Tarih: 2026-08-14
+- Durum: Kabul edildi
+- Karar: Doğrulanmış sözlük JSON'ları (`tbd_dictionary_2026_coordinate.json`,
+  `tbd_abbreviations_2025_03_17.json`) ve kaynak PDF Git'te olduğu gibi izlenmeye
+  devam edecek. Git LFS eklenmeyecek ve `.git` geçmişini küçültmek için geçmiş
+  yeniden yazımı yapılmayacak. Yeni büyük ikili dosyalar (çalışma PDF'leri,
+  üretim raporları) zaten `.gitignore` ile dışarıda tutulur.
+- Gerekçe: Deponun 133 MB'lık boyutu büyük ölçüde geçmişte eklenip çıkarılan
+  PDF'lerden gelir; etkin çalışma verisi yalnızca ~5,5 MB'dır. Tek geliştiricili
+  projede geçmiş yeniden yazmak veri kaybı ve push karmaşası riskini, sağladığı
+  yer kazancına kıyasla fazla taşır. LFS ayrı bir araç gerektirir ve mevcut
+  akışa somut yarar getirmez. Kurum dağıtımı kesinleşirse bu karar yeniden
+  değerlendirilir.
