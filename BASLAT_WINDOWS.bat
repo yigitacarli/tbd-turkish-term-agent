@@ -3,13 +3,13 @@ setlocal
 cd /d "%~dp0"
 
 if exist ".venv\Scripts\python.exe" (
-    ".venv\Scripts\python.exe" run.py
+    ".venv\Scripts\python.exe" run_v2.py
 ) else (
     where py >nul 2>nul
     if %errorlevel% equ 0 (
-        py -3 run.py
+        py -3 run_v2.py
     ) else (
-        python run.py
+        python run_v2.py
     )
 )
 

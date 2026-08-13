@@ -175,6 +175,14 @@
 - `python3 run_v2.py` artık yerel sunucuyu başlattıktan sonra V2 arayüzünü
   tarayıcıda otomatik açar; komut satırı kullanımı için `serve --no-browser`
   seçeneği vardır.
+- Günlük macOS ve Windows başlatıcıları da `run_v2.py` çalıştıracak şekilde
+  V2'ye yönlendirildi; README'deki kolay kullanım adresi `127.0.0.1:8876` olarak
+  güncellendi. `run.py` ve V1 komutları yalnız karşılaştırma/geri dönüş amacıyla
+  açıkça ayrı belgelenir.
+- Hedef cihazda kalan iki V2.3 kabul maddesi için
+  `KISISSEL_BILGISAYAR_KABUL.md` eklendi. İlk kurulum, tek PDF, indirme ve beş
+  belge ölçümü bu listeyle kaydedilebilir; fiziksel hedef cihaz erişimi olmadan
+  bu kabul tamamlandı diye işaretlenmemelidir.
 - Beş snapshot güncel politikayla yeniden oynatılıp kalan düşük puanlı,
   model-kabul `technical_pattern` adayları denetlendi. Yedi adayın yalnız üçü
   doğru, dördü gürültüdür. `protocol` kazanımları tek Spanner belgesinde,

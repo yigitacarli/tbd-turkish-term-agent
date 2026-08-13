@@ -125,7 +125,7 @@ Windows PowerShell'de sanal ortamı etkinleştirme komutu:
 Arayüzü Windows'ta başlatmak için:
 
 ```powershell
-python run.py
+python run_v2.py
 ```
 
 ## Kolay kullanım
@@ -137,15 +137,17 @@ python run.py
 - **Windows:** `BASLAT_WINDOWS.bat` dosyasına çift tıklayın. Pencere açık kaldığı sürece
   arayüz çalışır.
 
-Her iki başlatıcı da `http://127.0.0.1:8765` adresinde arayüzü açar. PDF seçin,
-modeli seçin ve analizden sonra önce yüksek öncelikli adayları inceleyin.
+Her iki başlatıcı da `http://127.0.0.1:8876` adresinde V2 arayüzünü açar. PDF
+seçin, modeli seçin ve analizden sonra önce yüksek öncelikli adayları inceleyin.
+Hedef bilgisayardaki ilk kurulum ve ölçümlü kabul adımları
+[KISISSEL_BILGISAYAR_KABUL.md](KISISSEL_BILGISAYAR_KABUL.md) dosyasındadır.
 
-## Komut satırı kullanımı
+## V2 komut satırı kullanımı
 
 Arayüzü başlatmak için:
 
 ```bash
-python3 run.py
+python3 run_v2.py
 ```
 
 PDF seçildikten sonra sonuçlar ekranda incelenebilir ve raporlar indirilebilir.
@@ -153,26 +155,30 @@ Model parçalarından biri okunamazsa arayüz analizi `kısmi` veya `başarısı
 olarak işaretler; böyle bir durum “sözlükte olmayan terim yok” anlamına gelmez.
 Uygulamayı kapatmak için açık terminal penceresinde `Control-C` kullanılır.
 
-Komut satırından tek PDF taramak için:
+Tarayıcının otomatik açılmaması için:
 
 ```bash
-python3 run.py scan /dosya/yolu/makale.pdf
+python3 run_v2.py serve --no-browser
 ```
 
-Bir klasördeki bütün PDF'leri taramak için:
+Sözlük güncellemesini denetlemek için:
 
 ```bash
-python3 run.py scan /dosya/yolu/pdf-klasoru --model MODEL_ETIKETI
+python3 run_v2.py dictionary check
 ```
 
-Başka bir Ollama modeli kullanmak için:
+V2 ana kullanıcı akışını tarayıcı arayüzü üzerinden çalıştırır; model her analizde
+listeden açıkça seçilir. `OLLAMA_MODEL` yalnız isteğe bağlı ön seçim, `OLLAMA_URL`
+ise yerel Ollama adresi içindir.
+
+## Korunan V1 komutları
+
+V1, karşılaştırma ve geri dönüş amacıyla korunur; günlük kullanım için V2'yi
+kullanın. V1 arayüzü `python3 run.py`, V1 tek-PDF komutu ise aşağıdaki gibidir:
 
 ```bash
-python3 run.py scan makale.pdf --model qwen3.5:2b
+python3 run.py scan makale.pdf --model MODEL_ETIKETI
 ```
-
-Web arayüzündeki isteğe bağlı ön seçim `OLLAMA_MODEL`, Ollama adresi `OLLAMA_URL`
-ortam değişkeniyle ayarlanabilir. CLI kullanımında model açıkça verilmelidir.
 
 ## Sonuçlar
 
@@ -185,8 +191,9 @@ Arayüz ve terminal dört grup gösterir:
   şişirmeyen adaylar
 - **Elenen:** Düşük güvenli adaylar; denetim amacıyla raporda korunur
 
-Raporlar model sonuçları birbirinin üzerine yazılmasın diye
-`output/<model>/<pdf-adı>/` klasöründe oluşur:
+V2 raporları çakışmayı önlemek için `output_v2/<model>/<pdf-adı>/` altında
+oluşur. Her analiz ayrıca aynı adayları Ollama çağırmadan yeniden denetlemek için
+bir `candidate_snapshot.json` kaydeder.
 
 - `<ad>_terim_raporu.csv`
 - `<ad>_terim_raporu.xlsx`
@@ -211,7 +218,8 @@ doğrulamasına bırakılır.
 Testler Ollama çağırmadan çalışır:
 
 ```bash
-PYTHONPATH=src python3 -m unittest discover -s tests -v
+PYTHONPYCACHEPREFIX=/private/tmp/terim-etmeni-pycache PYTHONPATH=src python3 -m unittest discover -s tests_v2 -v
+PYTHONPYCACHEPREFIX=/private/tmp/terim-etmeni-pycache PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
 ## Sözlük
@@ -239,13 +247,17 @@ tarafından doğrulanmalıdır.
 ## Proje yapısı
 
 ```text
-data/                  Yerel sözlük
-src/terim_etmeni/      Uygulama kaynak kodu
-tests/                 Otomatik testler
-output/                Üretilen raporlar
-BASLAT_APPLE.command   macOS başlatıcısı
-BASLAT_WINDOWS.bat     Windows başlatıcısı
-run.py                 Kurulumsuz giriş noktası
-pyproject.toml         Paket ve bağımlılık tanımı
-AI_HANDOFF.md          Yeni yapay zekâ sohbeti için teknik devir notu
+data/                     Yerel sözlük
+src/terim_etmeni_v2/      Etkin V2 kaynak kodu
+tests_v2/                 V2 otomatik testleri
+output_v2/                V2 üretilen raporları
+BASLAT_APPLE.command      macOS V2 başlatıcısı
+BASLAT_WINDOWS.bat        Windows V2 başlatıcısı
+run_v2.py                 Günlük V2 giriş noktası
+src/terim_etmeni/         Korunan V1 kaynak kodu
+tests/                    Korunan V1 otomatik testleri
+run.py                    Korunan V1 giriş noktası
+pyproject.toml            Paket ve bağımlılık tanımı
+AI_HANDOFF.md             Yeni yapay zekâ sohbeti için teknik devir notu
+KISISSEL_BILGISAYAR_KABUL.md Hedef bilgisayarda ilk çalışma listesi
 ```
