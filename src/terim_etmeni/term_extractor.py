@@ -85,6 +85,11 @@ _GENERIC_LEADING_MODIFIERS = {
     "different", "multiple", "new", "novel", "proposed", "several", "various",
 }
 
+_FRAGMENT_LEADING_WORDS = {
+    "and", "as", "at", "between", "by", "for", "from", "if", "in", "into",
+    "is", "of", "on", "or", "than", "the", "to", "with", "without",
+}
+
 _REFERENCE_NOISE_PATTERN = re.compile(
     r"\b(?:proceedings|et al|arxiv|preprint|journal of|conference on)\b",
     re.IGNORECASE,
@@ -165,6 +170,13 @@ def _plausible_term(term: str) -> bool:
     if re.match(r"^\d+(?:\.\d+)?[a-z]", term):
         return False
     if re.match(r"^(?:the|a|an|this|these|those|their|our|its)\s+", term, re.IGNORECASE):
+        return False
+    # Model çıktıları bazen PDF cümlesinin ortasından kesilmiş parçaları terim
+    # diye döndürüyor ("between pre-training", "is Service Provider").
+    # Edat veya bağlaçla başlayan bu tür diziler bağımsız teknik ad olamaz.
+    if words and words[0].casefold() in _FRAGMENT_LEADING_WORDS:
+        return False
+    if re.match(r"^i-th\b", term, re.IGNORECASE):
         return False
     # "cybersecurity- or privacy-supporting capability" gibi koordinasyonlu
     # cümle parçaları bağımsız terim değildir. Terim çıkarıcı bunları bölmek

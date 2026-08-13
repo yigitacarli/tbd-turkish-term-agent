@@ -89,9 +89,18 @@ def result_html(result: dict[str, object], json_name: str, csv_name: str, xlsx_n
         xlsx_name = csv_name.replace("_terim_raporu.csv", "_terim_raporu.xlsx")
     raw_missing = result.get("missing_terms", [])
     raw_missing = raw_missing if isinstance(raw_missing, list) else []
-    missing = [
+    reviewable_missing = [
         item for item in raw_missing
         if isinstance(item, dict) and item.get("review_priority") != "low"
+    ]
+    # Eski raporlarda öncelik alanı yoktur; geriye dönük olarak ana listede kalır.
+    high_missing = [
+        item for item in reviewable_missing
+        if item.get("review_priority") in (None, "high")
+    ]
+    medium_missing = [
+        item for item in reviewable_missing
+        if item.get("review_priority") == "medium"
     ]
     # Eski raporlar açıldığında düşük güvenli adayları ana karar listesine sokma.
     legacy_low = [
@@ -114,12 +123,17 @@ def result_html(result: dict[str, object], json_name: str, csv_name: str, xlsx_n
             css_class, title, len(values), body
         )
 
-    missing_section = section("missing_terms", "missing", "İncelenecek sözlük açıkları", missing)
+    missing_section = section(
+        "missing_terms", "missing", "Öncelikli sözlük açıkları", high_missing
+    )
+    medium_section = section(
+        "missing_terms", "low", "İkincil inceleme adayları", medium_missing
+    )
     possible_section = section("possible_matches", "possible", "Yakın sözlük eşleşmeleri", possible)
     found_section = section("dictionary_matches", "found", "Sözlükte bulunan terimler", found)
     rejected_section = section("rejected_candidates", "rejected", "Elenen düşük güvenli adaylar", rejected)
     metric_values = [
-        ("missing_terms", len(missing), "İncelenecek"),
+        ("missing_terms", len(high_missing), "Öncelikli açık"),
         ("possible_matches", len(possible), "Yakın eşleşme"),
         ("dictionary_matches", len(found), "Sözlükte bulunan"),
         ("rejected_candidates", len(rejected), "Elenen"),
@@ -161,7 +175,7 @@ def result_html(result: dict[str, object], json_name: str, csv_name: str, xlsx_n
     else:
         warning_html = ""
     status_label = "Analiz tamamlandı" if status == "complete" else "Analiz eksik kaldı"
-    return '<section class="result-head"><div class="eyebrow">{}</div><h2>{}</h2><p class="result-meta">{} sayfa · Model: {} · Sözlük sürümü: {}</p></section>{}<div class="review-layout"><section class="card review-panel"><h2>Karar listesi</h2><p>Önce aşağıdaki sözlük açıklarını doğrulayın. Bilgi ve denetim listeleri kapalı tutulur.</p>{}{}<details class="details"><summary>Sözlükte bulunanlar ({})</summary>{}</details><details class="details"><summary>Elenen adaylar ({})</summary>{}</details></section><aside class="card review-panel"><h2>Rapor özeti</h2><div class="summary">{}</div><div class="quality-note">Eksik sayısı yalnız puan eşiğini geçen inceleme adaylarını gösterir.</div><div class="result-actions"><a class="link-button primary" href="/reports/{}">Excel Raporunu indir</a><a class="link-button" href="/reports/{}">İnceleme CSV’sini indir</a><a class="link-button" href="/reports/{}">Teknik JSON’u indir</a><a class="link-button" href="/">Yeni PDF tara</a></div></aside></div>'.format(
+    return '<section class="result-head"><div class="eyebrow">{}</div><h2>{}</h2><p class="result-meta">{} sayfa · Model: {} · Sözlük sürümü: {}</p></section>{}<div class="review-layout"><section class="card review-panel"><h2>Karar listesi</h2><p>Önce aşağıdaki güçlü sözlük açıklarını doğrulayın. İkincil ve denetim listeleri kapalı tutulur.</p>{}{}<details class="details"><summary>İkincil inceleme adayları ({})</summary>{}</details><details class="details"><summary>Sözlükte bulunanlar ({})</summary>{}</details><details class="details"><summary>Elenen adaylar ({})</summary>{}</details></section><aside class="card review-panel"><h2>Rapor özeti</h2><div class="summary">{}</div><div class="quality-note">Ana sayı yalnız yüksek güvenli sözlük açıklarını gösterir. Orta güvenli adaylar kaybolmaz; ikincil listede ve raporlarda tutulur.</div><div class="result-actions"><a class="link-button primary" href="/reports/{}">Excel Raporunu indir</a><a class="link-button" href="/reports/{}">İnceleme CSV’sini indir</a><a class="link-button" href="/reports/{}">Teknik JSON’u indir</a><a class="link-button" href="/">Yeni PDF tara</a></div></aside></div>'.format(
         status_label,
         html.escape(str(result.get("document", "Analiz sonucu"))),
         html.escape(str(result.get("page_count", ""))),
@@ -170,6 +184,8 @@ def result_html(result: dict[str, object], json_name: str, csv_name: str, xlsx_n
         warning_html,
         missing_section,
         possible_section,
+        len(medium_missing),
+        medium_section,
         len(found),
         found_section,
         len(rejected),
@@ -195,9 +211,9 @@ def _setup_html() -> str:
     """Model seçimi ve her bilgisayarda görünen kısa kurulum yönergesi."""
     return """<details class="card setup"><summary>Kurulum ve model rehberi</summary><div class="setup-content"><h2>Model seçimi</h2>
 <p class="intro">Uygulama belirli bir modele bağlı değildir. Ollama'da kurulu modeller otomatik listelenir; her analizde kullanacağınız modeli siz seçersiniz.</p>
-<div class="model-grid"><div class="model-card"><b>Küçük modeller</b><p>Daha hızlı ve düşük bellek kullanımı</p></div>
-<div class="model-card"><b>Orta modeller</b><p>Hız ve terim bulma dengesi</p></div>
-<div class="model-card"><b>Büyük modeller</b><p>Daha güçlü donanım ve daha uzun analiz</p></div></div>
+<div class="model-grid"><div class="model-card recommended"><b>Küçük modeller · Önerilen: qwen3.5:2b</b><p>Daha hızlı ve düşük bellek kullanımı</p></div>
+<div class="model-card recommended"><b>Orta modeller · Önerilen: qwen3.5:4b</b><p>Hız ve terim bulma dengesi</p></div>
+<div class="model-card recommended"><b>Büyük modeller · Önerilen: qwen3.5:9b</b><p>Daha güçlü donanım ve daha uzun analiz</p></div></div>
 <h2>Kurulum</h2>
 <div class="setup-grid"><div class="setup-step"><b>macOS</b><ol>
 <li><a href="https://ollama.com/download" target="_blank" rel="noreferrer">Ollama'yı indirip kurun</a>.</li>
@@ -236,10 +252,8 @@ class WebApplication:
                 len(models)
             )
             selected = _preferred_installed_model(models, self.settings.model)
-            placeholder = (
-                '<option value="" disabled{}>Bir model seçin</option>'.format(
-                    "" if selected else " selected"
-                )
+            placeholder = '<option value="" disabled{}>Bir model seçin</option>'.format(
+                "" if selected else " selected"
             )
             options = placeholder + "".join(
                 '<option value="{}"{}>{}</option>'.format(
@@ -305,12 +319,13 @@ class WebApplication:
             client = OllamaClient(
                 self.settings.ollama_url, model, timeout=self.settings.timeout_seconds
             )
+            report_model = model
             client.check_model()
             result = analyze_pdf(
                 temporary,
                 self.dictionary,
                 client,
-                model,
+                report_model,
                 self.settings.chunk_size,
                 self.settings.chunk_overlap,
             )

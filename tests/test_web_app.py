@@ -62,7 +62,8 @@ class WebApplicationTests(unittest.TestCase):
         self.assertIn("Sözlükte bulunanlar", rendered)
         self.assertIn("semantic photon router", rendered)
         self.assertIn("Karar listesi", rendered)
-        self.assertIn("İncelenecek sözlük açıkları", rendered)
+        self.assertIn("Öncelikli sözlük açıkları", rendered)
+        self.assertIn("İkincil inceleme adayları", rendered)
         self.assertIn("Yakın sözlük eşleşmeleri", rendered)
         self.assertIn("İnceleme CSV’sini indir", rendered)
         self.assertIn("sample_report.csv", rendered)
@@ -81,7 +82,23 @@ class WebApplicationTests(unittest.TestCase):
         ]
         rendered = result_html(result, "sample_terms.json", "sample_report.csv")
         self.assertIn("Elenen adaylar (1)", rendered)
-        self.assertIn("Eksik sayısı yalnız puan eşiğini geçen", rendered)
+        self.assertIn("Ana sayı yalnız yüksek güvenli", rendered)
+
+    def test_result_page_separates_medium_candidates_from_primary_count(self):
+        result = dict(self.result)
+        result["missing_terms"] = [
+            dict(self.result["missing_terms"][0], review_priority="high"),
+            {
+                "term": "secondary candidate",
+                "pages": [1],
+                "occurrence_count": 1,
+                "review_priority": "medium",
+            },
+        ]
+        rendered = result_html(result, "sample_terms.json", "sample_report.csv")
+        self.assertIn("Öncelikli açık", rendered)
+        self.assertIn("İkincil inceleme adayları (1)", rendered)
+        self.assertIn("secondary candidate", rendered)
 
     def test_latest_result_keeps_nested_report_path_in_download_links(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -150,6 +167,9 @@ class WebApplicationTests(unittest.TestCase):
         self.assertIn("Küçük modeller", rendered)
         self.assertIn("Orta modeller", rendered)
         self.assertIn("Büyük modeller", rendered)
+        self.assertIn("Önerilen: qwen3.5:2b", rendered)
+        self.assertIn("Önerilen: qwen3.5:4b", rendered)
+        self.assertIn("Önerilen: qwen3.5:9b", rendered)
         self.assertIn("Eksik terimleri bul", rendered)
         self.assertIn("Model seçin", rendered)
         self.assertNotIn('id="model-help"', rendered)

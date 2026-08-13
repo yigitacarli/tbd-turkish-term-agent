@@ -82,6 +82,127 @@ class ReviewFailingProvider:
 
 
 class PipelineTests(unittest.TestCase):
+    def test_pipeline_rejects_small_model_fragments_and_merges_plural_variants(self):
+        class NoisySmallProvider:
+            def extract(self, text):
+                return [
+                    ExtractedTerm("Paxos group"),
+                    ExtractedTerm("Paxos groups"),
+                    ExtractedTerm("read-only transac"),
+                    ExtractedTerm("directoriesandplacement"),
+                    ExtractedTerm("North America"),
+                    ExtractedTerm("F1 team"),
+                    ExtractedTerm("implement atomic schema"),
+                    ExtractedTerm("Model Architecture GLUE benchmark"),
+                    ExtractedTerm("Percolator"),
+                ]
+
+            def validate_terms(self, terms):
+                return list(terms)
+
+        pages = [
+            PageText(
+                1,
+                "Paxos group coordinates replicas. Paxos groups are monitored.\n"
+                "read-only transac directoriesandplacement North America F1 team\n"
+                "implement atomic schema\nModel Architecture\nGLUE benchmark\n"
+                "Percolator coordinates commits. Percolator is deployed.",
+            )
+        ]
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=pages):
+            result = analyze_pdf(
+                Path("noisy.pdf"), DictionaryIndex([]), NoisySmallProvider(), "small-model"
+            )
+
+        missing = {item["term"] for item in result["missing_terms"]}
+        self.assertEqual(missing, {"Paxos group", "Percolator"})
+        rejected = {item["term"]: item.get("reason") for item in result["rejected_candidates"]}
+        self.assertEqual(rejected["read-only transac"], "truncated_pdf_fragment")
+        self.assertEqual(rejected["directoriesandplacement"], "compacted_pdf_text")
+        self.assertEqual(rejected["North America"], "geographic_name")
+        self.assertEqual(rejected["F1 team"], "named_group")
+        self.assertEqual(rejected["implement atomic schema"], "prose_fragment")
+        self.assertEqual(rejected["Model Architecture GLUE benchmark"], "cross_line_fragment")
+
+    def test_pipeline_rejects_reference_benchmark_and_language_pair_labels(self):
+        class ReferenceProvider:
+            def extract(self, text):
+                return [
+                    ExtractedTerm("WMT"),
+                    ExtractedTerm("GLUE benchmark"),
+                    ExtractedTerm("PPL"),
+                    ExtractedTerm("English-German"),
+                    ExtractedTerm("age recognition"),
+                    ExtractedTerm("BLEU"),
+                    ExtractedTerm("Transformer"),
+                    ExtractedTerm("True-Time"),
+                ]
+
+            def validate_terms(self, terms):
+                return list(terms)
+
+        pages = [
+            PageText(1, "Transformer and True-Time reach 28 BLEU on WMT and the GLUE benchmark using English-German data. Transformer improves."),
+            PageText(2, "train PPL BLEU params"),
+            PageText(3, "age recognition. In Proceedings of the IEEE Conference, 2017."),
+        ]
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=pages):
+            result = analyze_pdf(
+                Path("references.pdf"), DictionaryIndex([]), ReferenceProvider(), "small-model"
+            )
+
+        missing = {item["term"] for item in result["missing_terms"]}
+        self.assertEqual(missing, {"BLEU", "Transformer", "True-Time"})
+        rejected = {item["term"]: item.get("reason") for item in result["rejected_candidates"]}
+        self.assertEqual(rejected["WMT"], "benchmark_or_experiment_label")
+        self.assertEqual(rejected["GLUE benchmark"], "benchmark_or_experiment_label")
+        self.assertEqual(rejected["PPL"], "benchmark_or_experiment_label")
+        self.assertEqual(rejected["English-German"], "language_pair_label")
+        self.assertEqual(rejected["age recognition"], "reference_or_citation_context")
+
+    def test_pipeline_rejects_generic_business_and_named_group_noise(self):
+        class BusinessNoiseProvider:
+            def extract(self, text):
+                return [
+                    ExtractedTerm("SMM firm"),
+                    ExtractedTerm("MEP National Network"),
+                    ExtractedTerm("manufacturers"),
+                    ExtractedTerm("manufacturing"),
+                    ExtractedTerm("business operations"),
+                    ExtractedTerm("notification laws"),
+                    ExtractedTerm("your encryption"),
+                    ExtractedTerm("electricity goes off"),
+                    ExtractedTerm("plugin installed on a system"),
+                    ExtractedTerm("hardware firewall"),
+                ]
+
+            def validate_terms(self, terms):
+                return list(terms)
+
+        pages = [PageText(1, (
+            "SMM firm and MEP National Network support manufacturers and manufacturing. "
+            "Business operations follow notification laws. Protect your encryption. "
+            "Sometimes electricity goes off. A plugin installed on a system is checked. "
+            "The hardware firewall is active. The hardware firewall blocks traffic."
+        ))]
+        dictionary = DictionaryIndex([{"en": "encryption", "tr": "şifreleme"}])
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=pages):
+            result = analyze_pdf(
+                Path("business.pdf"), dictionary, BusinessNoiseProvider(), "small-model"
+            )
+
+        self.assertEqual(
+            {item["term"] for item in result["missing_terms"]}, {"hardware firewall"}
+        )
+        self.assertIn(
+            "encryption", {item["term"] for item in result["dictionary_matches"]}
+        )
+        rejected = {item["term"]: item.get("reason") for item in result["rejected_candidates"]}
+        self.assertEqual(rejected["SMM firm"], "named_group")
+        self.assertEqual(rejected["MEP National Network"], "named_group")
+        self.assertEqual(rejected["electricity goes off"], "prose_fragment")
+        self.assertEqual(rejected["plugin installed on a system"], "prose_fragment")
+
     def test_model_name_is_safe_as_cross_platform_output_directory(self):
         self.assertEqual(_model_directory_name("qwen3.5:4b"), "qwen3.5-4b")
         self.assertEqual(_model_directory_name("org/model:latest"), "org-model-latest")
@@ -267,7 +388,7 @@ class PipelineTests(unittest.TestCase):
             PageText(
                 1,
                 "Knowledge-Based Systems(KBS) use CAPTCHA technology. "
-                "AEG bot and Cloud Volumes are examples. Erica is a named robot.",
+                "AEG bot, Cloud Volumes, BERT, and GPT are examples. Erica is a named robot.",
             )
         ]
         dictionary = DictionaryIndex(
@@ -284,6 +405,8 @@ class PipelineTests(unittest.TestCase):
                     ExtractedTerm("CAPTCHA technology"),
                     ExtractedTerm("AEG bot"),
                     ExtractedTerm("Cloud Volumes"),
+                    ExtractedTerm("BERT"),
+                    ExtractedTerm("GPT"),
                     ExtractedTerm("Erica"),
                 ]
 
@@ -302,7 +425,7 @@ class PipelineTests(unittest.TestCase):
         )
         self.assertEqual([], result["missing_terms"])
         self.assertEqual(
-            {"AEG bot", "Cloud Volumes", "Erica"},
+            {"AEG bot", "Cloud Volumes", "BERT", "GPT", "Erica"},
             {item["term"] for item in result["rejected_candidates"]},
         )
 

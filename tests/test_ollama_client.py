@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from terim_etmeni.ollama_client import (
     SYSTEM_PROMPT,
+    TERM_REVIEW_SYSTEM,
     USER_TASK,
     OllamaClient,
     OllamaError,
@@ -65,8 +66,11 @@ class OllamaParserTests(unittest.TestCase):
         self.assertNotIn("at least five", SYSTEM_PROMPT)
         self.assertIn("If no such phrases exist", USER_TASK)
         self.assertIn("experiment/table fragments", USER_TASK)
+        self.assertIn("only return phrases that occur", USER_TASK)
+        self.assertNotIn("semantic signal router", USER_TASK)
         self.assertNotIn("formulas, or\nPrefer", USER_TASK)
         self.assertNotIn("Be exhaustive", USER_TASK)
+        self.assertIn("self-contained noun phrase", TERM_REVIEW_SYSTEM)
 
     def test_empty_model_result_is_a_valid_extraction(self):
         client = OllamaClient("http://localhost:11434", "fake")

@@ -9,7 +9,13 @@ from pathlib import Path
 
 from .chunker import chunk_pages
 from .config import PROJECT_ROOT
-from .dictionary import DictionaryIndex, normalized_key, relaxed_key, term_tokens
+from .dictionary import (
+    DictionaryIndex,
+    normalized_key,
+    relaxed_key,
+    singular_key,
+    term_tokens,
+)
 from .models import TermEvidence
 from .pdf_reader import read_pdf
 from .term_extractor import TermProvider, evidence_for, extract_verified_terms
@@ -67,7 +73,10 @@ _GENERIC_SINGLE_WORDS = {
     "education",
     "entertainment",
     "histogram",
+    "manufacturers",
+    "manufacturing",
     "music",
+    "purchasing",
     "selector",
     "seq",
     "task",
@@ -90,6 +99,7 @@ _BRAND_PREFIXES = {
 _METADATA_PATTERNS = (
     r"\b(?:author|orcid|copyright|licensing|how to cite)\b",
     r"\b(?:technical series|white papers?|publication|publication identifier|policies)\b",
+    r"\b(?:conference on|proceedings of|proc\. of)\b",
     r"\b(?:national institute|information technology laboratory)\b",
 )
 
@@ -112,9 +122,46 @@ _NAMED_PRODUCT_HEADS = {
 }
 
 _GENERIC_MISSING_PHRASES = {
-    "commercial equipment", "complementary protection", "implementation findings",
+    "business operations", "commercial equipment", "complementary protection",
+    "downstream tasks", "implementation findings", "masked sentence",
+    "model architecture", "notification laws",
     "network operators", "technical details", "technical effort",
 }
+
+_GEOGRAPHIC_NAMES = {
+    "africa", "asia", "europe", "north america", "south america",
+    "middle east", "united states",
+}
+
+_PROSE_LEADING_WORDS = {
+    "accessing", "adopting", "apply", "could", "deploying", "implement",
+    "inform", "means", "record", "support", "supports", "whereas",
+}
+
+_PROSE_VERB_PATTERN = re.compile(
+    r"\b(?:goes|installed|sending|trigger|triggered)\b", re.IGNORECASE
+)
+
+_TRUNCATED_WORDS = {
+    "arch", "auth", "config", "transac", "implem", "proto",
+}
+
+_BENCHMARK_OR_EXPERIMENT_LABELS = {
+    "cola", "corr", "glue", "iclr", "mnli", "mrpc", "ppl", "qnli",
+    "qqp", "rte", "squad", "sts-b", "swag", "wmt",
+}
+
+_LANGUAGE_NAMES = {
+    "arabic", "chinese", "dutch", "english", "french", "german", "hindi",
+    "italian", "japanese", "korean", "portuguese", "russian", "spanish",
+    "turkish",
+}
+
+_REFERENCE_CONTEXT_PATTERN = re.compile(
+    r"(?:\b(?:proceedings|proc\.|conference|journal|pages?)\b|"
+    r"\b(?:19|20)\d{2}\b|\b(?:acl|aaai|corr|iclr|naacl)\b|abs/\d)",
+    re.IGNORECASE,
+)
 
 # Genel başlıkları (ör. "Knowledge Base System") kişi adı sanmamak için yalnızca
 # yaygın verilen adlarla başlayan kısa baş harfli diziler elenir.
@@ -145,14 +192,32 @@ def _metadata_reason(term: str) -> str | None:
         return "organization_or_institution"
     if _is_title_cased_person_name(term):
         return "person_name"
-    # Ticari model/sürüm isimleri (GPT-4, GPT-3.5, GPT-4o, ET-BERT, Claude-3 vb.)
+    if normalized in _GEOGRAPHIC_NAMES:
+        return "geographic_name"
     if re.search(
-        r"\b(?:gpt[-\s]?[34][o\d\.]*|bert[-\s]?[a-z\d]+|claude[-\s]?\d*|llama[-\s]?\d*|windows[-\s]?\d+|office[-\s]?\d+)\b",
+        r"\b(?:january|february|march|april|may|june|july|august|september|"
+        r"october|november|december)\s+\d{1,2}(?:,\s*\d{4})?\b",
+        normalized,
+        re.IGNORECASE,
+    ):
+        return "date_or_version_label"
+    # Ticari model/sürüm isimleri (BERT, GPT-4, GPT-3.5, GPT-4o, ET-BERT, Claude-3 vb.)
+    if re.search(
+        r"\b(?:gpt(?:[-\s]?[34][o\d\.]*)?|bert(?:[-\s]?[a-z\d]+)?|claude[-\s]?\d*|llama[-\s]?\d*|windows[-\s]?\d+|office[-\s]?\d+)\b",
         term,
         re.IGNORECASE,
     ):
         return "named_product_or_system"
     words = term.split()
+    if (
+        len(words) >= 2
+        and words[-1].casefold() in {"firm", "network", "office", "team"}
+        and any(
+            word.isupper() or re.match(r"^[A-Z][A-Za-z0-9-]*$", word)
+            for word in words[:-1]
+        )
+    ):
+        return "named_group"
     if (
         len(words) == 1
         and re.fullmatch(r"[A-Z][a-z]+", words[0])
@@ -235,9 +300,102 @@ def _low_confidence_missing(term: str) -> bool:
     return False
 
 
+def _candidate_noise_reason(term: str, pages) -> str | None:
+    """Küçük modellerin sık ürettiği biçimsel gürültüyü anlamdan bağımsız eler."""
+    words = term.split()
+    lowered_words = [word.casefold().strip(".,;:()[]") for word in words]
+    lowered = term.casefold()
+    if lowered in _BENCHMARK_OR_EXPERIMENT_LABELS:
+        return "benchmark_or_experiment_label"
+    if any(
+        lowered == label + " benchmark"
+        for label in _BENCHMARK_OR_EXPERIMENT_LABELS
+    ):
+        return "benchmark_or_experiment_label"
+    language_pair = re.fullmatch(
+        r"(?P<left>[A-Z][a-z]+)-(?:to-)?(?P<right>[A-Z][a-z]+)", term
+    )
+    if (
+        language_pair
+        and language_pair.group("left").casefold() in _LANGUAGE_NAMES
+        and language_pair.group("right").casefold() in _LANGUAGE_NAMES
+    ):
+        return "language_pair_label"
+    if lowered_words and lowered_words[0] in _PROSE_LEADING_WORDS:
+        return "prose_fragment"
+    if _PROSE_VERB_PATTERN.search(term):
+        return "prose_fragment"
+    if any(word in _TRUNCATED_WORDS for word in lowered_words):
+        return "truncated_pdf_fragment"
+    if any(re.search(r"[a-z]{4,}and[a-z]{4,}", word) for word in lowered_words):
+        return "compacted_pdf_text"
+    if any(left == right for left, right in zip(lowered_words, lowered_words[1:])):
+        return "repeated_token_fragment"
+
+    matching_lines = [
+        line
+        for page in pages
+        for line in page.text.splitlines()
+        if lowered in line.casefold()
+    ]
+    if matching_lines and all(_REFERENCE_CONTEXT_PATTERN.search(line) for line in matching_lines):
+        return "reference_or_citation_context"
+
+    # PDF satır sonları model isteminde boşluk gibi görünebilir ve iki ayrı
+    # başlığı tek bir uzun terime dönüştürebilir. Dört veya daha fazla sözcüklü
+    # aday metinde yalnız satır aşarak bulunuyorsa güvenilir bir isim öbeği sayma.
+    if len(words) >= 4:
+        candidate_tokens = term_tokens(term)
+        appears_on_one_line = False
+        for page in pages:
+            for line in page.text.splitlines():
+                tokens = term_tokens(line)
+                window = len(candidate_tokens)
+                if any(
+                    tokens[start : start + window] == candidate_tokens
+                    for start in range(max(0, len(tokens) - window + 1))
+                ):
+                    appears_on_one_line = True
+                    break
+            if appears_on_one_line:
+                break
+        if not appears_on_one_line:
+            return "cross_line_fragment"
+    return None
+
+
+def _merge_candidate_variants(evidence: list[TermEvidence]) -> list[TermEvidence]:
+    """Tire ve son-sözcük çoğulu farklı adayları tek insan kararında toplar."""
+    grouped: "OrderedDict[str, list[TermEvidence]]" = OrderedDict()
+    for item in evidence:
+        grouped.setdefault(singular_key(item.term), []).append(item)
+
+    merged: list[TermEvidence] = []
+    for key, variants in grouped.items():
+        representative = min(
+            variants,
+            key=lambda item: (
+                relaxed_key(item.term) != key,
+                -item.occurrence_count,
+                len(item.term),
+                item.term.casefold(),
+            ),
+        )
+        combined = TermEvidence(term=representative.term)
+        combined.pages = set().union(*(item.pages for item in variants))
+        # Varyantların metin eşleşmeleri çakışabileceği için toplam yerine en
+        # güçlü kanıtı kullan; böylece çoğul yazım puanı yapay olarak şişirmez.
+        combined.occurrence_count = max(item.occurrence_count for item in variants)
+        combined.candidate_sources = set().union(
+            *(item.candidate_sources for item in variants)
+        )
+        merged.append(combined)
+    return merged
+
+
 def _canonical_candidate(term: str) -> str:
     candidate = re.sub(
-        r"^(?:the|a|an|this|these|those|their|our|its|different|multiple|several|various)\s+",
+        r"^(?:the|a|an|this|these|those|their|your|our|its|different|multiple|several|various)\s+",
         "",
         term,
         flags=re.IGNORECASE,
@@ -331,25 +489,29 @@ def _review_score(item: dict[str, object], model_accepted: bool | None) -> int:
     sources = set(item.get("candidate_sources", []))
     score = 0
     if "model" in sources:
-        score += 4
-    if "defined_term" in sources:
         score += 3
+    if "defined_term" in sources:
+        score += 4
     if "technical_pattern" in sources:
-        score += 1
+        score += 2
     if "quoted_phrase" in sources:
         score += 1
     occurrences = int(item.get("occurrence_count", 0) or 0)
     if occurrences >= 2:
-        score += 1
+        score += 2
     if occurrences >= 4:
         score += 1
     if len(str(item.get("term", "")).split()) >= 2:
         score += 1
     else:
         score -= 1
-    if model_accepted is True:
-        score += 2
-    elif model_accepted is False:
+        term = str(item.get("term", ""))
+        if term[:1].isupper() or term.isupper():
+            score += 2
+    # Küçük modeller olumlu ikinci turda aşırı kabulcü olabildiği için kabul
+    # yanıtı tek başına puan eklemez; ret ise güçlü metin kanıtını veto etmeden
+    # yalnız bir basamak güven düşürür.
+    if model_accepted is False:
         score -= 1
     return score
 
@@ -368,7 +530,7 @@ def _apply_review_decision(
     if score >= 5:
         item["review_priority"] = "high"
         return True
-    if score >= 3:
+    if score >= 4:
         item["review_priority"] = "medium"
         return True
     item["review_priority"] = "low"
@@ -393,6 +555,7 @@ def analyze_pdf(
     chunk_warning_count = len(extraction_warnings)
     processed_chunk_count = len(chunks) - chunk_warning_count
     evidence = _expand_model_evidence(model_evidence, pages, dictionary)
+    evidence = _merge_candidate_variants(evidence)
     evidence = _merge_dictionary_evidence(evidence, pages, dictionary)
 
     found: list[dict[str, object]] = []
@@ -420,6 +583,11 @@ def analyze_pdf(
             base["match_type"] = "normalized_variant"
             found.append(base)
         else:
+            noise_reason = _candidate_noise_reason(item.term, pages)
+            if noise_reason:
+                base["reason"] = noise_reason
+                rejected.append(base)
+                continue
             entries = _acronym_dictionary_match(item.term, pages, dictionary)
             if entries:
                 base["possible_dictionary_terms"] = [

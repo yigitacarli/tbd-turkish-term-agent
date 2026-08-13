@@ -50,9 +50,8 @@ explanatory prose, names, citations, models, products, datasets, formulas, or
 experiment/table fragments.
 Prefer specific multi-word phrases, but include a technical single word or
 abbreviation when omitting it would lose a distinct concept.
-
-Example text: The service uses machine learning and a semantic signal router.
-Example result: {{"terms":["machine learning","semantic signal router"]}}
+Do not repeat terms from these instructions; only return phrases that occur in
+the PDF text between TEXT START and TEXT END.
 
 TEXT START
 {text}
@@ -75,6 +74,10 @@ concept, method, algorithm, model component, data representation, mathematical o
 statistical concept, or computing system. A candidate can be new or absent from a
 dictionary. Reject prose fragments, ordinary contextual descriptions, person names,
 benchmark rows, experimental labels, dataset/model names, and generic word groups.
+Also reject truncated words, dates and places, organization or team labels, strings
+formed by joining adjacent headings or table cells, and phrases that contain two
+unrelated concepts accidentally concatenated together. A valid result must be a
+self-contained noun phrase that would make sense as one dictionary entry.
 When uncertain, reject the candidate. Rejected candidates remain visible to the
 human reviewer, while this queue must prioritize precision over list length.
 Return only JSON matching the requested schema."""
@@ -187,8 +190,10 @@ class OllamaClient:
         unique = list(dict.fromkeys(term for term in terms if term.strip()))
         accepted: list[str] = []
         # Çok uzun anketlerde tek istemin bağlamını taşırmamak için küçük gruplar.
-        for start in range(0, len(unique), 60):
-            batch = unique[start : start + 60]
+        # Küçük yerel modeller uzun karar listelerinde hemen her şeyi kabul
+        # etmeye eğilimlidir. Kısa gruplar seçiciliği ve JSON kararlılığını artırır.
+        for start in range(0, len(unique), 30):
+            batch = unique[start : start + 30]
             prompt = TERM_REVIEW_TASK.format(
                 candidates="\n".join("- " + term for term in batch)
             )

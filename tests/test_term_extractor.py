@@ -40,6 +40,9 @@ class FakeProvider:
             ExtractedTerm("vector training accuracy"),
             ExtractedTerm("Currency Angola kwanza Iran rial"),
             ExtractedTerm("word vectors are well trained"),
+            ExtractedTerm("between pre-training"),
+            ExtractedTerm("is Service Provider"),
+            ExtractedTerm("i-th token"),
         ]
 
 
@@ -121,6 +124,9 @@ class TermExtractorTests(unittest.TestCase):
         self.assertNotIn("vector training accuracy", by_term)
         self.assertNotIn("Currency Angola kwanza Iran rial", by_term)
         self.assertNotIn("word vectors are well trained", by_term)
+        self.assertNotIn("between pre-training", by_term)
+        self.assertNotIn("is Service Provider", by_term)
+        self.assertNotIn("i-th token", by_term)
         self.assertEqual(by_term["Machine Learning"].pages, {1, 2})
         self.assertEqual(by_term["Machine Learning"].occurrence_count, 2)
         self.assertEqual(by_term["neural-network"].pages, {1, 2})

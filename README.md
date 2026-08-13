@@ -112,7 +112,9 @@ Arayüz ve terminal dört grup gösterir:
 
 - **Bulunan:** Sözlükte tam eşleşen terimler
 - **Olası:** Açılımı sözlükte bulunan kısaltma gibi insan kararı isteyen eşleşmeler
-- **Eksik:** Sözlükte karşılığı bulunmayan ve birleşik güven puanı eşiğini geçen adaylar
+- **Öncelikli açık:** Sözlükte karşılığı bulunmayan yüksek güvenli adaylar
+- **İkincil aday:** Orta güvenli, kaybolmaması için raporda tutulan fakat ana sayıyı
+  şişirmeyen adaylar
 - **Elenen:** Düşük güvenli adaylar; denetim amacıyla raporda korunur
 
 Raporlar model sonuçları birbirinin üzerine yazılmasın diye
@@ -127,6 +129,10 @@ adayları gösterir: **İnceleme gerekli** ve **Yakın eşleşme** satırları e
 ardından bilgi ve elenen adaylar gelir. `öncelik` ve `önerilen işlem` sütunları
 sözlük sorumlusunun hangi satırı ele alacağını açıklar; uygulama sözlüğe otomatik
 terim eklemez.
+
+Web arayüzündeki büyük sayı yalnız yüksek güvenli açıkları gösterir. Orta güvenli
+adaylar kapalı **İkincil inceleme adayları** bölümünde ve indirilen raporlarda
+korunur. Böylece küçük modellerin belirsiz önerileri ana sonucu şişirmez.
 
 Güvenli tire ve düzenli tekil-çoğul farkları sözlük tarafından kapsanmış sayılır.
 Kısaltma açılımı gibi karar gerektiren yakın eşleşmeler **Olası** grubunda insan
