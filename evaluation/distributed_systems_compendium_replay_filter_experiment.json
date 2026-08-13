@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "acceptance_document_count": 1,
+  "acceptance_term_count": 135,
+  "systems": {
+    "baseline": {
+      "documents_expected": 1,
+      "documents_evaluated": 1,
+      "missing_documents": [],
+      "labelled_term_count": 135,
+      "unlabelled_prediction_count": 0,
+      "analysis_status_counts": {
+        "complete": 1
+      },
+      "duration_seconds": {
+        "reported_document_count": 0,
+        "total": null,
+        "average": null
+      },
+      "technical_term": {
+        "true_positive": 120,
+        "false_positive": 4,
+        "false_negative": 10,
+        "precision": 0.9677,
+        "recall": 0.9231
+      },
+      "missing_term": {
+        "true_positive": 16,
+        "false_positive": 1,
+        "false_negative": 10,
+        "precision": 0.9412,
+        "recall": 0.6154
+      },
+      "noise_rejection_recall": 0.2,
+      "exact_label_accuracy": 0.8963
+    },
+    "transparency_filter": {
+      "documents_expected": 1,
+      "documents_evaluated": 1,
+      "missing_documents": [],
+      "labelled_term_count": 135,
+      "unlabelled_prediction_count": 0,
+      "analysis_status_counts": {
+        "complete": 1
+      },
+      "duration_seconds": {
+        "reported_document_count": 0,
+        "total": null,
+        "average": null
+      },
+      "technical_term": {
+        "true_positive": 122,
+        "false_positive": 4,
+        "false_negative": 8,
+        "precision": 0.9683,
+        "recall": 0.9385
+      },
+      "missing_term": {
+        "true_positive": 18,
+        "false_positive": 1,
+        "false_negative": 8,
+        "precision": 0.9474,
+        "recall": 0.6923
+      },
+      "noise_rejection_recall": 0.2,
+      "exact_label_accuracy": 0.9111
+    }
+  }
+}

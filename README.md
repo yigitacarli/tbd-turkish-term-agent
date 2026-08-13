@@ -12,7 +12,19 @@ V2, V1'i değiştirmeden ayrı paket ve giriş noktası kullanır:
 python3 run_v2.py
 ```
 
+Bu komut yerel V2 sunucusunu başlatır ve tarayıcıyı otomatik açar. Tarayıcının
+otomatik açılması istenmezse `python3 run_v2.py serve --no-browser` kullanılır.
+
+V2 geliştirme sunucusu varsayılan olarak aynı anda tek analiz çalıştırır. Hedef
+sunucunun kapasitesi ölçüldükten sonra sınır örneğin
+`MAX_CONCURRENT_ANALYSES=2 python3 run_v2.py` ile artırılabilir. Kimlik doğrulama
+ve HTTPS eklenmeden uygulama yalnız `localhost`/loopback adresinde çalışır; genel
+ağa bağlanmayı reddeder. Yerel sağlık kontrolü `GET /healthz` adresindedir.
+Kurum sunucusu zorunlu değildir. İleride istenirse gerekli teknik ve veri
+politikası bilgileri `DEPLOYMENT_READINESS.md` dosyasında toplanmıştır.
+
 Arayüz `http://127.0.0.1:8876` adresinde açılır. Ana sayfada makale analizi,
+`/evaluation` sayfasında gerçek raporlardan iç değerlendirme kümesi hazırlama,
 `/dictionary` sayfasında ise etkin sözlük sürümü, TBD sitesini kontrol etme ve
 resmî sözlük PDF'sini elle doğrulama bulunur.
 
@@ -21,6 +33,34 @@ Sözlük durumunu terminalden görmek için:
 ```bash
 python3 run_v2.py dictionary status
 ```
+
+Ayrı TBD kısaltma kaynağının sürüm ve kayıt durumunu görmek için:
+
+```bash
+python3 run_v2.py abbreviations status
+```
+
+Resmî kısaltmalar PDF'sini ana sözlüğe eklemeden doğrulanmış JSON'a dönüştürmek
+için `python3 run_v2.py abbreviations convert KAYNAK.pdf --output KISALTMALAR.json`
+kullanılır. V2, kısaltma eşleşmelerini ana sözlük eşleşmesi saymaz; sonuçta
+`Kısaltma kaynağında` başlığı ve teknik JSON'da kaynak etiketiyle gösterir.
+
+İnsan tarafından etiketli gerçek makalelerde V1/V2 sonuçlarını çevrimdışı karşılaştırmak için
+`evaluation/README.md` içindeki kabul kümesi biçimi ve `evaluate` komutu
+kullanılır. Araç kaydedilmiş JSON raporlarından teknik-terim ve sözlük-açığı
+hassasiyet/yakalama oranlarını hesaplar; yeni model çağrısı yapmaz.
+
+Erişilebilir alan uzmanı yoksa web arayüzündeki **İç değerlendirme** sayfası bir
+veya daha fazla V1/V2 JSON raporunu birleştirir. Proje sahibi her adayı
+`Sözlükte var`, `Gerçek sözlük açığı` veya `Gürültü` olarak işaretler ve kabul
+kümesini JSON olarak indirir. Bu çıktı `internal_review` statüsündedir; uzman
+onayı olarak sunulmaz.
+
+Yeni V2 analizleri ayrıca rapor klasörüne bir `candidate_snapshot.json` dosyası
+yazar. Bu dosya, aynı Qwen adaylarını modele yeniden çağrı yapmadan güncel V2
+filtrelerinden geçirmek için `run_v2.py replay SNAPSHOT --output RAPOR.json`
+komutuyla kullanılabilir. Bu geliştirme/ölçüm aracıdır; ana kullanıcı akışını
+değiştirmez.
 
 V2'nin sözlük güncellemesi yeni PDF'yi önce geçici alanda dönüştürür ve kayıt
 sayılarını doğrular. Başarısız bir indirme veya PDF düzeni değişikliği son sağlam

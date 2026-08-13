@@ -1,0 +1,4890 @@
+{
+  "schema_version": 1,
+  "review_status": "internal_review",
+  "prepared_at": "2026-08-13",
+  "reviewed_at": "2026-08-13",
+  "document_note": "V1 ve V2 qwen3.5:2b aday birlesimi; proje sahibi yonlendirmesi ve yapay zeka PDF baglam incelemesiyle etiketlendi. Uzman onayi degildir.",
+  "documents": [
+    {
+      "document": "intrusion-detection-systems-survey.pdf",
+      "terms": [
+        {
+          "term": "access control",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Active IDS",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "active logging",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "ad hoc",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "ad hoc networks",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Also Known As",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "anomaly",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                3,
+                4,
+                5,
+                6,
+                8
+              ],
+              "occurrence_count": 21
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "anomaly detection",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                6
+              ],
+              "occurrence_count": 5
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                6
+              ],
+              "occurrence_count": 5
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "anomaly-based detection",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3,
+                4,
+                5
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3,
+                4,
+                5
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "anomaly-based IDS",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "artificial neural networks",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "attack signatures",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "audit data",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "backup power",
+          "label": "missing_term",
+          "observed_in": [
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "baseline behavior",
+          "label": "missing_term",
+          "observed_in": [
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "baseline data",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                6
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                6
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "baseline profile data set",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Bayes",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                5
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Bayesian model",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Bayesian network",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Bayesian networks",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 5
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "black box",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "business world",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "classification algorithms",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "classification problems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "cloud computing",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "cloud data",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "cloud data storage systems",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "cloud systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "clustering",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 12
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 12
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "comparative analysis",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8,
+                9
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8,
+                9
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "complex systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "computer applications",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "computer communications",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "computer crime",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "computer engineering",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "computer network",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                9
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                9
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "computer networks",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "computer security",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                6,
+                8
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                6,
+                8
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "computer security field",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "computer system",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "cyber-security",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data analysis",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data breaches",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data mining",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                8,
+                9
+              ],
+              "occurrence_count": 10
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                8,
+                9
+              ],
+              "occurrence_count": 10
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data mining algorithm",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data mining algorithms",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data mining approach",
+          "label": "missing_term",
+          "observed_in": [
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data point",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                6
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                6
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data points",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data reduction",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data set",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6,
+                7
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6,
+                7
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data sources",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data storage",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "decision tree",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "decision-making",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "defense mechanism",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Denial of Service",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3,
+                4
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3,
+                4
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "detection algorithms",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Detection System",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                5,
+                6,
+                8,
+                9
+              ],
+              "occurrence_count": 10
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                5,
+                6,
+                8,
+                9
+              ],
+              "occurrence_count": 10
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Detection Systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 18
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "distributed IDS architectures",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "domain knowledge",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "DT",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:possible_matches",
+            "v2:possible_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:possible_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:possible_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "email spam",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "ensemble classifiers",
+          "label": "missing_term",
+          "observed_in": [
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "error prone",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "expert system",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "expert systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "External Network",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2,
+                3,
+                4
+              ],
+              "occurrence_count": 5
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2,
+                3,
+                4
+              ],
+              "occurrence_count": 5
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "false alarm",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "false alarm minimization",
+          "label": "missing_term",
+          "observed_in": [
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "false alarms",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "false negatives",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "false positive",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                3
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                3
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "false positives",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "fault approaches",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "fault tolerant",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "feature selection",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "firewalls and routers",
+          "label": "noise",
+          "observed_in": [
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "fraud detection",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "fuzzy classifiers",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "fuzzy coordinated attacks",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "fuzzy data",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "fuzzy logic",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6,
+                7,
+                8
+              ],
+              "occurrence_count": 12
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6,
+                7,
+                8
+              ],
+              "occurrence_count": 12
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "GA",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:possible_matches",
+            "v2:possible_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:possible_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:possible_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Genetic Algorithm",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "genetic algorithms",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                6,
+                9
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "graphical models",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "HIDS",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                2,
+                3,
+                8
+              ],
+              "occurrence_count": 11
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "host machine",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Host-based Intrusion",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Host-based Intrusion Detection Systems",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "hybrid detection techniques",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "hybrid forms",
+          "label": "noise",
+          "observed_in": [
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "hybrid intrusion detection",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "IDS",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:possible_matches",
+            "v2:possible_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:possible_matches",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 49
+            },
+            {
+              "source": "v2:possible_matches",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 49
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "IDS may",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                2,
+                7,
+                8
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                2,
+                7,
+                8
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "IDS Sensor",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "IDS will",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                3,
+                4
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3,
+                4
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "incomplete data",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "indefinite environments",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "information sciences",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "information security",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                8,
+                9
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                8,
+                9
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "information sharing",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "information systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "inline",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "occurrence_count": 10
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "innovative technology",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "intellectual property",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "internal network",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Intrusion detection",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 43
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 43
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "intrusion detection system",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                8,
+                9
+              ],
+              "occurrence_count": 6
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                8,
+                9
+              ],
+              "occurrence_count": 6
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "intrusion detection systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 17
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "intrusion detection techniques",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "intrusion prevention",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4,
+                9
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4,
+                9
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Intrusion Prevention Systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4,
+                9
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4,
+                9
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "IP address",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "ip addresses",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "IPS",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:possible_matches",
+            "v2:possible_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:possible_matches",
+              "pages": [
+                1,
+                4,
+                8,
+                9
+              ],
+              "occurrence_count": 17
+            },
+            {
+              "source": "v2:possible_matches",
+              "pages": [
+                1,
+                4,
+                8,
+                9
+              ],
+              "occurrence_count": 17
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "joint distribution",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "knowledge based systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "knowledge-based",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "large scale",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "learning technique",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "machine learning",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "mobile applications",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Modern Intrusion Detection",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 10
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 10
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "mutually exclusive",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network analysis",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network based intrusion detection system",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network connections",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network forensics",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network intrusion detection systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network resources",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network security",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8,
+                9
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8,
+                9
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network sniffing",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network system",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network traffic",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3,
+                4,
+                6
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3,
+                4,
+                6
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network-based IDS",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "network-based IDSs",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Network-Based Intrusion Detection System",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "neural network",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6,
+                8
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6,
+                8
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "neural networks",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                6,
+                8,
+                9
+              ],
+              "occurrence_count": 7
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "next-generation",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "NIDS",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                2,
+                3,
+                8
+              ],
+              "occurrence_count": 11
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Operating System",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Outlier detection",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                6
+              ],
+              "occurrence_count": 5
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                6
+              ],
+              "occurrence_count": 5
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "passive IDS",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "pattern recognition",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "prediction models",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "predictive model",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "predictive model decision tree",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "prevention capabilities",
+          "label": "missing_term",
+          "observed_in": [
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "probing tools",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "random variables",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "real time",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "resource usage",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "risk assessment",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "rule-based",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6,
+                7
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6,
+                7
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "rule-based systems",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "rulesets",
+          "label": "missing_term",
+          "observed_in": [
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "sample space",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "security incidents",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "security mechanisms",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "semi-supervised learning",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "signal-to-noise ratio",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "signature",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 23
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "signature database",
+          "label": "missing_term",
+          "observed_in": [
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "signature-based",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2,
+                3,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 12
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2,
+                3,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 12
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "signature-based approach",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2,
+                3,
+                8
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "signature-based design",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Signature-based Detection",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "signature-based IDS",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "signature-based intrusion detection systems",
+          "label": "missing_term",
+          "observed_in": [
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "SNMP trap",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "soft computing",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                7,
+                8
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                7,
+                8
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "SPAN port",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 5
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 5
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "spanning port",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                2
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                2
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "state transition",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "state transition analysis",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "state-of-the-art",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "statistical analysis",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "stochastic distribution",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "supervised learning",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5,
+                9
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "support vector machines",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6,
+                8
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                6,
+                8
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "SVM",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "switch SPAN",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "switch SPAN port",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                2,
+                3
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "systems security",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "true negatives",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "true positives",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Understanding Modern Intrusion Detection",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 10
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "occurrence_count": 10
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "unknown clients",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "unlabeled data",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "unsupervised learning",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "wireless networks",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "zero-day",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "zero-day attacks",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        }
+      ]
+    }
+  ]
+}

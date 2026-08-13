@@ -1,0 +1,1985 @@
+{
+  "document": "distributed-systems-compendium.pdf",
+  "generated_at": "2026-08-13T15:56:14.865547+00:00",
+  "model": "qwen3.5:2b",
+  "dictionary_version": "2026-07-20",
+  "page_count": 8,
+  "verified_candidate_count": 135,
+  "chunk_count": 8,
+  "processed_chunk_count": 8,
+  "failed_chunk_count": 0,
+  "analysis_status": "complete",
+  "processing_warnings": [],
+  "replay": {
+    "enabled": true,
+    "snapshot_schema_version": 1,
+    "ollama_called": false
+  },
+  "technical_review": {
+    "enabled": true,
+    "candidate_count": 25,
+    "accepted_count": 20,
+    "candidate_terms": [
+      "client-server architecture",
+      "three-tier architecture",
+      "n-tier architecture",
+      "primary system controller",
+      "secondary controller",
+      "user-interface client",
+      "system datastore",
+      "fabrication",
+      "security requirements",
+      "interception",
+      "cryptographic techniques",
+      "encryption-decryption methods",
+      "total transparency",
+      "openness issues",
+      "access transparency",
+      "app editor",
+      "fault transparency",
+      "location transparency",
+      "openness solution",
+      "performance transparency",
+      "scaling transparency",
+      "user interface",
+      "concerns authorization",
+      "Symmetric Encryption",
+      "Asymmetric Encryption"
+    ],
+    "accepted_terms": [
+      "client-server architecture",
+      "three-tier architecture",
+      "n-tier architecture",
+      "primary system controller",
+      "secondary controller",
+      "user-interface client",
+      "system datastore",
+      "fabrication",
+      "security requirements",
+      "interception",
+      "cryptographic techniques",
+      "encryption-decryption methods",
+      "openness issues",
+      "app editor",
+      "fault transparency",
+      "openness solution",
+      "user interface",
+      "concerns authorization",
+      "Symmetric Encryption",
+      "Asymmetric Encryption"
+    ],
+    "status": "replayed"
+  },
+  "counts": {
+    "dictionary_matches": 107,
+    "possible_matches": 0,
+    "missing_terms": 19,
+    "rejected_candidates": 9
+  },
+  "dictionary_matches": [
+    {
+      "term": "abstract computer",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "soyut bilgisayar"
+      ]
+    },
+    {
+      "term": "access control",
+      "pages": [
+        3,
+        4,
+        5
+      ],
+      "occurrence_count": 5,
+      "candidate_sources": [],
+      "translations": [
+        "erişim denetimi"
+      ]
+    },
+    {
+      "term": "access control methods",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "erişim denetimi yöntemi"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "access control method",
+          "tr": "erişim denetimi yöntemi"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "access methods",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 3,
+      "candidate_sources": [],
+      "translations": [
+        "erişim yöntemi"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "access method",
+          "tr": "erişim yöntemi"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "access rights",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "erişim hakkı"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "access right",
+          "tr": "erişim hakkı"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "Also Known As",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "olarak da bilinen"
+      ]
+    },
+    {
+      "term": "application server",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "uygulama sunucusu"
+      ]
+    },
+    {
+      "term": "audit logs",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "denetim kaydı"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "audit log",
+          "tr": "denetim kaydı"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "auditing",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "denetim",
+        "denetleme"
+      ]
+    },
+    {
+      "term": "authentication",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 4,
+      "candidate_sources": [],
+      "translations": [
+        "aslına uygunluğu kanıtlama",
+        "kimlik doğrulama"
+      ]
+    },
+    {
+      "term": "authentication process",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "kimlik doğrulama süreci"
+      ]
+    },
+    {
+      "term": "authorization",
+      "pages": [
+        3,
+        4
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "yetki",
+        "yetkilendirme"
+      ]
+    },
+    {
+      "term": "autonomous computing",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "özerk bilişim"
+      ]
+    },
+    {
+      "term": "availability",
+      "pages": [
+        1,
+        3,
+        6,
+        7,
+        8
+      ],
+      "occurrence_count": 7,
+      "candidate_sources": [],
+      "translations": [
+        "elde hazır olma",
+        "hazır bulunurluk"
+      ]
+    },
+    {
+      "term": "broadcast message",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "yayın iletisi"
+      ]
+    },
+    {
+      "term": "client-server",
+      "pages": [
+        2,
+        3
+      ],
+      "occurrence_count": 4,
+      "candidate_sources": [],
+      "translations": [
+        "istemci sunucu"
+      ]
+    },
+    {
+      "term": "cloud computing",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bulut bilişim"
+      ]
+    },
+    {
+      "term": "communication system",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "iletişim sistemi"
+      ]
+    },
+    {
+      "term": "computer networks",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bilgisayar ağı"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "computer network",
+          "tr": "bilgisayar ağı"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "computer science",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 4,
+      "candidate_sources": [],
+      "translations": [
+        "bilgisayar bilimi"
+      ]
+    },
+    {
+      "term": "computer security",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bilgisayar güvenliği"
+      ]
+    },
+    {
+      "term": "computer system",
+      "pages": [
+        3,
+        4,
+        5
+      ],
+      "occurrence_count": 4,
+      "candidate_sources": [],
+      "translations": [
+        "bilgisayar sistemi"
+      ]
+    },
+    {
+      "term": "computer systems",
+      "pages": [
+        1,
+        6
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model"
+      ],
+      "translations": [
+        "bilgisayar sistemi"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "computer system",
+          "tr": "bilgisayar sistemi"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "computing environment",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bilişim ortamı"
+      ]
+    },
+    {
+      "term": "computing services",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bilişim hizmeti"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "computing service",
+          "tr": "bilişim hizmeti"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "confidentiality",
+      "pages": [
+        3,
+        6,
+        8
+      ],
+      "occurrence_count": 5,
+      "candidate_sources": [],
+      "translations": [
+        "gizlilik"
+      ]
+    },
+    {
+      "term": "core networks",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "çekirdek ağ"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "core network",
+          "tr": "çekirdek ağ"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "cryptographic keys",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "şifreleme anahtarı"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "cryptographic key",
+          "tr": "şifreleme anahtarı"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "data confidentiality",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "veri gizliliği"
+      ]
+    },
+    {
+      "term": "data frame",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "veri çerçevesi"
+      ]
+    },
+    {
+      "term": "data integrity",
+      "pages": [
+        3,
+        4
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "veri bütünlüğü"
+      ]
+    },
+    {
+      "term": "data item",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "veri öğesi"
+      ]
+    },
+    {
+      "term": "data systems",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "veri dizgesi"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "data system",
+          "tr": "veri dizgesi"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "database server",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "veritabanı sunucusu"
+      ]
+    },
+    {
+      "term": "database systems",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "veritabanı dizgesi"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "database system",
+          "tr": "veritabanı dizgesi"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "decentralized system",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "merkeziyetsiz dizge"
+      ]
+    },
+    {
+      "term": "denial of service attacks",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "hizmet durdurma saldırısı",
+        "hizmeti engelleme saldırısı"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "Denial of Service Attack",
+          "tr": "hizmet durdurma saldırısı"
+        },
+        {
+          "en": "denial-of-service attack",
+          "tr": "hizmeti engelleme saldırısı"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "denial-of-service",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "translations": [
+        "hizmet durdurma"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "Denial of Service",
+          "tr": "hizmet durdurma"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "distributed computing",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "dağıtımlı bilişim"
+      ]
+    },
+    {
+      "term": "distributed environment",
+      "pages": [
+        5,
+        6
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "dağıtımlı ortam"
+      ]
+    },
+    {
+      "term": "distributed environments",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "dağıtımlı ortam"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "distributed environment",
+          "tr": "dağıtımlı ortam"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "distributed system",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "occurrence_count": 27,
+      "candidate_sources": [],
+      "translations": [
+        "dağıtımlı dizge",
+        "dağıtımlı sistem"
+      ]
+    },
+    {
+      "term": "distributed systems",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 11,
+      "candidate_sources": [],
+      "translations": [
+        "dağıtımlı dizge",
+        "dağıtımlı sistem"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "distributed system",
+          "tr": "dağıtımlı dizge"
+        },
+        {
+          "en": "distributed system",
+          "tr": "dağıtımlı sistem"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "encrypted messages",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "şifreli ileti"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "encrypted message",
+          "tr": "şifreli ileti"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "encryption",
+      "pages": [
+        1,
+        3,
+        4,
+        6
+      ],
+      "occurrence_count": 14,
+      "candidate_sources": [],
+      "translations": [
+        "şifreleme"
+      ]
+    },
+    {
+      "term": "encryption of data",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "verinin şifrelenmesi"
+      ]
+    },
+    {
+      "term": "end users",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "son kullanıcı"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "end-user",
+          "tr": "son kullanıcı"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "end-user",
+      "pages": [
+        1,
+        2
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "son kullanıcı"
+      ]
+    },
+    {
+      "term": "event handlers",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model"
+      ],
+      "translations": [
+        "olay işleyici"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "event handler",
+          "tr": "olay işleyici"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "fault tolerant",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "aksaklığa dayanıklı",
+        "hataya dayanıklı"
+      ]
+    },
+    {
+      "term": "formal specifications",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "biçimsel belirtim"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "formal specification",
+          "tr": "biçimsel belirtim"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "global search",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "genel arama"
+      ]
+    },
+    {
+      "term": "grid computing",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "ızgara hesaplama"
+      ]
+    },
+    {
+      "term": "high-performance",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "yüksek başarım"
+      ]
+    },
+    {
+      "term": "high-throughput",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "yüksek işlem hacmi"
+      ]
+    },
+    {
+      "term": "horizontal scaling",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "yatay ölçekleme"
+      ]
+    },
+    {
+      "term": "in-memory",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bellekte"
+      ]
+    },
+    {
+      "term": "information management",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bilgi yönetimi"
+      ]
+    },
+    {
+      "term": "information resources",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "bilgi kaynağı"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "information resource",
+          "tr": "bilgi kaynağı"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "Information Technology",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "Bilgi Teknolojisi (BT)",
+        "bilgi teknolojisi"
+      ]
+    },
+    {
+      "term": "integrity",
+      "pages": [
+        3,
+        4,
+        6,
+        8
+      ],
+      "occurrence_count": 6,
+      "candidate_sources": [],
+      "translations": [
+        "bozulmazlık",
+        "bütünlük"
+      ]
+    },
+    {
+      "term": "large scale",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "büyük ölçekli"
+      ]
+    },
+    {
+      "term": "local network",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "yerel ağ"
+      ]
+    },
+    {
+      "term": "local printer",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "yerel yazıcı"
+      ]
+    },
+    {
+      "term": "mobile phones",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "cep",
+        "cep telefonu"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "mobile phone",
+          "tr": "cep"
+        },
+        {
+          "en": "mobile phone",
+          "tr": "cep telefonu"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "network address",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "ağ adresi"
+      ]
+    },
+    {
+      "term": "network traffic",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "ağ trafiği"
+      ]
+    },
+    {
+      "term": "Not AND",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "olumsuz \"VE\""
+      ]
+    },
+    {
+      "term": "online social networks",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "çevrimiçi sosyal ağlar"
+      ]
+    },
+    {
+      "term": "open systems",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "açık sistem"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "open system",
+          "tr": "açık sistem"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "operating systems",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "işletim dizgesi",
+        "işletim sistemi"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "Operating System",
+          "tr": "işletim dizgesi"
+        },
+        {
+          "en": "operating system",
+          "tr": "işletim sistemi"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "peer to peer systems",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "uçtan uca sistem"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "peer to peer system",
+          "tr": "uçtan uca sistem"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "peer-to-peer",
+      "pages": [
+        2,
+        3
+      ],
+      "occurrence_count": 3,
+      "candidate_sources": [],
+      "translations": [
+        "eşler arası",
+        "eşten eşe",
+        "uçtan uca"
+      ]
+    },
+    {
+      "term": "peer-to-peer network",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "eşler ağı"
+      ]
+    },
+    {
+      "term": "plain text",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "düz metin"
+      ]
+    },
+    {
+      "term": "programming languages",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "programlama dili"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "programming language",
+          "tr": "programlama dili"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "public key",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "açık anahtar"
+      ]
+    },
+    {
+      "term": "public key encryption",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "açık anahtar şifrelemesi"
+      ]
+    },
+    {
+      "term": "read write",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "okuma yazma"
+      ]
+    },
+    {
+      "term": "relational database",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "ilişkisel veritabanı"
+      ]
+    },
+    {
+      "term": "relational databases",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "ilişkisel veritabanı"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "relational database",
+          "tr": "ilişkisel veritabanı"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "remote access",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "uzaktan erişim"
+      ]
+    },
+    {
+      "term": "replication",
+      "pages": [
+        7,
+        8
+      ],
+      "occurrence_count": 4,
+      "candidate_sources": [],
+      "translations": [
+        "çoğaltma",
+        "yinelenme"
+      ]
+    },
+    {
+      "term": "resource management",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "kaynak yönetimi"
+      ]
+    },
+    {
+      "term": "routing tables",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "yol atama çizelgesi"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "routing table",
+          "tr": "yol atama çizelgesi"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "scalability issues",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "ölçeklenebilirlik konusu"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "scalability issue",
+          "tr": "ölçeklenebilirlik konusu"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "secure channel",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "güvenli kanal"
+      ]
+    },
+    {
+      "term": "secure channels",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "güvenli kanal"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "secure channel",
+          "tr": "güvenli kanal"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "secure distributed systems",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "güvenli dağıtımlı sistem"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "secure distributed system",
+          "tr": "güvenli dağıtımlı sistem"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "security analysis",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "güvenlik çözümlemesi"
+      ]
+    },
+    {
+      "term": "security features",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "güvenlik özelliği"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "security feature",
+          "tr": "güvenlik özelliği"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "security management",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "güvenlik yönetimi"
+      ]
+    },
+    {
+      "term": "security measures",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "güvenlik önlemi"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "security measure",
+          "tr": "güvenlik önlemi"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "security mechanisms",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "güvenlik düzeneği"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "security mechanism",
+          "tr": "güvenlik düzeneği"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "security threat",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bilgisayar güvenlik tehdidi",
+        "güvenlik tehdidi",
+        "güvenlik tehditi"
+      ]
+    },
+    {
+      "term": "security threats",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bilgisayar güvenlik tehdidi",
+        "güvenlik tehdidi",
+        "güvenlik tehditi"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "security threat",
+          "tr": "bilgisayar güvenlik tehdidi"
+        },
+        {
+          "en": "security threat",
+          "tr": "güvenlik tehdidi"
+        },
+        {
+          "en": "security threat",
+          "tr": "güvenlik tehditi"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "security violation",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "güvenliği bozma"
+      ]
+    },
+    {
+      "term": "sensitive information",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "korunacak bilgi"
+      ]
+    },
+    {
+      "term": "service-oriented",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "hizmet yönelimli"
+      ]
+    },
+    {
+      "term": "shared data",
+      "pages": [
+        2,
+        7
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [],
+      "translations": [
+        "ortak veri",
+        "paylaşımlı veri"
+      ]
+    },
+    {
+      "term": "social networks",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "sosyal ağ",
+        "toplumsal ağ"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "social network",
+          "tr": "sosyal ağ"
+        },
+        {
+          "en": "social network",
+          "tr": "toplumsal ağ"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "third party",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "üçüncü taraf"
+      ]
+    },
+    {
+      "term": "virtual synchrony",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "sanal eşzamanlama"
+      ]
+    },
+    {
+      "term": "web applications",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "bilgiağı uygulaması"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "web application",
+          "tr": "bilgiağı uygulaması"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "wireless communications",
+      "pages": [
+        8
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "kablosuz iletişim"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "wireless communication",
+          "tr": "kablosuz iletişim"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "wireless networks",
+      "pages": [
+        1
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "kablosuz ağ"
+      ],
+      "possible_dictionary_terms": [
+        {
+          "en": "wireless network",
+          "tr": "kablosuz ağ"
+        }
+      ],
+      "match_type": "normalized_variant"
+    },
+    {
+      "term": "workload management",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [],
+      "translations": [
+        "iş yükü yönetimi"
+      ]
+    }
+  ],
+  "possible_matches": [],
+  "missing_terms": [
+    {
+      "term": "primary system controller",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 4,
+      "candidate_sources": [
+        "model",
+        "technical_pattern"
+      ],
+      "review_score": 9,
+      "model_review": "accepted",
+      "review_priority": "high"
+    },
+    {
+      "term": "app editor",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 6,
+      "model_review": "accepted",
+      "review_priority": "high"
+    },
+    {
+      "term": "client-server architecture",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model",
+        "ngram_scan"
+      ],
+      "review_score": 6,
+      "model_review": "accepted",
+      "review_priority": "high"
+    },
+    {
+      "term": "n-tier architecture",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model",
+        "ngram_scan"
+      ],
+      "review_score": 6,
+      "model_review": "accepted",
+      "review_priority": "high"
+    },
+    {
+      "term": "secondary controller",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 6,
+      "model_review": "accepted",
+      "review_priority": "high"
+    },
+    {
+      "term": "three-tier architecture",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model",
+        "ngram_scan"
+      ],
+      "review_score": 6,
+      "model_review": "accepted",
+      "review_priority": "high"
+    },
+    {
+      "term": "user-interface client",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 6,
+      "model_review": "accepted",
+      "review_priority": "high"
+    },
+    {
+      "term": "performance transparency",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 5,
+      "model_review": "rejected",
+      "review_priority": "high"
+    },
+    {
+      "term": "scaling transparency",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 5,
+      "model_review": "rejected",
+      "review_priority": "high"
+    },
+    {
+      "term": "user interface",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 3,
+      "candidate_sources": [
+        "technical_pattern"
+      ],
+      "review_score": 5,
+      "model_review": "accepted",
+      "review_priority": "high"
+    },
+    {
+      "term": "cryptographic techniques",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 4,
+      "model_review": "accepted",
+      "review_priority": "medium"
+    },
+    {
+      "term": "encryption-decryption methods",
+      "pages": [
+        4
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 4,
+      "model_review": "accepted",
+      "review_priority": "medium"
+    },
+    {
+      "term": "fabrication",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 2,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 4,
+      "model_review": "accepted",
+      "review_priority": "medium"
+    },
+    {
+      "term": "fault transparency",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 4,
+      "model_review": "accepted",
+      "review_priority": "medium"
+    },
+    {
+      "term": "interception",
+      "pages": [
+        3,
+        4
+      ],
+      "occurrence_count": 3,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 4,
+      "model_review": "accepted",
+      "review_priority": "medium"
+    },
+    {
+      "term": "openness issues",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 4,
+      "model_review": "accepted",
+      "review_priority": "medium"
+    },
+    {
+      "term": "openness solution",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 4,
+      "model_review": "accepted",
+      "review_priority": "medium"
+    },
+    {
+      "term": "security requirements",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 4,
+      "model_review": "accepted",
+      "review_priority": "medium"
+    },
+    {
+      "term": "system datastore",
+      "pages": [
+        2
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 4,
+      "model_review": "accepted",
+      "review_priority": "medium"
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "term": "access transparency",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 3,
+      "model_review": "rejected",
+      "review_priority": "low",
+      "reason": "insufficient_review_score"
+    },
+    {
+      "term": "Asymmetric Encryption",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "technical_pattern"
+      ],
+      "review_score": 3,
+      "model_review": "accepted",
+      "review_priority": "low",
+      "reason": "insufficient_review_score"
+    },
+    {
+      "term": "concerns authorization",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "technical_pattern"
+      ],
+      "review_score": 3,
+      "model_review": "accepted",
+      "review_priority": "low",
+      "reason": "insufficient_review_score"
+    },
+    {
+      "term": "location transparency",
+      "pages": [
+        7
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 3,
+      "model_review": "rejected",
+      "review_priority": "low",
+      "reason": "insufficient_review_score"
+    },
+    {
+      "term": "modification",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "reason": "common_english_word"
+    },
+    {
+      "term": "partial failure",
+      "pages": [
+        6
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "reason": "common_english_word"
+    },
+    {
+      "term": "Symmetric Encryption",
+      "pages": [
+        3
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "technical_pattern"
+      ],
+      "review_score": 3,
+      "model_review": "accepted",
+      "review_priority": "low",
+      "reason": "insufficient_review_score"
+    },
+    {
+      "term": "total transparency",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "review_score": 3,
+      "model_review": "rejected",
+      "review_priority": "low",
+      "reason": "insufficient_review_score"
+    },
+    {
+      "term": "transparency criteria",
+      "pages": [
+        5
+      ],
+      "occurrence_count": 1,
+      "candidate_sources": [
+        "model"
+      ],
+      "reason": "common_english_word"
+    }
+  ]
+}

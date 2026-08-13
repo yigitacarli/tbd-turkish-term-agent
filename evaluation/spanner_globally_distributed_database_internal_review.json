@@ -1,0 +1,3396 @@
+{
+  "schema_version": 1,
+  "review_status": "internal_review",
+  "prepared_at": "2026-08-13",
+  "reviewed_at": "2026-08-13",
+  "document_note": "V1 ve V2 qwen3.5:2b aday birlesimi; proje sahibi yonlendirmesi ve yapay zeka PDF baglam incelemesiyle etiketlendi. Uzman onayi degildir.",
+  "documents": [
+    {
+      "document": "spanner-globally-distributed-database.pdf",
+      "terms": [
+        {
+          "term": "accessors",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "action manager",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "all data",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "application controls",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "atomic clock",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "atomic clocks",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "automatic maintenance",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "availability",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                9,
+                10
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                9,
+                10
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "average error",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "B-tree-like files",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "bag of key-value mappings",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "base value",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                11
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                11
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Bigtable",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                8,
+                12,
+                13
+              ],
+              "occurrence_count": 12
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                8,
+                12,
+                13
+              ],
+              "occurrence_count": 12
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "by default",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "clock uncertainty",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                10,
+                11,
+                12
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                10,
+                11,
+                12
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "cluster-management software",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "commit protocol",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "commit timestamp",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2,
+                7,
+                8
+              ],
+              "occurrence_count": 7
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                2,
+                7,
+                8
+              ],
+              "occurrence_count": 7
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "consistency",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                7,
+                12
+              ],
+              "occurrence_count": 5
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                7,
+                12
+              ],
+              "occurrence_count": 5
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "cross-datacenter replicated data",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data centers",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data loss",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                11
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                11
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data model",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2,
+                4,
+                12
+              ],
+              "occurrence_count": 6
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2,
+                4,
+                12
+              ],
+              "occurrence_count": 6
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "data structures",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                13
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                13
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "database audit",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "database systems",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                14
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                14
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "datacenters",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                4,
+                5,
+                10,
+                12,
+                13
+              ],
+              "occurrence_count": 11
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                4,
+                5,
+                10,
+                12,
+                13
+              ],
+              "occurrence_count": 11
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "directoriesandplacement",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "directory",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2,
+                3,
+                4,
+                11
+              ],
+              "occurrence_count": 10
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2,
+                3,
+                4,
+                11
+              ],
+              "occurrence_count": 10
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "disaster recovery",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "disjointness invariant",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Distributed Database",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "distributed file system",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "distributed transactions",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                1,
+                2
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                1,
+                2
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Eventually consistent replication",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "experimental setup",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "external consistency",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                2,
+                7
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                2,
+                7
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "externally-consistent distributed transactions",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "F1",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                11,
+                12
+              ],
+              "occurrence_count": 11
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1,
+                11,
+                12
+              ],
+              "occurrence_count": 11
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "F1 servers",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "F1 team",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                11,
+                12
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                11,
+                12
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "fat tail",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "file system",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "fine-grained",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "globally-consistent reads",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "globally-distributed database",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "GPS masters",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                5
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "high-performance",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "higher-level",
+          "label": "noise",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "implement atomic schema",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                7
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "key value",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                12,
+                13
+              ],
+              "occurrence_count": 7
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                12,
+                13
+              ],
+              "occurrence_count": 7
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "key-value store",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                2,
+                4
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1,
+                2,
+                4
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "latency",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                9,
+                10,
+                12,
+                13
+              ],
+              "occurrence_count": 7
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                9,
+                10,
+                12,
+                13
+              ],
+              "occurrence_count": 7
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "lease expiration times",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "lexicographic order",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "local data",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                13
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                13
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "lock conflicts",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "lock table",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                3,
+                9
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3,
+                9
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "long-lived leaders",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "master-slave replication",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "maximum value",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "mean",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                10,
+                12
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                10,
+                12
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "model-based",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Movedir",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "multi-version",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                2
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                2
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "non-blocking",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6,
+                8,
+                12
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6,
+                8,
+                12
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "non-blocking commit protocol",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "non-snapshot reads",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "North America",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "NoSQL",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                11,
+                14
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                11,
+                14
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "participant slaves",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "participants",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                8,
+                10
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                8,
+                10
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Paxos",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3,
+                4,
+                6,
+                7,
+                8,
+                9,
+                11,
+                12,
+                14
+              ],
+              "occurrence_count": 33
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3,
+                4,
+                6,
+                7,
+                8,
+                9,
+                11,
+                12,
+                14
+              ],
+              "occurrence_count": 33
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Paxos group",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3,
+                4,
+                8,
+                9
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3,
+                4,
+                8,
+                9
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Paxos protocol",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "per-zone location proxies",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Percolator",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "pessimistic leader",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Placement specification language",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "primary key",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4,
+                5
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4,
+                5
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "primary keys",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "query language",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "query processing",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                11
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                11
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "read latency",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "read only",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                1,
+                6,
+                7,
+                8,
+                12
+              ],
+              "occurrence_count": 11
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                1,
+                6,
+                7,
+                8,
+                12
+              ],
+              "occurrence_count": 11
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "read throughput",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "read write",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                6,
+                8
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                6,
+                8
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "read-only transac",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                1,
+                8,
+                12
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                1,
+                8,
+                12
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "read-only transaction",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6,
+                7,
+                8
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                6,
+                7,
+                8
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "read-write transaction",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "record supports atomic schema",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "relational data model",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "relational database",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Replicas",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                4,
+                9,
+                10,
+                12
+              ],
+              "occurrence_count": 9
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1,
+                4,
+                9,
+                10,
+                12
+              ],
+              "occurrence_count": 9
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "replicated data",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                1
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "sawtooth bounds",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "schematized semi-relational",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                1,
+                4
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                1,
+                4
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "schematized semi-relational tables",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Schematized tables",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "semi-relational tables",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "similar schema",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                12
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "single Paxos state machine",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "snapshot isolation",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                6
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "spanner",
+          "label": "noise",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ],
+              "occurrence_count": 61
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                1,
+                2,
+                3,
+                4,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ],
+              "occurrence_count": 61
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Spanner tablet",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3,
+                4
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3,
+                4
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "spanserver",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2,
+                3,
+                10
+              ],
+              "occurrence_count": 6
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                2,
+                3,
+                10
+              ],
+              "occurrence_count": 6
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "specification language",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "standard deviation",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                9,
+                12
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                9,
+                12
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "state machine",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3,
+                7
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3,
+                7
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "state machines",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "sufficiently up-to-date",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                3,
+                7
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3,
+                7
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "support atomic schema",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                8
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Synchronous replication",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                4
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "throughput",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                9,
+                10,
+                12
+              ],
+              "occurrence_count": 7
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                9,
+                10,
+                12
+              ],
+              "occurrence_count": 7
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "time stamp",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "time-based leader leases",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "timestamp",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                2,
+                6,
+                7,
+                8,
+                10,
+                11,
+                12
+              ],
+              "occurrence_count": 25
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                2,
+                6,
+                7,
+                8,
+                10,
+                11,
+                12
+              ],
+              "occurrence_count": 25
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "transaction",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2,
+                3,
+                4,
+                6,
+                7,
+                8,
+                9,
+                12,
+                14
+              ],
+              "occurrence_count": 31
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2,
+                3,
+                4,
+                6,
+                7,
+                8,
+                9,
+                12,
+                14
+              ],
+              "occurrence_count": 31
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "transaction manager",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                3,
+                7
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                3,
+                7
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "transaction timestamps",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                9
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "True-Time",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 2
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                10
+              ],
+              "occurrence_count": 2
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "Two-phase commit",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                4,
+                6,
+                8,
+                10,
+                12
+              ],
+              "occurrence_count": 6
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                4,
+                6,
+                8,
+                10,
+                12
+              ],
+              "occurrence_count": 6
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "universe",
+          "label": "noise",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                2,
+                4,
+                10
+              ],
+              "occurrence_count": 3
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                2,
+                4,
+                10
+              ],
+              "occurrence_count": 3
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "write-ahead log",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:missing_terms",
+            "v2:missing_terms"
+          ],
+          "evidence": [
+            {
+              "source": "v1:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:missing_terms",
+              "pages": [
+                3
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "zone",
+          "label": "dictionary_match",
+          "observed_in": [
+            "v1:dictionary_matches",
+            "v2:dictionary_matches"
+          ],
+          "evidence": [
+            {
+              "source": "v1:dictionary_matches",
+              "pages": [
+                2,
+                10
+              ],
+              "occurrence_count": 4
+            },
+            {
+              "source": "v2:dictionary_matches",
+              "pages": [
+                2,
+                10
+              ],
+              "occurrence_count": 4
+            }
+          ],
+          "review_confidence": "high"
+        },
+        {
+          "term": "zonemaster",
+          "label": "missing_term",
+          "observed_in": [
+            "v1:rejected_candidates",
+            "v2:rejected_candidates"
+          ],
+          "evidence": [
+            {
+              "source": "v1:rejected_candidates",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            },
+            {
+              "source": "v2:rejected_candidates",
+              "pages": [
+                2
+              ],
+              "occurrence_count": 1
+            }
+          ],
+          "review_confidence": "high"
+        }
+      ]
+    }
+  ]
+}

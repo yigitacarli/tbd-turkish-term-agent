@@ -2,14 +2,25 @@
 from __future__ import annotations
 
 import tempfile
+import threading
+import time
 from pathlib import Path
 
 from terim_etmeni.ollama_client import OllamaClient
-from terim_etmeni.pipeline import analyze_pdf
 from terim_etmeni.reporting import write_reports
 
+from .abbreviation_index import AbbreviationIndex
 from .config import Settings
 from .dictionary_store import DictionaryStatus, DictionaryStore
+from .replay import (
+    capture_candidate_snapshot,
+    replay_snapshot,
+    write_candidate_snapshot,
+)
+
+
+class AnalysisBusyError(RuntimeError):
+    """Sunucunun eşzamanlı analiz kapasitesi dolu olduğunda yükseltilir."""
 
 
 class AnalysisService:
@@ -18,6 +29,12 @@ class AnalysisService:
         self.dictionaries = DictionaryStore(
             self.settings.dictionary_state_dir,
             self.settings.bootstrap_dictionary,
+        )
+        self.abbreviations = AbbreviationIndex.load(
+            self.settings.bootstrap_abbreviations
+        )
+        self._analysis_slots = threading.BoundedSemaphore(
+            self.settings.max_concurrent_analyses
         )
 
     def dictionary_status(self) -> DictionaryStatus:
@@ -42,6 +59,10 @@ class AnalysisService:
             raise ValueError("Geçerli bir makale PDF'si seçin.")
         if not model.strip():
             raise ValueError("Analiz modeli hazır değil.")
+        if not self._analysis_slots.acquire(blocking=False):
+            raise AnalysisBusyError(
+                "Analiz kapasitesi dolu. Devam eden çalışma bitince yeniden deneyin."
+            )
 
         temporary: Path | None = None
         try:
@@ -55,13 +76,19 @@ class AnalysisService:
                 timeout=self.settings.timeout_seconds,
             )
             client.check_model()
-            result = analyze_pdf(
+            started_at = time.perf_counter()
+            snapshot = capture_candidate_snapshot(
                 temporary,
                 dictionary,
                 client,
                 model.strip(),
                 self.settings.chunk_size,
                 self.settings.chunk_overlap,
+            )
+            snapshot["document"] = safe_name
+            result = replay_snapshot(snapshot, dictionary, self.abbreviations)
+            result["analysis_duration_seconds"] = round(
+                time.perf_counter() - started_at, 3
             )
             result["document"] = safe_name
             status = self.dictionaries.status()
@@ -70,8 +97,10 @@ class AnalysisService:
             json_path, csv_path = write_reports(result, self.settings.output_dir)
             stem = json_path.name.removesuffix("_terms.json")
             xlsx_path = json_path.parent / "{}_terim_raporu.xlsx".format(stem)
+            snapshot_path = json_path.parent / "{}_candidate_snapshot.json".format(stem)
+            write_candidate_snapshot(snapshot, snapshot_path)
             return result, json_path, csv_path, xlsx_path
         finally:
             if temporary is not None:
                 temporary.unlink(missing_ok=True)
-
+            self._analysis_slots.release()

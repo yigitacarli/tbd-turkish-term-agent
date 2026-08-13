@@ -23,8 +23,9 @@ uzmanlara aittir.
   analiz, karar listesi ve Excel indirme.
 - Model, parça boyutu, Ollama adresi ve sözlük dönüştürme gibi teknik ayrıntılar
   ana kullanıcı ekranını kalabalıklaştırmamalıdır.
-- Kurum sunucusunda tarayıcı bağlantısıyla kullanım olası nihai dağıtım biçimidir;
-  hedef donanım ve erişim politikası henüz doğrulanmamıştır.
+- Birincil olası kullanım kişisel bilgisayarda yerel tarayıcı arayüzüdür. Kurum
+  sunucusu kesin hedef değildir; ileride istenirse ayrı dağıtım kararı olarak
+  değerlendirilir.
 
 ## Değişmez ürün kuralları
 
@@ -78,8 +79,8 @@ uzmanlara aittir.
 
 ## Bilinen belirsizlikler
 
-- Kurumun sunucusu, işletim sistemi, RAM'i ve GPU'su bilinmiyor.
-- İnternet/VPN erişim biçimi ve kullanıcı girişi gereksinimi bilinmiyor.
+- Kullanılacak kişisel bilgisayarın işletim sistemi ve donanımı kesinleşmedi.
+- Kurum sunucusu veya uzaktan erişim gereksinimi henüz yoktur.
 - Kurumun kullandığı Excel şeması görülmedi; Excel zorunlu değildir.
 - Kısaltmalar sözlüğünün makinece okunabilir resmî dosya adresi doğrulanmadı.
 - TBD verisinin yeniden dağıtım ve otomatik indirme koşulları kurum tarafından
@@ -94,4 +95,3 @@ uzmanlara aittir.
 5. Geliştirme sonunda `AI_HANDOFF.md` içindeki mevcut durum ve sonraki adımı
    güncelle.
 6. Çalışan davranışı ölçmeden filtre, model veya sözlük kaynağı değiştirme.
-

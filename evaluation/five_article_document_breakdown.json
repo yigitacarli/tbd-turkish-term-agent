@@ -1,0 +1,340 @@
+{
+  "schema_version": 1,
+  "documents": [
+    {
+      "document": "google-file-system.pdf",
+      "systems": {
+        "v1": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 182,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 0,
+            "total": null,
+            "average": null
+          },
+          "technical_term": {
+            "true_positive": 109,
+            "false_positive": 24,
+            "false_negative": 33,
+            "precision": 0.8195,
+            "recall": 0.7676
+          },
+          "missing_term": {
+            "true_positive": 42,
+            "false_positive": 15,
+            "false_negative": 32,
+            "precision": 0.7368,
+            "recall": 0.5676
+          },
+          "noise_rejection_recall": 0.4,
+          "exact_label_accuracy": 0.6868
+        },
+        "v2": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 182,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 0,
+            "total": null,
+            "average": null
+          },
+          "technical_term": {
+            "true_positive": 86,
+            "false_positive": 16,
+            "false_negative": 56,
+            "precision": 0.8431,
+            "recall": 0.6056
+          },
+          "missing_term": {
+            "true_positive": 23,
+            "false_positive": 5,
+            "false_negative": 51,
+            "precision": 0.8214,
+            "recall": 0.3108
+          },
+          "noise_rejection_recall": 0.6,
+          "exact_label_accuracy": 0.6044
+        }
+      }
+    },
+    {
+      "document": "bitcoin-whitepaper.pdf",
+      "systems": {
+        "v1": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 93,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 0,
+            "total": null,
+            "average": null
+          },
+          "technical_term": {
+            "true_positive": 50,
+            "false_positive": 7,
+            "false_negative": 17,
+            "precision": 0.8772,
+            "recall": 0.7463
+          },
+          "missing_term": {
+            "true_positive": 14,
+            "false_positive": 5,
+            "false_negative": 14,
+            "precision": 0.7368,
+            "recall": 0.5
+          },
+          "noise_rejection_recall": 0.7308,
+          "exact_label_accuracy": 0.7419
+        },
+        "v2": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 93,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 1,
+            "total": 38.672,
+            "average": 38.672
+          },
+          "technical_term": {
+            "true_positive": 54,
+            "false_positive": 13,
+            "false_negative": 13,
+            "precision": 0.806,
+            "recall": 0.806
+          },
+          "missing_term": {
+            "true_positive": 15,
+            "false_positive": 10,
+            "false_negative": 13,
+            "precision": 0.6,
+            "recall": 0.5357
+          },
+          "noise_rejection_recall": 0.5,
+          "exact_label_accuracy": 0.7204
+        }
+      }
+    },
+    {
+      "document": "distributed-systems-compendium.pdf",
+      "systems": {
+        "v1": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 135,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 0,
+            "total": null,
+            "average": null
+          },
+          "technical_term": {
+            "true_positive": 120,
+            "false_positive": 4,
+            "false_negative": 10,
+            "precision": 0.9677,
+            "recall": 0.9231
+          },
+          "missing_term": {
+            "true_positive": 16,
+            "false_positive": 1,
+            "false_negative": 10,
+            "precision": 0.9412,
+            "recall": 0.6154
+          },
+          "noise_rejection_recall": 0.2,
+          "exact_label_accuracy": 0.8963
+        },
+        "v2": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 135,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 1,
+            "total": 43.996,
+            "average": 43.996
+          },
+          "technical_term": {
+            "true_positive": 120,
+            "false_positive": 4,
+            "false_negative": 10,
+            "precision": 0.9677,
+            "recall": 0.9231
+          },
+          "missing_term": {
+            "true_positive": 16,
+            "false_positive": 1,
+            "false_negative": 10,
+            "precision": 0.9412,
+            "recall": 0.6154
+          },
+          "noise_rejection_recall": 0.2,
+          "exact_label_accuracy": 0.8963
+        }
+      }
+    },
+    {
+      "document": "intrusion-detection-systems-survey.pdf",
+      "systems": {
+        "v1": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 198,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 0,
+            "total": null,
+            "average": null
+          },
+          "technical_term": {
+            "true_positive": 160,
+            "false_positive": 12,
+            "false_negative": 19,
+            "precision": 0.9302,
+            "recall": 0.8939
+          },
+          "missing_term": {
+            "true_positive": 28,
+            "false_positive": 6,
+            "false_negative": 22,
+            "precision": 0.8235,
+            "recall": 0.56
+          },
+          "noise_rejection_recall": 0.3684,
+          "exact_label_accuracy": 0.8232
+        },
+        "v2": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 198,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 1,
+            "total": 58.8,
+            "average": 58.8
+          },
+          "technical_term": {
+            "true_positive": 143,
+            "false_positive": 10,
+            "false_negative": 36,
+            "precision": 0.9346,
+            "recall": 0.7989
+          },
+          "missing_term": {
+            "true_positive": 12,
+            "false_positive": 4,
+            "false_negative": 38,
+            "precision": 0.75,
+            "recall": 0.24
+          },
+          "noise_rejection_recall": 0.4737,
+          "exact_label_accuracy": 0.7475
+        }
+      }
+    },
+    {
+      "document": "spanner-globally-distributed-database.pdf",
+      "systems": {
+        "v1": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 126,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 0,
+            "total": null,
+            "average": null
+          },
+          "technical_term": {
+            "true_positive": 89,
+            "false_positive": 9,
+            "false_negative": 14,
+            "precision": 0.9082,
+            "recall": 0.8641
+          },
+          "missing_term": {
+            "true_positive": 45,
+            "false_positive": 5,
+            "false_negative": 14,
+            "precision": 0.9,
+            "recall": 0.7627
+          },
+          "noise_rejection_recall": 0.6087,
+          "exact_label_accuracy": 0.8175
+        },
+        "v2": {
+          "documents_expected": 1,
+          "documents_evaluated": 1,
+          "missing_documents": [],
+          "labelled_term_count": 126,
+          "unlabelled_prediction_count": 0,
+          "analysis_status_counts": {
+            "complete": 1
+          },
+          "duration_seconds": {
+            "reported_document_count": 1,
+            "total": 102.323,
+            "average": 102.323
+          },
+          "technical_term": {
+            "true_positive": 89,
+            "false_positive": 9,
+            "false_negative": 14,
+            "precision": 0.9082,
+            "recall": 0.8641
+          },
+          "missing_term": {
+            "true_positive": 45,
+            "false_positive": 5,
+            "false_negative": 14,
+            "precision": 0.9,
+            "recall": 0.7627
+          },
+          "noise_rejection_recall": 0.6087,
+          "exact_label_accuracy": 0.8175
+        }
+      }
+    }
+  ]
+}
