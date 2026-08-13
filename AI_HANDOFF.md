@@ -13,20 +13,22 @@ Kaynak sözlük sitesi: https://bilisimde.ozenliturkce.org.tr/
 
 - Python 3.9+ ile çalışır.
 - Yerel model sağlayıcısı Ollama'dır.
-- Varsayılan model `qwen3.5:2b`; model adı CLI, web arayüzü veya `OLLAMA_MODEL`
-  ile değişebilir.
+- Kalıcı varsayılan model yoktur. Web arayüzü kurulu Ollama modellerini dinamik
+  listeler ve açık seçim ister; `OLLAMA_MODEL` yalnız isteğe bağlı ön seçimdir.
 - Yerel web arayüzü `python3 run.py` ile açılır.
-- CLI: `python3 run.py scan <pdf-veya-klasör>`.
-- CSV ve JSON raporları `output/` altında oluşturulur.
+- CLI: `python3 run.py scan <pdf-veya-klasör> --model MODEL_ETIKETI`.
+- Excel, CSV ve JSON raporları çakışmayı önlemek için
+  `output/<model>/<belge>/` altında oluşturulur.
 - PDF sayfa numaraları ve terim geçiş sayıları korunur.
 - Bulunan, olası, eksik ve elenen adaylar ayrı raporlanır.
 - Üretim akışı varsayılan olarak tek geçişli model aday çıkarımı yapar;
   `OllamaClient` deneyler için iki geçişi destekler ancak CLI ve web arayüzü bu
   seçeneği henüz açmaz. Çok sözcüklü sözlük terimleri ayrıca deterministik taranır.
-- Sözlükte olmayan tek sözcükler ve teknik kısaltmalar sessizce elenmez; düşük
-  öncelikli inceleme adayı olarak korunur.
+- Sözlükte olmayan adaylar kaynak, tekrar sayısı ve model doğrulamasını birleştiren
+  açıklanabilir puanla sınıflandırılır; düşük puanlılar denetim listesine alınır.
 - Modelin kaçırdığı kontrollü teknik baş kalıpları ve açıkça tanımlanan
-  kısaltma açılımları deterministik olarak geri kazanılır; ham n-gram üretilmez.
+  kısaltma açılımları deterministik olarak geri kazanılır; sınır ve referans
+  filtrelerinden geçen tekrarlı öbekler de düşük ağırlıklı sinyal olabilir.
 - Düşünme destekli Ollama modellerinde yapılandırılmış JSON yanıtının boş
   kalmaması için `think: false` gönderilir.
 - Başarısız model parçaları `failed` veya `partial` analiz durumuyla görünür;
@@ -55,7 +57,7 @@ Kaynak sözlük sitesi: https://bilisimde.ozenliturkce.org.tr/
 PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
 ```
 
-Son temizlemede 33 test başarılıydı. Yeni değişikliklerden sonra bu komut yeniden
+Son temizlemede 43 test başarılıydı. Yeni değişikliklerden sonra bu komut yeniden
 çalıştırılmalıdır.
 
 ## Bilinen kararlar ve sınırlar

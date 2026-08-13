@@ -55,6 +55,14 @@ def run_scan(args: argparse.Namespace) -> int:
         print("PDF bulunamadı: {}".format(args.input), file=sys.stderr)
         return 2
 
+    if not args.model:
+        print(
+            "Model seçilmedi. Kurulu modelleri 'ollama list' ile görün ve "
+            "--model MODEL_ETIKETI parametresini kullanın.",
+            file=sys.stderr,
+        )
+        return 2
+
     try:
         dictionary = DictionaryIndex.load(args.dictionary)
         client = OllamaClient(args.ollama_url, args.model, timeout=args.timeout)
@@ -89,11 +97,18 @@ def run_scan(args: argparse.Namespace) -> int:
                 )
             )
             warnings = result.get("processing_warnings", [])
-            if warnings:
+            failed_chunks = int(result.get("failed_chunk_count", 0) or 0)
+            if failed_chunks:
                 print(
                     "  uyarı: {}/{} parça model yanıtı olmadan atlandı".format(
-                        len(warnings), result.get("chunk_count", 0)
+                        failed_chunks, result.get("chunk_count", 0)
                     ),
+                    file=sys.stderr,
+                )
+            review = result.get("technical_review", {})
+            if isinstance(review, dict) and review.get("status") == "failed":
+                print(
+                    "  uyarı: ikinci model doğrulaması tamamlanamadı; birleşik puan kullanıldı",
                     file=sys.stderr,
                 )
             print(format_terminal_report(result))

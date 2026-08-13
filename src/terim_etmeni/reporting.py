@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import csv
 import json
+import re
+import unicodedata
 from pathlib import Path
 
 try:
@@ -53,20 +55,16 @@ def report_rows(result: dict[str, object]) -> list[dict[str, object]]:
                 if isinstance(value, dict)
             ) if isinstance(suggestions, list) else ""
             priority, action, explanation = _REVIEW_DETAILS[group]
-            if group == "missing_terms" and item.get("review_priority") == "low":
-                priority = "Düşük"
-                if item.get("reason") == "deterministic_recovery":
-                    action = "Modelin kaçırdığı adayı doğrula"
-                    explanation = (
-                        "Kontrollü metin taramasıyla bulundu; model seçmediği "
-                        "için düşük öncelikli insan incelemesine alındı."
-                    )
-                else:
-                    action = "Tek sözcüklü adayı doğrula"
-                    explanation = (
-                        "Sözlükte eşleşmeyen tek sözcüklü terim veya kısaltma; "
-                        "sessizce elenmemesi için düşük öncelikli incelemeye alındı."
-                    )
+            if group == "missing_terms":
+                priority = {
+                    "high": "Yüksek",
+                    "medium": "Orta",
+                    "low": "Düşük",
+                }.get(str(item.get("review_priority", "high")), "Yüksek")
+                explanation = (
+                    "Sözlükte eşleşme bulunamadı; kaynak, tekrar ve model "
+                    "doğrulaması birlikte değerlendirilerek {} güven puanı aldı."
+                ).format(item.get("review_score", "-"))
             rows.append(
                 {
                     "İnceleme Durumu": status,
@@ -131,36 +129,6 @@ def format_terminal_report(result: dict[str, object]) -> str:
     return "\n".join(lines)
 
 
-def write_reports(result: dict[str, object], output_dir: Path) -> tuple[Path, Path]:
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    stem = Path(str(result["document"])).stem
-    json_path = output_dir / "{}_terms.json".format(stem)
-    csv_path = output_dir / "{}_terim_raporu.csv".format(stem)
-    xlsx_path = output_dir / "{}_terim_raporu.xlsx".format(stem)
-
-    json_path.write_text(
-        json.dumps(result, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    rows = report_rows(result)
-    fieldnames = [
-        "İnceleme Durumu",
-        "Öncelik",
-        "Önerilen İşlem",
-        "İngilizce Terim",
-        "Türkçe Karşılık",
-        "Yakın Sözlük Eşleşmesi",
-        "Kanıt Sayfaları",
-        "PDF'deki Geçiş Sayısı",
-        "Açıklama",
-    ]
-
-    with csv_path.open("w", encoding="utf-8-sig", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=";")
-        writer.writeheader()
-        writer.writerows(rows)
-
 def _export_styled_xlsx(
     result: dict[str, object],
     rows: list[dict[str, object]],
@@ -182,7 +150,7 @@ def _export_styled_xlsx(
         counts = {}
 
     doc_name = Path(str(result.get("document", "Dokuman"))).name
-    model_name = str(result.get("model", "qwen3.5:2b"))
+    model_name = str(result.get("model") or "Belirtilmedi")
 
     # Title Banner (Row 1-2)
     ws.merge_cells("A1:I1")
@@ -204,7 +172,7 @@ def _export_styled_xlsx(
         ("SÖZLÜKTE BULUNDU", counts.get("dictionary_matches", 0), "E2EFDA", "375623", "A4:B4", "A5:B5"),
         ("YAKIN EŞLEŞME", counts.get("possible_matches", 0), "FFF2CC", "7F6000", "C4:D4", "C5:D5"),
         ("İNCELENMESİ GEREKLİ", counts.get("missing_terms", 0), "FCE4D6", "C65911", "E4:F4", "E5:F5"),
-        ("ELENEN ADAY", counts.get("discarded_candidates", 0), "F2F2F2", "595959", "G4:H4", "G5:H5"),
+        ("ELENEN ADAY", counts.get("rejected_candidates", 0), "F2F2F2", "595959", "G4:H4", "G5:H5"),
     ]
 
     for label, val, bg_color, fg_color, m1, m2 in cards:
@@ -309,10 +277,18 @@ def _export_styled_xlsx(
     wb.save(xlsx_path)
 
 
+def _model_directory_name(model: object) -> str:
+    """Ollama etiketini Windows ve macOS'ta güvenli bir klasör adına çevirir."""
+    value = unicodedata.normalize("NFKC", str(model or "bilinmeyen-model")).strip()
+    value = re.sub(r"[\\/:*?\"<>|\s]+", "-", value)
+    value = re.sub(r"[^A-Za-z0-9._-]+", "-", value).strip(".-_")
+    return value.casefold() or "bilinmeyen-model"
+
+
 def write_reports(result: dict[str, object], output_dir: Path) -> tuple[Path, Path]:
     output_dir = Path(output_dir)
     stem = Path(str(result["document"])).stem
-    doc_dir = output_dir / stem
+    doc_dir = output_dir / _model_directory_name(result.get("model")) / stem
     doc_dir.mkdir(parents=True, exist_ok=True)
     json_path = doc_dir / "{}_terms.json".format(stem)
     csv_path = doc_dir / "{}_terim_raporu.csv".format(stem)

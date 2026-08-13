@@ -35,8 +35,8 @@ STYLE = """
 .section{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}.section h3{margin:0;padding:10px 13px;font-size:14px}.found h3{background:var(--found)}.possible h3{background:var(--possible)}.missing h3{background:var(--missing)}.rejected h3{background:var(--rejected)}
 .terms{list-style:none;margin:0;padding:0}.terms li{padding:9px 13px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:14px}.term-main{font-weight:700;font-size:14px}.term-detail{color:var(--muted);font-size:12px}.evidence{white-space:nowrap;color:var(--muted);font-size:11px}.empty{padding:10px 13px;color:var(--muted);font-size:13px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.link-button{display:inline-block;text-decoration:none;border:1px solid var(--brand);color:var(--brand);padding:9px 12px;border-radius:8px;font-weight:750;font-size:13px}.link-button:hover{background:#e9faf7}.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px}
-.model-picker{grid-column:1/-1}.warnings{font-size:12px;color:#8b5d10;margin:8px 0}
-.setup{padding:18px}.setup h2{margin:0 0 10px;font-size:18px}.setup-grid,.model-grid{display:grid;gap:12px}.setup-grid{grid-template-columns:repeat(2,1fr)}.model-grid{grid-template-columns:repeat(3,1fr);margin-bottom:12px}.setup-step,.model-card{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fbfcfe}.setup-step b,.model-card b{display:block;margin-bottom:5px}.model-card p{margin:0;color:var(--muted);font-size:13px}.model-card.recommended{border-color:#72bdb2;background:#f2fbf9}.setup-step ol{margin:6px 0 0;padding-left:20px;font-size:13px}.setup-step li{margin:5px 0}.setup code{font-size:12px;overflow-wrap:anywhere}@media(max-width:700px){.setup-grid,.model-grid{grid-template-columns:1fr}}
+.model-picker{grid-column:1/-1}.warnings{font-size:12px;color:#8b5d10;margin:8px 0}.intro{margin:0 0 16px;color:var(--muted);font-size:14px}.model-settings{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:#fbfcfe}.model-settings summary{cursor:pointer;padding:10px 12px;font-size:13px;font-weight:750}.model-settings .field{padding:0 12px 12px}
+.setup{padding:18px}.setup>summary{cursor:pointer;font-weight:800;font-size:14px}.setup-content{padding-top:14px}.setup h2{margin:0 0 10px;font-size:18px}.setup-grid,.model-grid{display:grid;gap:12px}.setup-grid{grid-template-columns:repeat(2,1fr)}.model-grid{grid-template-columns:repeat(3,1fr);margin-bottom:12px}.setup-step,.model-card{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fbfcfe}.setup-step b,.model-card b{display:block;margin-bottom:5px}.model-card p{margin:0;color:var(--muted);font-size:13px}.model-card.recommended{border-color:#72bdb2;background:#f2fbf9}.setup-step ol{margin:6px 0 0;padding-left:20px;font-size:13px}.setup-step li{margin:5px 0}.setup code{font-size:12px;overflow-wrap:anywhere}@media(max-width:700px){.setup-grid,.model-grid{grid-template-columns:1fr}}
 .result-head{background:linear-gradient(120deg,#073b4c,#087f73);color:#fff;border-radius:14px;padding:20px 22px;margin-bottom:14px;box-shadow:0 8px 22px rgba(7,59,76,.16)}.result-head h2{margin:4px 0;font-size:24px;overflow-wrap:anywhere}.result-meta{margin:0;color:#d9fffa;font-size:12px}.review-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(245px,.45fr);gap:14px}.review-panel{padding:17px}.review-panel h2{margin:0 0 3px;font-size:18px}.review-panel>p{margin:0 0 10px;color:var(--muted);font-size:12px}.review-section{margin-top:9px;border:1px solid var(--line);border-radius:10px}.review-section h3{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);border-radius:9px 9px 0 0;padding:9px 11px;margin:0;font-size:13px}.review-section.possible h3{background:var(--possible);border-bottom-color:#f2d994}.review-section.missing h3{background:var(--missing);border-bottom-color:#f3c3c3}.review-section.found h3{background:var(--found);border-bottom-color:#c8eedf}.review-section.rejected h3{background:var(--rejected);border-bottom-color:#d4dfea}.review-section.acronym h3{background:var(--acronym);border-bottom-color:#d0dcfa}.review-section.low h3{background:var(--low);border-bottom-color:#f1cdb6}.count-pill{font-size:11px;background:#fff;padding:1px 7px;border-radius:99px;border:1px solid rgba(0,0,0,.08)}.details{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:#fff}.details summary{cursor:pointer;padding:11px 13px;font-weight:750;color:var(--ink);font-size:13px}.details .section{margin:0;border:0;border-top:1px solid var(--line);border-radius:0}.result-actions{display:grid;gap:7px;margin-top:12px}.result-actions .link-button{text-align:center}.quality-note{border-left:4px solid var(--brand);background:#f2fbf9;padding:10px 11px;border-radius:0 9px 9px 0;font-size:12px;margin-top:12px}
 @media(max-width:700px){.grid,.review-layout{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.terms li{display:block}.evidence{margin-top:5px}.top h1{font-size:28px}.result-head h2{font-size:23px}}
 """
@@ -69,12 +69,10 @@ def _item_html(item: dict[str, object], group: str) -> str:
             if isinstance(value, dict)
         )
     elif group == "missing_terms":
-        if item.get("reason") == "single_word_review":
-            detail = "Düşük öncelik: tek sözcüklü terim veya kısaltma"
-        elif item.get("reason") == "deterministic_recovery":
-            detail = "Düşük öncelik: modelin atladığı kontrollü kalıpla geri kazanıldı"
-        else:
-            detail = "Sözlükte eşleşme bulunamadı"
+        priority = {"high": "Yüksek güven", "medium": "Kontrol edilmeli"}.get(
+            str(item.get("review_priority", "high")), "Kontrol edilmeli"
+        )
+        detail = "{} · sözlükte eşleşme bulunamadı".format(priority)
     else:
         detail = "Düşük güvenli aday"
     pages = ", ".join(str(value) for value in item.get("pages", []))
@@ -89,73 +87,46 @@ def _item_html(item: dict[str, object], group: str) -> str:
 def result_html(result: dict[str, object], json_name: str, csv_name: str, xlsx_name: str = "") -> str:
     if not xlsx_name:
         xlsx_name = csv_name.replace("_terim_raporu.csv", "_terim_raporu.xlsx")
-    counts = result.get("counts", {})
-    groups = [
-        ("missing_terms", "missing", "Yüksek öncelik · inceleme gerekli"),
-        ("possible_matches", "possible", "Orta öncelik · yakın eşleşmeler"),
-        ("dictionary_matches", "found", "Sözlükte bulunan kelimeler"),
-        ("rejected_candidates", "rejected", "Elenen (Düşük güvenli) adaylar"),
+    raw_missing = result.get("missing_terms", [])
+    raw_missing = raw_missing if isinstance(raw_missing, list) else []
+    missing = [
+        item for item in raw_missing
+        if isinstance(item, dict) and item.get("review_priority") != "low"
     ]
-    sections = {}
-    low_priority_missing: list[dict[str, object]] = []
-    acronym_missing: list[dict[str, object]] = []
-    
-    for key, css_class, title in groups:
-        items = result.get(key, [])
-        values = items if isinstance(items, list) else []
-        if key == "missing_terms":
-            # Kısaltmaları veya tanımları ayır
-            acronym_missing = [
-                item for item in values
-                if isinstance(item, dict) and (
-                    item.get("reason") in ("repeated_abbreviation", "defined_term")
-                    or (isinstance(item.get("term"), str) and item.get("term").isupper() and len(item.get("term")) > 1)
-                )
-            ]
-            # Düşük önceliklileri ayır (kısaltmalar hariç)
-            low_priority_missing = [
-                item for item in values
-                if isinstance(item, dict) and item.get("review_priority") == "low" and item not in acronym_missing
-            ]
-            # Geriye kalan yüksek öncelikliler
-            values = [
-                item for item in values
-                if item not in acronym_missing and item not in low_priority_missing
-            ]
-            
-        body = "".join(_item_html(item, key) for item in values if isinstance(item, dict))
+    # Eski raporlar açıldığında düşük güvenli adayları ana karar listesine sokma.
+    legacy_low = [
+        item for item in raw_missing
+        if isinstance(item, dict) and item.get("review_priority") == "low"
+    ]
+    possible_values = result.get("possible_matches", [])
+    possible = [item for item in possible_values if isinstance(item, dict)] if isinstance(possible_values, list) else []
+    found_values = result.get("dictionary_matches", [])
+    found = [item for item in found_values if isinstance(item, dict)] if isinstance(found_values, list) else []
+    rejected_values = result.get("rejected_candidates", [])
+    rejected = [item for item in rejected_values if isinstance(item, dict)] if isinstance(rejected_values, list) else []
+    rejected.extend(legacy_low)
+
+    def section(key: str, css_class: str, title: str, values: list[dict[str, object]]) -> str:
+        body = "".join(_item_html(item, key) for item in values)
         if not body:
             body = '<div class="empty">Bu grupta terim yok.</div>'
-        sections[key] = (
-            '<div class="review-section {}"><h3>{} <span class="count-pill">{}</span></h3><ul class="terms">{}</ul></div>'.format(
-                css_class, title, len(values), body
-            )
+        return '<div class="review-section {}"><h3>{} <span class="count-pill">{}</span></h3><ul class="terms">{}</ul></div>'.format(
+            css_class, title, len(values), body
         )
-        
-    acronym_body = "".join(_item_html(item, "missing_terms") for item in acronym_missing)
-    acronym_section = (
-        '<div class="review-section acronym"><h3>Kısaltmalar ve Tanımlar <span class="count-pill">{}</span></h3>'
-        '<ul class="terms">{}</ul></div>'
-    ).format(len(acronym_missing), acronym_body) if acronym_missing else ""
 
-    low_missing_body = "".join(_item_html(item, "missing_terms") for item in low_priority_missing)
-    low_missing_section = (
-        '<div class="review-section low"><h3>Düşük öncelikli eksik adaylar <span class="count-pill">{}</span></h3>'
-        '<ul class="terms">{}</ul></div>'
-    ).format(len(low_priority_missing), low_missing_body) if low_priority_missing else ""
-
-    metrics = [
-        ("dictionary_matches", "Bulunan"),
-        ("possible_matches", "Olası"),
-        ("missing_terms", "Eksik"),
-        ("rejected_candidates", "Elenen"),
+    missing_section = section("missing_terms", "missing", "İncelenecek sözlük açıkları", missing)
+    possible_section = section("possible_matches", "possible", "Yakın sözlük eşleşmeleri", possible)
+    found_section = section("dictionary_matches", "found", "Sözlükte bulunan terimler", found)
+    rejected_section = section("rejected_candidates", "rejected", "Elenen düşük güvenli adaylar", rejected)
+    metric_values = [
+        ("missing_terms", len(missing), "İncelenecek"),
+        ("possible_matches", len(possible), "Yakın eşleşme"),
+        ("dictionary_matches", len(found), "Sözlükte bulunan"),
+        ("rejected_candidates", len(rejected), "Elenen"),
     ]
     metric_html = "".join(
-        '<div class="metric metric-{}"><b>{}</b><span>{}</span></div>'.format(
-            key,
-            counts.get(key, 0) if isinstance(counts, dict) else 0, label
-        )
-        for key, label in metrics
+        '<div class="metric metric-{}"><b>{}</b><span>{}</span></div>'.format(key, value, label)
+        for key, value, label in metric_values
     )
     warnings = result.get("processing_warnings", [])
     status = result.get("analysis_status", "complete")
@@ -168,31 +139,41 @@ def result_html(result: dict[str, object], json_name: str, csv_name: str, xlsx_n
             'Modeli veya Ollama bağlantısını denetleyip belgeyi yeniden tarayın.</div>'
         )
     elif status == "partial":
-        warning_html = (
-            '<div class="warnings"><b>Eksik analiz:</b> {} metin parçası model '
-            'yanıtı olmadan atlandı; eksik terim listesi tam olmayabilir.</div>'
-        ).format(html.escape(str(failed_chunks)))
+        review = result.get("technical_review", {})
+        review_failed = isinstance(review, dict) and review.get("status") == "failed"
+        if failed_chunks:
+            message = (
+                "{} metin parçası model yanıtı olmadan atlandı; "
+                "eksik terim listesi tam olmayabilir."
+            ).format(html.escape(str(failed_chunks)))
+        elif review_failed:
+            message = (
+                "İkinci model doğrulaması tamamlanamadı; sonuçlar kaynak, tekrar "
+                "ve ilk model sinyaliyle puanlandı."
+            )
+        else:
+            message = "Analizin bir bölümü tamamlanamadı; sonuçları dikkatle inceleyin."
+        warning_html = '<div class="warnings"><b>Eksik analiz:</b> {}</div>'.format(message)
     elif warnings:
         warning_html = '<div class="warnings">Model doğrulama uyarısı: {}</div>'.format(
             html.escape(" | ".join(str(value) for value in warnings))
         )
     else:
         warning_html = ""
-    high_priority_missing_count = len(result.get("missing_terms", [])) - len(low_priority_missing) - len(acronym_missing)
     status_label = "Analiz tamamlandı" if status == "complete" else "Analiz eksik kaldı"
-    return '<section class="result-head"><div class="eyebrow">{}</div><h2>{}</h2><p class="result-meta">{} sayfa · Model: {} · Sözlük sürümü: {}</p></section>{}<div class="review-layout"><section class="card review-panel"><h2>İnceleme</h2>{}{}{}{}{}{}</section><aside class="card review-panel"><h2>Rapor özeti</h2><div class="summary">{}</div><div class="result-actions"><a class="link-button primary" href="/reports/{}">Excel Raporunu indir</a><a class="link-button" href="/reports/{}">İnceleme CSV’sini indir</a><a class="link-button" href="/reports/{}">Teknik JSON’u indir</a><a class="link-button" href="/">Yeni PDF tara</a></div></aside></div>'.format(
+    return '<section class="result-head"><div class="eyebrow">{}</div><h2>{}</h2><p class="result-meta">{} sayfa · Model: {} · Sözlük sürümü: {}</p></section>{}<div class="review-layout"><section class="card review-panel"><h2>Karar listesi</h2><p>Önce aşağıdaki sözlük açıklarını doğrulayın. Bilgi ve denetim listeleri kapalı tutulur.</p>{}{}<details class="details"><summary>Sözlükte bulunanlar ({})</summary>{}</details><details class="details"><summary>Elenen adaylar ({})</summary>{}</details></section><aside class="card review-panel"><h2>Rapor özeti</h2><div class="summary">{}</div><div class="quality-note">Eksik sayısı yalnız puan eşiğini geçen inceleme adaylarını gösterir.</div><div class="result-actions"><a class="link-button primary" href="/reports/{}">Excel Raporunu indir</a><a class="link-button" href="/reports/{}">İnceleme CSV’sini indir</a><a class="link-button" href="/reports/{}">Teknik JSON’u indir</a><a class="link-button" href="/">Yeni PDF tara</a></div></aside></div>'.format(
         status_label,
         html.escape(str(result.get("document", "Analiz sonucu"))),
         html.escape(str(result.get("page_count", ""))),
         html.escape(str(result.get("model", ""))),
         html.escape(str(result.get("dictionary_version", ""))),
         warning_html,
-        sections["missing_terms"],
-        sections["possible_matches"],
-        acronym_section,
-        low_missing_section,
-        sections["dictionary_matches"],
-        sections["rejected_candidates"],
+        missing_section,
+        possible_section,
+        len(found),
+        found_section,
+        len(rejected),
+        rejected_section,
         metric_html,
         urllib.parse.quote(xlsx_name),
         urllib.parse.quote(csv_name),
@@ -201,37 +182,31 @@ def result_html(result: dict[str, object], json_name: str, csv_name: str, xlsx_n
 
 
 def _preferred_installed_model(models: list[str], configured: str) -> str:
-    """Yapılandırılan model yoksa kurulu modellerden güvenli bir başlangıç seçer."""
-    if configured in models or not models:
-        return configured
-    preferences = (
-        "qwen3.5:2b",
-        "qwen3.5:4b",
-        "qwen2.5:1.5b",
-        "qwen3.5:9b",
-    )
-    lowered = {name.casefold(): name for name in models}
-    for preferred in preferences:
-        if preferred in lowered:
-            return lowered[preferred]
-    return models[0]
+    """Yalnız açık OLLAMA_MODEL ayarı kuruluysa ön seçim yapar."""
+    return configured if configured in models else ""
+
+
+def _model_label(name: str, selected: bool = False) -> str:
+    suffix = " · ortam ayarı" if selected else ""
+    return "{}{}".format(name, suffix)
 
 
 def _setup_html() -> str:
     """Model seçimi ve her bilgisayarda görünen kısa kurulum yönergesi."""
-    return """<section class="card setup"><h2>Önerilen Yapay Zeka Modeli</h2>
-<div class="model-grid"><div class="model-card"><b><code>qwen3.5:9b</code></b><p>Güçlü bilgisayarlar için</p></div>
-<div class="model-card"><b><code>qwen3.5:4b</code></b><p>Orta seviye bilgisayarlar için</p></div>
-<div class="model-card recommended"><b><code>qwen3.5:2b</code></b><p>Hafif bilgisayarlar için</p></div></div>
+    return """<details class="card setup"><summary>Kurulum ve model rehberi</summary><div class="setup-content"><h2>Model seçimi</h2>
+<p class="intro">Uygulama belirli bir modele bağlı değildir. Ollama'da kurulu modeller otomatik listelenir; her analizde kullanacağınız modeli siz seçersiniz.</p>
+<div class="model-grid"><div class="model-card"><b>Küçük modeller</b><p>Daha hızlı ve düşük bellek kullanımı</p></div>
+<div class="model-card"><b>Orta modeller</b><p>Hız ve terim bulma dengesi</p></div>
+<div class="model-card"><b>Büyük modeller</b><p>Daha güçlü donanım ve daha uzun analiz</p></div></div>
 <h2>Kurulum</h2>
 <div class="setup-grid"><div class="setup-step"><b>macOS</b><ol>
 <li><a href="https://ollama.com/download" target="_blank" rel="noreferrer">Ollama'yı indirip kurun</a>.</li>
-<li>Terminal'i açın ve seçtiğiniz model için örneğin <code>ollama pull qwen3.5:2b</code> komutunu çalıştırın.</li>
+<li>Terminal'i açın ve seçtiğiniz güncel model için <code>ollama pull MODEL_ETIKETI</code> komutunu çalıştırın.</li>
 <li>Bu sayfayı yenileyin.</li></ol></div>
 <div class="setup-step"><b>Windows</b><ol>
 <li><a href="https://ollama.com/download" target="_blank" rel="noreferrer">Ollama'yı indirip kurun</a>.</li>
-<li>PowerShell'i açın ve seçtiğiniz model için örneğin <code>ollama pull qwen3.5:2b</code> komutunu çalıştırın.</li>
-<li>Bu sayfayı yenileyin.</li></ol></div></div></section>"""
+<li>PowerShell'i açın ve seçtiğiniz güncel model için <code>ollama pull MODEL_ETIKETI</code> komutunu çalıştırın.</li>
+<li>Bu sayfayı yenileyin.</li></ol></div></div></div></details>"""
 
 
 class WebApplication:
@@ -248,6 +223,7 @@ class WebApplication:
 
     def index_html(self, error_message: str = "") -> str:
         models, connection_error = self.model_status()
+        selected = ""
         if connection_error:
             status = '<div><span class="dot bad"></span><b>Ollama bağlantısı yok</b><br><small>{}</small></div>'.format(
                 html.escape(connection_error)
@@ -260,11 +236,16 @@ class WebApplication:
                 len(models)
             )
             selected = _preferred_installed_model(models, self.settings.model)
-            options = "".join(
+            placeholder = (
+                '<option value="" disabled{}>Bir model seçin</option>'.format(
+                    "" if selected else " selected"
+                )
+            )
+            options = placeholder + "".join(
                 '<option value="{}"{}>{}</option>'.format(
                     html.escape(name, quote=True),
                     " selected" if name == selected else "",
-                    html.escape(name),
+                    html.escape(_model_label(name, name == selected)),
                 )
                 for name in models
             )
@@ -278,9 +259,10 @@ class WebApplication:
         error_box = '<div class="error"><b>Analiz tamamlanamadı:</b> {}</div>'.format(
             html.escape(error_message)
         ) if error_message else ""
-        content = '{}<div class="card"><div class="status">{}<small>Sözlük: {:,} terim</small></div><form id="scan-form" action="/analyze" method="post" enctype="multipart/form-data"><div class="grid"><div class="field drop"><label>İngilizce makaleyi seçin</label><input type="file" name="pdf" accept="application/pdf,.pdf" required></div><div class="field model-picker"><label>Ollama modeli</label><select id="model-select" name="model" required{}>{}</select></div></div><button class="button" type="submit"{}>Makaleyi analiz et</button><span class="loading">Analiz sürüyor...</span></form></div>{}'.format(
-            error_box, status, len(self.dictionary), model_disabled,
-            options, submit_disabled, _setup_html()
+        selected_label = _model_label(selected, True) if selected else "Model seçin"
+        content = '{}<div class="card"><div class="status">{}<small>Sözlük: {:,} terim</small></div><p class="intro">PDF’yi seçin; uygulama yalnız sözlükte bulunmayan, incelenmeye değer terimleri öne çıkarsın.</p><form id="scan-form" action="/analyze" method="post" enctype="multipart/form-data"><div class="grid"><div class="field drop"><label>İngilizce makaleyi seçin</label><input type="file" name="pdf" accept="application/pdf,.pdf" required></div></div><details class="model-settings"><summary>{}</summary><div class="field model-picker"><label>Ollama modeli</label><select id="model-select" name="model" required{}>{}</select></div></details><button class="button" type="submit"{}>Eksik terimleri bul</button><span class="loading">Analiz sürüyor...</span></form></div>{}'.format(
+            error_box, status, len(self.dictionary), html.escape(selected_label),
+            model_disabled, options, submit_disabled, _setup_html()
         )
         return _document(content)
 
@@ -299,10 +281,13 @@ class WebApplication:
             if not isinstance(result, dict):
                 continue
             stem = json_path.name.removesuffix("_terms.json")
-            doc_dir_name = json_path.parent.name if json_path.parent != self.settings.output_dir else stem
-            json_rel = f"{doc_dir_name}/{json_path.name}"
-            csv_rel = f"{doc_dir_name}/{stem}_terim_raporu.csv"
-            xlsx_rel = f"{doc_dir_name}/{stem}_terim_raporu.xlsx"
+            # Değerlendirme çalışmaları model/belge gibi birden fazla alt
+            # klasörde tutulabilir. Yalnız son klasör adını kullanmak sonuç
+            # ekranını açsa bile indirme bağlantılarını 404'e düşürüyordu.
+            report_dir = json_path.parent.relative_to(self.settings.output_dir)
+            json_rel = str(report_dir / json_path.name)
+            csv_rel = str(report_dir / f"{stem}_terim_raporu.csv")
+            xlsx_rel = str(report_dir / f"{stem}_terim_raporu.xlsx")
             return _document(result_html(result, json_rel, csv_rel, xlsx_rel))
         return None
 
@@ -402,16 +387,19 @@ class RequestHandler(BaseHTTPRequestHandler):
             if "pdf" not in files:
                 raise ValueError("Bir PDF dosyası seçin.")
             filename, content = files["pdf"]
-            model = fields.get("model", self.server.application.settings.model).strip()
+            model = fields.get("model", "").strip()
             if not model:
                 raise ValueError("Bir model seçin.")
             result, json_path, csv_path = self.server.application.analyze(
                 filename, content, model
             )
-            stem = json_path.parent.name
-            json_rel = f"{stem}/{json_path.name}"
-            csv_rel = f"{stem}/{csv_path.name}"
-            xlsx_rel = f"{stem}/{stem}_terim_raporu.xlsx"
+            report_dir = json_path.parent.relative_to(
+                self.server.application.settings.output_dir
+            )
+            stem = json_path.name.removesuffix("_terms.json")
+            json_rel = str(report_dir / json_path.name)
+            csv_rel = str(report_dir / csv_path.name)
+            xlsx_rel = str(report_dir / f"{stem}_terim_raporu.xlsx")
             self._html(_document(result_html(result, json_rel, csv_rel, xlsx_rel)))
         except Exception as error:
             self._html(self.server.application.index_html(str(error)), status=400)

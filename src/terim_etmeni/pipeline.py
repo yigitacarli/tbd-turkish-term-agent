@@ -326,6 +326,56 @@ def _translations(entries: list[dict[str, object]]) -> list[str]:
     )
 
 
+def _review_score(item: dict[str, object], model_accepted: bool | None) -> int:
+    """Model kararını tek başına veto olarak kullanmadan açıklanabilir puan üretir."""
+    sources = set(item.get("candidate_sources", []))
+    score = 0
+    if "model" in sources:
+        score += 4
+    if "defined_term" in sources:
+        score += 3
+    if "technical_pattern" in sources:
+        score += 1
+    if "quoted_phrase" in sources:
+        score += 1
+    occurrences = int(item.get("occurrence_count", 0) or 0)
+    if occurrences >= 2:
+        score += 1
+    if occurrences >= 4:
+        score += 1
+    if len(str(item.get("term", "")).split()) >= 2:
+        score += 1
+    else:
+        score -= 1
+    if model_accepted is True:
+        score += 2
+    elif model_accepted is False:
+        score -= 1
+    return score
+
+
+def _apply_review_decision(
+    item: dict[str, object], model_accepted: bool | None
+) -> bool:
+    """Adayı puanlar; yalnız anlamlı güven taşıyanları inceleme listesinde tutar."""
+    score = _review_score(item, model_accepted)
+    item["review_score"] = score
+    item["model_review"] = (
+        "accepted" if model_accepted is True
+        else "rejected" if model_accepted is False
+        else "unavailable"
+    )
+    if score >= 5:
+        item["review_priority"] = "high"
+        return True
+    if score >= 3:
+        item["review_priority"] = "medium"
+        return True
+    item["review_priority"] = "low"
+    item["reason"] = "insufficient_review_score"
+    return False
+
+
 def analyze_pdf(
     pdf_path: Path,
     dictionary: DictionaryIndex,
@@ -399,28 +449,7 @@ def analyze_pdf(
                 base["reason"] = "common_english_word"
                 rejected.append(base)
                 continue
-            if len(item.term.split()) == 1:
-                # Tek sözcük ve kısaltmaların gürültü olma olasılığı daha
-                # yüksektir; yine de gerçek yeni terimleri kaybetmemek için
-                # sessizce elemek yerine düşük öncelikli incelemeye alırız.
-                base["review_priority"] = "low"
-                base["reason"] = "single_word_review"
-                review_queue.append(base)
-            elif (
-                "model" not in item.candidate_sources
-                and item.candidate_sources
-                & {
-                    "defined_term", "technical_pattern", "repeated_abbreviation",
-                    "quoted_phrase", "ngram_scan",
-                }
-            ):
-                # Modelin hiç önermediği fakat kontrollü bir deterministik
-                # sinyalle bulunan aday sessizce kaybolmaz. Gürültü riskinden
-                # dolayı düşük öncelikli insan incelemesinde tutulur.
-                base["review_priority"] = "low"
-                base["reason"] = "deterministic_recovery"
-                review_queue.append(base)
-            elif _low_confidence_missing(item.term):
+            if _low_confidence_missing(item.term):
                 base["reason"] = "low_confidence_phrase"
                 rejected.append(base)
             else:
@@ -433,7 +462,13 @@ def analyze_pdf(
         "accepted_count": len(review_queue),
         "candidate_terms": [str(item["term"]) for item in review_queue],
         "accepted_terms": [str(item["term"]) for item in review_queue],
+        "status": (
+            "not_available" if not callable(review_method)
+            else "complete" if not review_queue
+            else "pending"
+        ),
     }
+    accepted: set[str] | None = None
     if callable(review_method) and review_queue:
         try:
             accepted = {
@@ -443,33 +478,35 @@ def analyze_pdf(
             }
         except RuntimeError as error:
             extraction_warnings.append("Teknik terim doğrulaması: {}".format(error))
+            technical_review["status"] = "failed"
         else:
+            technical_review["status"] = "complete"
             technical_review["accepted_count"] = len(accepted)
             technical_review["accepted_terms"] = [
                 str(item["term"])
                 for item in review_queue
                 if normalized_key(str(item["term"])) in accepted
             ]
-            for item in review_queue:
-                model_accepted = normalized_key(str(item["term"])) in accepted
-                if model_accepted or item.get("review_priority") == "low":
-                    if not model_accepted:
-                        item["model_review"] = "rejected_but_retained_for_human_review"
-                    missing.append(item)
-                else:
-                    item["reason"] = "non_technical_contextual_phrase"
-                    rejected.append(item)
-            review_queue = []
-    missing.extend(review_queue)
+    for item in review_queue:
+        model_accepted = (
+            normalized_key(str(item["term"])) in accepted
+            if accepted is not None else None
+        )
+        if _apply_review_decision(item, model_accepted):
+            missing.append(item)
+        else:
+            rejected.append(item)
 
     found.sort(key=lambda item: str(item["term"]).casefold())
     possible.sort(key=lambda item: str(item["term"]).casefold())
-    missing.sort(key=lambda item: str(item["term"]).casefold())
+    missing.sort(
+        key=lambda item: (-int(item.get("review_score", 0)), str(item["term"]).casefold())
+    )
     rejected.sort(key=lambda item: str(item["term"]).casefold())
     version = dictionary.metadata.get("version")
     if not chunks or processed_chunk_count == 0:
         analysis_status = "failed"
-    elif chunk_warning_count:
+    elif chunk_warning_count or technical_review.get("status") == "failed":
         analysis_status = "partial"
     else:
         analysis_status = "complete"

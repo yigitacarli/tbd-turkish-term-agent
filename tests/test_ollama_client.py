@@ -64,6 +64,8 @@ class OllamaParserTests(unittest.TestCase):
         self.assertIn("established technical abbreviations", SYSTEM_PROMPT)
         self.assertNotIn("at least five", SYSTEM_PROMPT)
         self.assertIn("If no such phrases exist", USER_TASK)
+        self.assertIn("experiment/table fragments", USER_TASK)
+        self.assertNotIn("formulas, or\nPrefer", USER_TASK)
         self.assertNotIn("Be exhaustive", USER_TASK)
 
     def test_empty_model_result_is_a_valid_extraction(self):

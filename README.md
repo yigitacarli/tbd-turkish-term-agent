@@ -3,28 +3,30 @@
 Türkçe Terim Etmeni, metin katmanı bulunan PDF belgelerindeki İngilizce bilişim
 terimlerini çıkarır ve Bilişimde Özenli Türkçe sitesinden hazırlanmış yerel
 İngilizce–Türkçe sözlükle karşılaştırır. Sözlükte bulunmayan adayları sayfa ve
-geçiş bilgileriyle gösterir; CSV ve JSON raporu üretir.
+geçiş bilgileriyle gösterir; Excel, CSV ve JSON raporu üretir.
 
-PDF içeriği ve model çalışması yerel bilgisayarda kalır. Sistem NLP-first hibrit 
-bir mimari kullanır: Aday terimler önce kural tabanlı algoritmalar ve N-Gram taramasıyla 
-bulunur, genel İngilizce kelimeler filtrelenir ve yalnızca kalan adaylar yerel 
-Ollama modeline sınıflandırma/doğrulama için gönderilir.
+PDF içeriği ve model çalışması yerel bilgisayarda kalır. Sistem hibrit bir akış
+kullanır: yerel model ve kontrollü metin kalıpları aday üretir; sözlük eşleşmesi,
+metindeki kanıt, aday kaynağı ve model doğrulaması birlikte puanlanır. Yalnız
+puan eşiğini geçen sözlük açıkları ana inceleme listesinde gösterilir.
 
 ## Gereksinimler
 
 - Python 3.9+
 - [Ollama](https://ollama.com/)
-- Ollama içinde `qwen3.5:2b` modeli
+- Ollama içinde yapılandırılmış çıktı verebilen güncel bir model
 - Metin seçilebilen bir PDF
 
 ```bash
-ollama pull qwen3.5:2b
+ollama pull MODEL_ETIKETI
 ```
 
 ## Yapay zekâ motoru ve platform desteği
 
 Bu teslim sürümü **yerel Ollama** ile çalışır: PDF ve terim sonuçları bilgisayardan
-çıkmaz. Varsayılan model `qwen3.5:2b`'dir; bilgisayarda yüklü başka bir Ollama modeli arayüzden seçilebilir.
+çıkmaz. Uygulama herhangi bir modeli kalıcı varsayılan yapmaz; Ollama'da kurulu
+modeller arayüzde listelenir ve kullanıcı her analiz için modeli açıkça seçer.
+İstenirse `OLLAMA_MODEL` ortam değişkeniyle kuruma özel bir ön seçim yapılabilir.
 
 OpenAI, Azure OpenAI veya başka bir kurum API'si bu sürümde henüz uygulanmamıştır.
 Bu tür bir entegrasyon için kurumun sağlayıcı, anahtar yönetimi, maliyet ve veri
@@ -62,9 +64,9 @@ python run.py
 
 İlk kurulum yapıldıktan sonra komut yazmadan başlatmak için:
 
-- **macOS:** `Baslat.command` dosyasına çift tıklayın. Bu, macOS için en kolay
+- **macOS:** `BASLAT_APPLE.command` dosyasına çift tıklayın. Bu, macOS için en kolay
   günlük kullanım yöntemidir.
-- **Windows:** `Baslat.bat` dosyasına çift tıklayın. Pencere açık kaldığı sürece
+- **Windows:** `BASLAT_WINDOWS.bat` dosyasına çift tıklayın. Pencere açık kaldığı sürece
   arayüz çalışır.
 
 Her iki başlatıcı da `http://127.0.0.1:8765` adresinde arayüzü açar. PDF seçin,
@@ -92,7 +94,7 @@ python3 run.py scan /dosya/yolu/makale.pdf
 Bir klasördeki bütün PDF'leri taramak için:
 
 ```bash
-python3 run.py scan /dosya/yolu/pdf-klasoru
+python3 run.py scan /dosya/yolu/pdf-klasoru --model MODEL_ETIKETI
 ```
 
 Başka bir Ollama modeli kullanmak için:
@@ -101,22 +103,23 @@ Başka bir Ollama modeli kullanmak için:
 python3 run.py scan makale.pdf --model qwen3.5:2b
 ```
 
-Varsayılan model `OLLAMA_MODEL`, Ollama adresi `OLLAMA_URL` ortam değişkeniyle de
-değiştirilebilir.
+Web arayüzündeki isteğe bağlı ön seçim `OLLAMA_MODEL`, Ollama adresi `OLLAMA_URL`
+ortam değişkeniyle ayarlanabilir. CLI kullanımında model açıkça verilmelidir.
 
 ## Sonuçlar
 
 Arayüz ve terminal dört grup gösterir:
 
 - **Bulunan:** Sözlükte tam eşleşen terimler
-- **Olası:** Tekil/çoğul veya kontrollü yazım farkıyla eşleşenler
-- **Eksik:** Sözlükte karşılığı bulunmayan adaylar. Tek sözcüklü terimler ve
-  kısaltmalar kaybolmamaları için düşük öncelikli inceleme satırı olarak korunur.
+- **Olası:** Açılımı sözlükte bulunan kısaltma gibi insan kararı isteyen eşleşmeler
+- **Eksik:** Sözlükte karşılığı bulunmayan ve birleşik güven puanı eşiğini geçen adaylar
 - **Elenen:** Düşük güvenli adaylar; denetim amacıyla raporda korunur
 
-`output/` klasöründe her PDF için şu dosyalar oluşur:
+Raporlar model sonuçları birbirinin üzerine yazılmasın diye
+`output/<model>/<pdf-adı>/` klasöründe oluşur:
 
 - `<ad>_terim_raporu.csv`
+- `<ad>_terim_raporu.xlsx`
 - `<ad>_terms.json`
 
 CSV, Excel ile uyumlu UTF-8 BOM biçimindedir. Satırlar önce karar gerektiren
@@ -151,9 +154,9 @@ tarafından doğrulanmalıdır.
   ayarlar tek model geçişi ve 6.000 karakterlik parça kullanır; özellikle ayrıntılı
   inceleme gerektiğinde daha büyük bir model seçilebilir.
 - Modelin hiç önermediği bazı terimler kontrollü teknik baş kalıpları, açık
-  kısaltma tanımları ve tekrarlanan teknoloji kuşak adlarıyla deterministik olarak
-  geri kazanılır. Bu adaylar gürültü riskinden dolayı düşük öncelikli insan
-  incelemesinde tutulur; ham n-gram listesi üretilmez.
+  kısaltma tanımları ve tekrarlanan teknik öbeklerle geri kazanılır. Bu adaylar
+  model kararına ek olarak kaynak ve tekrar sinyalleriyle puanlanır; zayıf cümle
+  parçaları ana inceleme listesine alınmaz.
 - Sonuçlar otomatik öneridir; nihai liste uzman incelemesinden geçirilmelidir.
 - Aynı adlı PDF yeniden taranırsa önceki raporun üzerine yazılır.
 - Ollama hedef bilgisayarda kurulu değilse uygulama model indirmez; açıklayıcı hata
@@ -166,8 +169,8 @@ data/                  Yerel sözlük
 src/terim_etmeni/      Uygulama kaynak kodu
 tests/                 Otomatik testler
 output/                Üretilen raporlar
-Baslat.command         macOS başlatıcısı
-Baslat.bat             Windows başlatıcısı
+BASLAT_APPLE.command   macOS başlatıcısı
+BASLAT_WINDOWS.bat     Windows başlatıcısı
 run.py                 Kurulumsuz giriş noktası
 pyproject.toml         Paket ve bağımlılık tanımı
 AI_HANDOFF.md          Yeni yapay zekâ sohbeti için teknik devir notu

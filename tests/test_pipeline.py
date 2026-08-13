@@ -7,7 +7,11 @@ from unittest.mock import patch
 from terim_etmeni.dictionary import DictionaryIndex
 from terim_etmeni.models import ExtractedTerm, PageText
 from terim_etmeni.pipeline import analyze_pdf
-from terim_etmeni.reporting import format_terminal_report, write_reports
+from terim_etmeni.reporting import (
+    _model_directory_name,
+    format_terminal_report,
+    write_reports,
+)
 
 
 class FakeProvider:
@@ -69,7 +73,19 @@ class FailingProvider:
         raise RuntimeError("invalid model response")
 
 
+class ReviewFailingProvider:
+    def extract(self, text):
+        return [ExtractedTerm("algorithmic recourse")]
+
+    def validate_terms(self, terms):
+        raise RuntimeError("review timeout")
+
+
 class PipelineTests(unittest.TestCase):
+    def test_model_name_is_safe_as_cross_platform_output_directory(self):
+        self.assertEqual(_model_directory_name("qwen3.5:4b"), "qwen3.5-4b")
+        self.assertEqual(_model_directory_name("org/model:latest"), "org-model-latest")
+
     def test_pipeline_marks_all_failed_model_chunks_as_failed_analysis(self):
         pages = [PageText(1, "A machine learning system is described.")]
         dictionary = DictionaryIndex(
@@ -83,7 +99,19 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result["processed_chunk_count"], 0)
         self.assertEqual(result["failed_chunk_count"], 1)
 
-    def test_pipeline_retains_model_missed_deterministic_candidates_for_humans(self):
+    def test_pipeline_marks_failed_second_review_as_partial(self):
+        pages = [PageText(1, "Algorithmic recourse is evaluated twice. Algorithmic recourse helps.")]
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=pages):
+            result = analyze_pdf(
+                Path("partial.pdf"), DictionaryIndex([]), ReviewFailingProvider(), "fake-model"
+            )
+        self.assertEqual(result["analysis_status"], "partial")
+        self.assertEqual(result["processed_chunk_count"], 1)
+        self.assertEqual(result["failed_chunk_count"], 0)
+        self.assertEqual(result["technical_review"]["status"], "failed")
+        self.assertEqual([item["term"] for item in result["missing_terms"]], ["algorithmic recourse"])
+
+    def test_pipeline_keeps_only_strong_deterministic_candidates_for_humans(self):
         pages = [
             PageText(
                 1,
@@ -98,14 +126,10 @@ class PipelineTests(unittest.TestCase):
                 "fake-model",
             )
         missing = {item["term"].casefold(): item for item in result["missing_terms"]}
-        self.assertEqual(
-            set(missing), {"adaptive signal router", "domain name system", "dns"}
-        )
-        self.assertEqual(missing["adaptive signal router"]["review_priority"], "low")
-        self.assertEqual(
-            missing["adaptive signal router"]["model_review"],
-            "rejected_but_retained_for_human_review",
-        )
+        self.assertEqual(set(missing), {"domain name system"})
+        self.assertEqual(missing["domain name system"]["review_priority"], "medium")
+        rejected = {item["term"].casefold() for item in result["rejected_candidates"]}
+        self.assertTrue({"adaptive signal router", "dns"} <= rejected)
 
     def test_pipeline_classifies_and_writes_reports(self):
         pages = [
@@ -153,6 +177,11 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(normalized["match_type"], "normalized_variant")
 
             json_path, csv_path = write_reports(result, temp_path / "reports")
+            xlsx_path = json_path.parent / "sample_terim_raporu.xlsx"
+            self.assertEqual(
+                json_path.parent.relative_to(temp_path / "reports"),
+                Path("fake-model") / "sample",
+            )
             saved = json.loads(json_path.read_text(encoding="utf-8"))
             self.assertEqual(saved["dictionary_version"], "test")
             csv_text = csv_path.read_text(encoding="utf-8-sig")
@@ -163,6 +192,12 @@ class PipelineTests(unittest.TestCase):
             self.assertIn("Önerilen İşlem", csv_text)
             self.assertIn("İnceleme gerekli", csv_text)
             self.assertIn("Sözlükte bulundu", csv_text)
+            try:
+                import openpyxl  # noqa: F401
+            except ImportError:
+                pass
+            else:
+                self.assertTrue(xlsx_path.is_file())
             terminal = format_terminal_report(result)
             self.assertIn("SÖZLÜKTE BULUNANLAR", terminal)
             self.assertIn("SÖZLÜKTE OLMAYANLAR", terminal)
@@ -281,13 +316,11 @@ class PipelineTests(unittest.TestCase):
             )
         self.assertEqual(
             [item["term"] for item in result["missing_terms"]],
-            ["DNS", "multilayer perceptron"],
+            ["multilayer perceptron"],
         )
-        dns = next(item for item in result["missing_terms"] if item["term"] == "DNS")
+        dns = next(item for item in result["rejected_candidates"] if item["term"] == "DNS")
         self.assertEqual(dns["review_priority"], "low")
-        self.assertEqual(
-            dns["model_review"], "rejected_but_retained_for_human_review"
-        )
+        self.assertEqual(dns["model_review"], "rejected")
         # "small model" genel İngilizce filtresi tarafından elenir,
         # review_queue'ya girmez. Yalnızca "multilayer perceptron" ve "DNS" kalır.
         self.assertIn(
@@ -297,6 +330,25 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result["technical_review"]["accepted_count"], 1)
         self.assertIn("multilayer perceptron", result["technical_review"]["candidate_terms"])
         self.assertEqual(result["technical_review"]["accepted_terms"], ["multilayer perceptron"])
+
+    def test_model_rejection_does_not_veto_a_repeated_primary_candidate(self):
+        class SkepticalProvider:
+            def extract(self, text):
+                return [ExtractedTerm("algorithmic recourse")]
+
+            def validate_terms(self, terms):
+                return []
+
+        pages = [
+            PageText(1, "Algorithmic recourse improves access. Algorithmic recourse is evaluated.")
+        ]
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=pages):
+            result = analyze_pdf(
+                Path("recourse.pdf"), DictionaryIndex([]), SkepticalProvider(), "fake-model"
+            )
+        self.assertEqual([item["term"] for item in result["missing_terms"]], ["algorithmic recourse"])
+        self.assertEqual(result["missing_terms"][0]["model_review"], "rejected")
+        self.assertEqual(result["missing_terms"][0]["review_priority"], "high")
 
     def test_pipeline_preserves_single_word_technical_terms(self):
         class TechTermProvider:
@@ -418,6 +470,13 @@ class PipelineTests(unittest.TestCase):
                 "privacy-supporting capability is",
             }
         )
+
+    def test_ngram_scan_rejects_reference_and_formula_fragments(self):
+        from terim_etmeni.term_extractor import _ngram_candidates
+
+        pages = [PageText(1, "In AAAI Conference on AI. In AAAI Conference on AI. i k2 T appears. i k2 T appears.")]
+        candidates = {term.casefold() for term, _ in _ngram_candidates(pages)}
+        self.assertFalse(candidates & {"in aaai", "aaai conference", "aaai conference on", "i k2", "i k2 t", "k2 t"})
 
 
 if __name__ == "__main__":

@@ -47,6 +47,7 @@ newly coined technical phrases only when they occur exactly in the text.
 If no such phrases exist in the text, return an empty list for "terms".
 Do not return document titles, section headings, labels, complete sentences,
 explanatory prose, names, citations, models, products, datasets, formulas, or
+experiment/table fragments.
 Prefer specific multi-word phrases, but include a technical single word or
 abbreviation when omitting it would lose a distinct concept.
 

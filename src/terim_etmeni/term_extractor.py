@@ -174,6 +174,18 @@ def _plausible_term(term: str) -> bool:
     # Kod değişkenleri (num_heads, batch_size vb.) ve pseudo-code yapıları
     if "_" in term:
         return False
+    # PDF'lerden kopan formül değişkenleri ve kod hücreleri (``i k2 T``,
+    # ``head1 head0`` gibi) teknik sözlük terimi değildir.
+    formula_tokens = sum(
+        bool(re.fullmatch(r"(?:[A-Za-z]|[A-Za-z]\d+)", word)) for word in words
+    )
+    if len(words) >= 2 and formula_tokens >= 2:
+        return False
+    if any(
+        re.fullmatch(r"(?:head|layer|sand|sor|val|vals|bool|bools)\d*", word, re.IGNORECASE)
+        for word in words
+    ):
+        return False
     if any(character in term for character in ("(", ")", "{", "}", "[", "]", ";", "=", "<", ">", "+", "*", "%", "!", "|")):
         return False
     if re.search(
@@ -295,7 +307,11 @@ def _ngram_candidates(pages: list[PageText]) -> list[tuple[str, str]]:
 
     for page in pages:
         for line in page.text.splitlines():
-            if _is_tabular_line(line) or _is_structured_table_row(line):
+            if (
+                _is_tabular_line(line)
+                or _is_structured_table_row(line)
+                or _REFERENCE_NOISE_PATTERN.search(line)
+            ):
                 continue
             words = word_pattern.findall(line)
             # 2-gram ve 3-gram tarama
@@ -305,8 +321,12 @@ def _ngram_candidates(pages: list[PageText]) -> list[tuple[str, str]]:
                     # En az bir kelimede teknik sinyal olmalı
                     if not any(_has_technical_signal(w) for w in gram):
                         continue
-                    # Tüm kelimeler boundary ise atla
-                    if all(w.casefold() in _PHRASE_BOUNDARIES for w in gram):
+                    # Bir bağlaç/edatla başlayıp biten pencereler (``in RASP``,
+                    # ``AAAI Conference on``) cümle parçasıdır.
+                    if (
+                        gram[0].casefold() in _PHRASE_BOUNDARIES
+                        or gram[-1].casefold() in _PHRASE_BOUNDARIES
+                    ):
                         continue
                     # Koordinasyonun iki yanından kesilmiş n-gramlar (ör.
                     # "or privacy-supporting") teknik terim değil, cümle

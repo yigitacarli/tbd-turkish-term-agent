@@ -1,5 +1,8 @@
 import io
+import json
+import tempfile
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -56,15 +59,15 @@ class WebApplicationTests(unittest.TestCase):
 
     def test_result_page_contains_all_groups_and_downloads(self):
         rendered = result_html(self.result, "sample_terms.json", "sample_report.csv")
-        self.assertIn("Sözlükte bulunan kelimeler", rendered)
+        self.assertIn("Sözlükte bulunanlar", rendered)
         self.assertIn("semantic photon router", rendered)
-        self.assertIn("İnceleme", rendered)
-        self.assertIn("Yüksek öncelik", rendered)
-        self.assertIn("Orta öncelik", rendered)
+        self.assertIn("Karar listesi", rendered)
+        self.assertIn("İncelenecek sözlük açıkları", rendered)
+        self.assertIn("Yakın sözlük eşleşmeleri", rendered)
         self.assertIn("İnceleme CSV’sini indir", rendered)
         self.assertIn("sample_report.csv", rendered)
 
-    def test_result_page_separates_low_priority_recovered_terms(self):
+    def test_result_page_moves_legacy_low_priority_terms_to_audit_details(self):
         result = dict(self.result)
         result["counts"] = dict(self.result["counts"], missing_terms=2)
         result["missing_terms"] = list(self.result["missing_terms"]) + [
@@ -77,8 +80,31 @@ class WebApplicationTests(unittest.TestCase):
             }
         ]
         rendered = result_html(result, "sample_terms.json", "sample_report.csv")
-        self.assertIn("Kısaltmalar ve Tanımlar", rendered)
-        self.assertIn("tek sözcüklü terim veya kısaltma", rendered)
+        self.assertIn("Elenen adaylar (1)", rendered)
+        self.assertIn("Eksik sayısı yalnız puan eşiğini geçen", rendered)
+
+    def test_latest_result_keeps_nested_report_path_in_download_links(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output_dir = Path(directory)
+            report_dir = output_dir / "evaluation" / "qwen35-4b" / "sample"
+            report_dir.mkdir(parents=True)
+            (report_dir / "sample_terms.json").write_text(
+                json.dumps(self.result), encoding="utf-8"
+            )
+            app = object.__new__(WebApplication)
+            app.settings = Settings(output_dir=output_dir)
+
+            rendered = app.latest_result_html()
+
+        self.assertIsNotNone(rendered)
+        self.assertIn(
+            "/reports/evaluation/qwen35-4b/sample/sample_terms.json",
+            rendered,
+        )
+        self.assertIn(
+            "/reports/evaluation/qwen35-4b/sample/sample_terim_raporu.xlsx",
+            rendered,
+        )
 
     def test_failed_analysis_is_not_presented_as_zero_missing_success(self):
         result = dict(self.result)
@@ -91,16 +117,13 @@ class WebApplicationTests(unittest.TestCase):
         self.assertIn("Model analizi tamamlanamadı", rendered)
         self.assertIn("“0 eksik” anlamına gelmez", rendered)
 
-    def test_preferred_installed_model_prefers_qwen(self):
+    def test_model_is_preselected_only_by_explicit_environment_setting(self):
+        models = ["future-model:latest", "qwen3.5:2b"]
+        self.assertEqual(_preferred_installed_model(models, ""), "")
+        self.assertEqual(_preferred_installed_model(models, "missing"), "")
         self.assertEqual(
-            _preferred_installed_model(
-                ["qwen3.5:9b", "granite4.1:3b", "gemma3:4b"], "missing"
-            ),
-            "qwen3.5:9b",
-        )
-        self.assertEqual(
-            _preferred_installed_model(["custom:latest"], "missing"),
-            "custom:latest",
+            _preferred_installed_model(models, "future-model:latest"),
+            "future-model:latest",
         )
 
     def test_index_shows_ollama_status_and_upload_form(self):
@@ -120,14 +143,15 @@ class WebApplicationTests(unittest.TestCase):
         self.assertIn("qwen3.5:2b", rendered)
         self.assertIn("granite4.1:3b", rendered)
         self.assertIn("gemma3:4b", rendered)
-        self.assertIn('<option value="qwen3.5:2b" selected', rendered)
-        self.assertIn("Önerilen Yapay Zeka Modeli", rendered)
-        self.assertIn("qwen3.5:9b", rendered)
-        self.assertIn("Güçlü bilgisayarlar için", rendered)
-        self.assertIn("qwen3.5:4b", rendered)
-        self.assertIn("Orta seviye bilgisayarlar için", rendered)
-        self.assertIn("Hafif bilgisayarlar için", rendered)
-        self.assertIn("Kurulum", rendered)
+        self.assertIn('<option value="" disabled selected>Bir model seçin</option>', rendered)
+        self.assertNotIn('<option value="qwen3.5:2b" selected', rendered)
+        self.assertIn("Kurulum ve model rehberi", rendered)
+        self.assertIn("Uygulama belirli bir modele bağlı değildir", rendered)
+        self.assertIn("Küçük modeller", rendered)
+        self.assertIn("Orta modeller", rendered)
+        self.assertIn("Büyük modeller", rendered)
+        self.assertIn("Eksik terimleri bul", rendered)
+        self.assertIn("Model seçin", rendered)
         self.assertNotIn('id="model-help"', rendered)
 
     def test_index_does_not_show_default_model_when_ollama_is_unavailable(self):
@@ -141,8 +165,8 @@ class WebApplicationTests(unittest.TestCase):
         self.assertNotIn('<option value="qwen3.5:2b"', rendered)
         self.assertIn('<select id="model-select" name="model" required disabled>', rendered)
         self.assertIn('<button class="button" type="submit" disabled>', rendered)
-        self.assertIn("Önerilen Yapay Zeka Modeli", rendered)
-        self.assertIn("ollama pull qwen3.5:2b", rendered)
+        self.assertIn("Kurulum ve model rehberi", rendered)
+        self.assertIn("ollama pull MODEL_ETIKETI", rendered)
         self.assertIn("macOS", rendered)
         self.assertIn("Windows", rendered)
 

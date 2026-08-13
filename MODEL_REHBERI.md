@@ -10,37 +10,27 @@ Sözlük eşleşmesi, kanıt sayımı ve raporlama Python kodunda yapılır. Bu 
 Claude Code, OpenCode veya benzeri genel amaçlı bir ajan eklemek doğruluğu doğrudan
 artırmaz; günlük kullanımda yalnızca uygun Ollama modelini seçmek gerekir.
 
-## Donanıma göre başlangıç profilleri
+## Donanıma göre model boyutu
 
 Model dosyası boyutu tek başına yeterli bellek ölçüsü değildir. Ollama ayrıca
 çalışma belleği ve bağlam önbelleği kullanır; tabloda baş boşluğu bırakılmıştır.
 
-| Profil | Yaklaşık donanım | Önerilen model | Amaç |
+| Profil | Yaklaşık donanım | Model boyutu | Amaç |
 |---|---|---|---|
-| Hafif | 8 GB bellek / Apple Silicon | `qwen3.5:2b` | Günlük hızlı tarama |
-| Orta seviye | 12–16 GB bellek veya VRAM | `qwen3.5:4b` | Hız ve terim bulma dengesi |
-| Güçlü | 16 GB+ bellek veya VRAM | `qwen3.5:9b` | Daha güçlü terim çıkarımı |
+| Hafif | 8 GB bellek / Apple Silicon | Yaklaşık 2–4B | Günlük hızlı tarama |
+| Orta seviye | 12–16 GB bellek veya VRAM | Yaklaşık 4–9B | Hız ve terim bulma dengesi |
+| Güçlü | 16 GB+ bellek veya VRAM | 9B ve üzeri | Daha güçlü terim çıkarımı |
 
-8 GB M2 MacBook Air için önerilen ilk kurulum:
-
-```bash
-ollama pull qwen3.5:2b
-```
-
-Orta seviye bilgisayarda:
+Model aileleri ve sürümleri sürekli değiştiği için uygulama belirli bir etiketi
+varsayılan yapmaz. Güncel bir modeli kurma biçimi:
 
 ```bash
-ollama pull qwen3.5:4b
-```
-
-Güçlü bilgisayarda:
-
-```bash
-ollama pull qwen3.5:9b
+ollama pull MODEL_ETIKETI
 ```
 
 Kurulan modeller uygulamanın web arayüzündeki model listesinde otomatik görünür.
-Arayüz doğrudan Ollama model etiketini gösterir. Terminalden model kaldırmak için
+Arayüz herhangi bir modeli kendiliğinden seçmez ve doğrudan Ollama model etiketini
+gösterir. Terminalden model kaldırmak için
 aynı etiketi kullanın:
 
 ```bash
@@ -59,15 +49,14 @@ boyutuna ve projenin İngilizce terim çıkarma gereksinimine göre hazırlanmı
 
 1. `qwen3.5:9b` — güçlü bilgisayarlar için en yüksek önerilen Qwen 3.5 profili
 2. `qwen3.5:4b` — orta seviye bilgisayarlar için dengeli profil
-3. `qwen3.5:2b` — hafif bilgisayarlar için varsayılan profil
+3. `qwen3.5:2b` — önceki hafif donanım test profili
 
-Gemma ve Granite, bu projedeki terim çıkarma denemelerinde Qwen 3.5 modellerinden
-daha zayıf sonuç verdiği için önerilen modeller arasında yer almaz. `gpt-oss` ve
-diğer model aileleri bu görevde henüz ölçülmediğinden varsayılan veya öneri olarak
-kullanılmamalıdır.
+Gemma ve Granite için tamamlanmış, uzman etiketli bir karşılaştırma henüz yoktur;
+bu nedenle kalite sıralaması yapılmamıştır. `gpt-oss` ve diğer model aileleri de
+aynı kabul kümesinde ölçülmeden genel öneri yapılmamalıdır.
 
-Önceki `qwen2.5:1.5b` modeli çalışmaya devam eder; yeni varsayılan ölçülürken
-karşılaştırma tabanı olarak tutulabilir.
+Önceki `qwen2.5:1.5b` modeli çalışmaya devam eder ve karşılaştırma tabanı olarak
+tutulabilir.
 
 ## Nihai sıralama için kabul deneyi
 
