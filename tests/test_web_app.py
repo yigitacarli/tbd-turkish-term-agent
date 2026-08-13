@@ -121,8 +121,23 @@ class WebApplicationTests(unittest.TestCase):
         self.assertIn("granite4.1:3b", rendered)
         self.assertIn("gemma3:4b", rendered)
         self.assertIn('<option value="qwen3.5:2b" selected', rendered)
-        self.assertNotIn("önerilen", rendered.casefold())
         self.assertNotIn('id="model-help"', rendered)
+
+    def test_index_does_not_show_default_model_when_ollama_is_unavailable(self):
+        app = object.__new__(WebApplication)
+        app.settings = Settings()
+        app.dictionary = DictionaryIndex([])
+        with patch.object(app, "model_status", return_value=([], "connection refused")):
+            rendered = app.index_html()
+        self.assertIn("Ollama bağlantısı yok", rendered)
+        self.assertIn("Ollama kurulmadı veya çalışmıyor", rendered)
+        self.assertNotIn('<option value="qwen3.5:2b"', rendered)
+        self.assertIn('<select id="model-select" name="model" required disabled>', rendered)
+        self.assertIn('<button class="button" type="submit" disabled>', rendered)
+        self.assertIn("Önerilen yapay zeka modeli", rendered)
+        self.assertIn("ollama pull qwen3.5:2b", rendered)
+        self.assertIn("macOS", rendered)
+        self.assertIn("Windows", rendered)
 
     def test_multipart_parser_reads_pdf_and_model(self):
         boundary = "test-boundary"

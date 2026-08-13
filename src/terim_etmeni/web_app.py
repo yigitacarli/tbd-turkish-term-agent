@@ -36,6 +36,7 @@ STYLE = """
 .terms{list-style:none;margin:0;padding:0}.terms li{padding:9px 13px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:14px}.term-main{font-weight:700;font-size:14px}.term-detail{color:var(--muted);font-size:12px}.evidence{white-space:nowrap;color:var(--muted);font-size:11px}.empty{padding:10px 13px;color:var(--muted);font-size:13px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.link-button{display:inline-block;text-decoration:none;border:1px solid var(--brand);color:var(--brand);padding:9px 12px;border-radius:8px;font-weight:750;font-size:13px}.link-button:hover{background:#e9faf7}.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px}
 .model-picker{grid-column:1/-1}.warnings{font-size:12px;color:#8b5d10;margin:8px 0}
+.setup{padding:18px}.setup h2{margin:0 0 6px;font-size:18px}.setup p{margin:0 0 12px;color:var(--muted);font-size:13px}.setup-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.setup-step{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fbfcfe}.setup-step b{display:block;margin-bottom:5px}.setup-step ol{margin:6px 0 0;padding-left:20px;font-size:13px}.setup-step li{margin:5px 0}.setup code{font-size:12px;overflow-wrap:anywhere}@media(max-width:700px){.setup-grid{grid-template-columns:1fr}}
 .result-head{background:linear-gradient(120deg,#073b4c,#087f73);color:#fff;border-radius:14px;padding:20px 22px;margin-bottom:14px;box-shadow:0 8px 22px rgba(7,59,76,.16)}.result-head h2{margin:4px 0;font-size:24px;overflow-wrap:anywhere}.result-meta{margin:0;color:#d9fffa;font-size:12px}.review-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(245px,.45fr);gap:14px}.review-panel{padding:17px}.review-panel h2{margin:0 0 3px;font-size:18px}.review-panel>p{margin:0 0 10px;color:var(--muted);font-size:12px}.review-section{margin-top:9px;border:1px solid var(--line);border-radius:10px}.review-section h3{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);border-radius:9px 9px 0 0;padding:9px 11px;margin:0;font-size:13px}.review-section.possible h3{background:var(--possible);border-bottom-color:#f2d994}.review-section.missing h3{background:var(--missing);border-bottom-color:#f3c3c3}.review-section.found h3{background:var(--found);border-bottom-color:#c8eedf}.review-section.rejected h3{background:var(--rejected);border-bottom-color:#d4dfea}.review-section.acronym h3{background:var(--acronym);border-bottom-color:#d0dcfa}.review-section.low h3{background:var(--low);border-bottom-color:#f1cdb6}.count-pill{font-size:11px;background:#fff;padding:1px 7px;border-radius:99px;border:1px solid rgba(0,0,0,.08)}.details{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:#fff}.details summary{cursor:pointer;padding:11px 13px;font-weight:750;color:var(--ink);font-size:13px}.details .section{margin:0;border:0;border-top:1px solid var(--line);border-radius:0}.result-actions{display:grid;gap:7px;margin-top:12px}.result-actions .link-button{text-align:center}.quality-note{border-left:4px solid var(--brand);background:#f2fbf9;padding:10px 11px;border-radius:0 9px 9px 0;font-size:12px;margin-top:12px}
 @media(max-width:700px){.grid,.review-layout{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.terms li{display:block}.evidence{margin-top:5px}.top h1{font-size:28px}.result-head h2{font-size:23px}}
 """
@@ -216,6 +217,20 @@ def _preferred_installed_model(models: list[str], configured: str) -> str:
     return models[0]
 
 
+def _setup_html() -> str:
+    """Ollama olmayan bilgisayarlar için kısa, doğrudan kurulum yönergesi."""
+    return """<section class="card setup"><h2>Önerilen yapay zeka modeli</h2>
+<p><code>qwen3.5:2b</code></p>
+<div class="setup-grid"><div class="setup-step"><b>macOS</b><ol>
+<li><a href="https://ollama.com/download" target="_blank" rel="noreferrer">Ollama'yı indirip kurun</a>.</li>
+<li>Terminal'i açın ve <code>ollama pull qwen3.5:2b</code> komutunu çalıştırın.</li>
+<li>Bu sayfayı yenileyin.</li></ol></div>
+<div class="setup-step"><b>Windows</b><ol>
+<li><a href="https://ollama.com/download" target="_blank" rel="noreferrer">Ollama'yı indirip kurun</a>.</li>
+<li>PowerShell'i açın ve <code>ollama pull qwen3.5:2b</code> komutunu çalıştırın.</li>
+<li>Bu sayfayı yenileyin.</li></ol></div></div></section>"""
+
+
 class WebApplication:
     def __init__(self, settings: Optional[Settings] = None) -> None:
         self.settings = settings or Settings()
@@ -230,33 +245,42 @@ class WebApplication:
 
     def index_html(self, error_message: str = "") -> str:
         models, connection_error = self.model_status()
-        selected = _preferred_installed_model(models, self.settings.model)
-        options = "".join(
-            '<option value="{}"{}>{}</option>'.format(
-                html.escape(name, quote=True),
-                " selected" if name == selected else "",
-                html.escape(name),
-            )
-            for name in models
-        )
-        if selected not in models:
-            options = '<option value="{}" selected>{}</option>'.format(
-                html.escape(selected, quote=True),
-                html.escape(selected),
-            ) + options
         if connection_error:
             status = '<div><span class="dot bad"></span><b>Ollama bağlantısı yok</b><br><small>{}</small></div>'.format(
                 html.escape(connection_error)
             )
+            options = '<option value="">Ollama kurulmadı veya çalışmıyor</option>'
+            model_disabled = " disabled"
+            submit_disabled = " disabled"
+            setup_html = _setup_html()
         else:
             status = '<div><span class="dot ok"></span><b>Ollama hazır</b><br><small>{} model bulundu</small></div>'.format(
                 len(models)
             )
+            selected = _preferred_installed_model(models, self.settings.model)
+            options = "".join(
+                '<option value="{}"{}>{}</option>'.format(
+                    html.escape(name, quote=True),
+                    " selected" if name == selected else "",
+                    html.escape(name),
+                )
+                for name in models
+            )
+            if not models:
+                options = '<option value="">Kurulu Ollama modeli bulunamadı</option>'
+                model_disabled = " disabled"
+                submit_disabled = " disabled"
+                setup_html = _setup_html()
+            else:
+                model_disabled = ""
+                submit_disabled = ""
+                setup_html = ""
         error_box = '<div class="error"><b>Analiz tamamlanamadı:</b> {}</div>'.format(
             html.escape(error_message)
         ) if error_message else ""
-        content = '{}<div class="card"><div class="status">{}<small>Sözlük: {:,} terim</small></div><form id="scan-form" action="/analyze" method="post" enctype="multipart/form-data"><div class="grid"><div class="field drop"><label>İngilizce makaleyi seçin</label><input type="file" name="pdf" accept="application/pdf,.pdf" required></div><div class="field model-picker"><label>Ollama modeli</label><select id="model-select" name="model" required>{}</select></div></div><button class="button" type="submit">Makaleyi analiz et</button><span class="loading">Analiz sürüyor...</span></form></div>'.format(
-            error_box, status, len(self.dictionary), options
+        content = '{}<div class="card"><div class="status">{}<small>Sözlük: {:,} terim</small></div><form id="scan-form" action="/analyze" method="post" enctype="multipart/form-data"><div class="grid"><div class="field drop"><label>İngilizce makaleyi seçin</label><input type="file" name="pdf" accept="application/pdf,.pdf" required></div><div class="field model-picker"><label>Ollama modeli</label><select id="model-select" name="model" required{}>{}</select></div></div><button class="button" type="submit"{}>Makaleyi analiz et</button><span class="loading">Analiz sürüyor...</span></form></div>{}'.format(
+            error_box, status, len(self.dictionary), model_disabled,
+            options, submit_disabled, setup_html
         )
         return _document(content)
 
