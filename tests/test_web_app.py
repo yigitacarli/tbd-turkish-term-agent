@@ -121,6 +121,13 @@ class WebApplicationTests(unittest.TestCase):
         self.assertIn("granite4.1:3b", rendered)
         self.assertIn("gemma3:4b", rendered)
         self.assertIn('<option value="qwen3.5:2b" selected', rendered)
+        self.assertIn("Yapay zeka modeli", rendered)
+        self.assertIn("qwen3.5:9b", rendered)
+        self.assertIn("Güçlü bilgisayarlar için", rendered)
+        self.assertIn("qwen3.5:4b", rendered)
+        self.assertIn("Orta seviye bilgisayarlar için", rendered)
+        self.assertIn("Hafif bilgisayarlar için", rendered)
+        self.assertIn("Kurulum", rendered)
         self.assertNotIn('id="model-help"', rendered)
 
     def test_index_does_not_show_default_model_when_ollama_is_unavailable(self):
@@ -134,7 +141,7 @@ class WebApplicationTests(unittest.TestCase):
         self.assertNotIn('<option value="qwen3.5:2b"', rendered)
         self.assertIn('<select id="model-select" name="model" required disabled>', rendered)
         self.assertIn('<button class="button" type="submit" disabled>', rendered)
-        self.assertIn("Önerilen yapay zeka modeli", rendered)
+        self.assertIn("Yapay zeka modeli", rendered)
         self.assertIn("ollama pull qwen3.5:2b", rendered)
         self.assertIn("macOS", rendered)
         self.assertIn("Windows", rendered)
