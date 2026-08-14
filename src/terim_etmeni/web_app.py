@@ -1,8 +1,8 @@
-"""Kurulum gerektirmeyen yerel tarayıcı arayüzü."""
+"""Türkiye Bilişim Derneği — Bilişim Terimleri Denetim Sistemi Web Arayüzü."""
 from __future__ import annotations
 
 import html
-import json
+import ipaddress
 import tempfile
 import threading
 import urllib.parse
@@ -11,464 +11,1183 @@ from email.parser import BytesParser
 from email.policy import default
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Optional
 
 from .config import Settings
-from .dictionary import DictionaryIndex
-from .ollama_client import OllamaClient, OllamaError
-from .pipeline import analyze_pdf
-from .reporting import write_reports
+from .dictionary_update import check_and_update
+from .service import AnalysisBusyError, AnalysisService
 
 
-MAX_UPLOAD_BYTES = 50 * 1024 * 1024
-
+MAX_REQUEST_BYTES = 60 * 1024 * 1024
+LOOPBACK_HOST_NAMES = {"localhost"}
 
 STYLE = """
-:root{--ink:#172033;--muted:#61708a;--line:#dbe3ee;--brand:#087f73;--brand2:#0f766e;--bg:#f4f7fb;--white:#fff;--found:#e7f8f2;--possible:#fff6d9;--missing:#feecec;--rejected:#edf1f7;--acronym:#f0f4ff;--low:#fff1e6}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}
-.top{background:linear-gradient(125deg,#073b4c,#087f73);color:#fff;padding:25px 24px 58px}.top-inner,.main{max-width:1120px;margin:auto}.eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.8}.top h1{font-size:30px;line-height:1.15;margin:5px 0}
-.main{margin-top:-34px;padding:0 20px 38px}.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 22px rgba(30,52,78,.07);padding:20px;margin-bottom:14px}
-.status{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border-radius:10px;background:#f6f9fc;margin-bottom:16px}.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px}.ok{background:#12a779}.bad{background:#dc4c64}.status small{color:var(--muted)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;font-size:13px;font-weight:750;margin-bottom:6px}.field input,.field select{width:100%;padding:10px 11px;border:1px solid #b9c6d8;border-radius:9px;background:#fff;color:var(--ink);font:inherit}.field input:focus,.field select:focus{outline:3px solid #bcece6;border-color:var(--brand)}
-.drop{grid-column:1/-1;border:2px dashed #9fb3c8;border-radius:12px;padding:17px;background:#f8fbfd}.drop input{border:0;padding:4px;background:transparent}.hint{font-size:12px;color:var(--muted);margin-top:5px}.button{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:9px;background:var(--brand);color:#fff;font-weight:800;font-size:14px;padding:11px 17px;cursor:pointer;margin-top:16px;min-width:180px}.button:hover{background:var(--brand2)}.button:disabled{opacity:.6;cursor:wait}.error{background:#fff0f1;color:#9e2638;border:1px solid #ffc8cf;border-radius:10px;padding:12px;margin-bottom:14px}
-.loading{display:none;margin-left:12px;color:var(--muted);font-size:12px}.loading.show{display:inline}.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}.metric{padding:10px 11px;border-radius:10px;border:1px solid var(--line);background:#fbfcfe}.metric b{font-size:21px;display:block;line-height:1.1}.metric span{font-size:11px;color:var(--muted)}.metric-dictionary_matches{background:var(--found)}.metric-possible_matches{background:var(--possible)}.metric-missing_terms{background:var(--missing)}.metric-rejected_candidates{background:var(--rejected)}
-.section{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}.section h3{margin:0;padding:10px 13px;font-size:14px}.found h3{background:var(--found)}.possible h3{background:var(--possible)}.missing h3{background:var(--missing)}.rejected h3{background:var(--rejected)}
-.terms{list-style:none;margin:0;padding:0}.terms li{padding:9px 13px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:14px}.term-main{font-weight:700;font-size:14px}.term-detail{color:var(--muted);font-size:12px}.evidence{white-space:nowrap;color:var(--muted);font-size:11px}.empty{padding:10px 13px;color:var(--muted);font-size:13px}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.link-button{display:inline-block;text-decoration:none;border:1px solid var(--brand);color:var(--brand);padding:9px 12px;border-radius:8px;font-weight:750;font-size:13px}.link-button:hover{background:#e9faf7}.footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px}
-.model-picker{grid-column:1/-1}.warnings{font-size:12px;color:#8b5d10;margin:8px 0}.intro{margin:0 0 16px;color:var(--muted);font-size:14px}.model-settings{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:#fbfcfe}.model-settings summary{cursor:pointer;padding:10px 12px;font-size:13px;font-weight:750}.model-settings .field{padding:0 12px 12px}
-.setup{padding:18px}.setup>summary{cursor:pointer;font-weight:800;font-size:14px}.setup-content{padding-top:14px}.setup h2{margin:0 0 10px;font-size:18px}.setup-grid,.model-grid{display:grid;gap:12px}.setup-grid{grid-template-columns:repeat(2,1fr)}.model-grid{grid-template-columns:repeat(3,1fr);margin-bottom:12px}.setup-step,.model-card{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fbfcfe}.setup-step b,.model-card b{display:block;margin-bottom:5px}.model-card p{margin:0;color:var(--muted);font-size:13px}.model-card.recommended{border-color:#72bdb2;background:#f2fbf9}.setup-step ol{margin:6px 0 0;padding-left:20px;font-size:13px}.setup-step li{margin:5px 0}.setup code{font-size:12px;overflow-wrap:anywhere}@media(max-width:700px){.setup-grid,.model-grid{grid-template-columns:1fr}}
-.result-head{background:linear-gradient(120deg,#073b4c,#087f73);color:#fff;border-radius:14px;padding:20px 22px;margin-bottom:14px;box-shadow:0 8px 22px rgba(7,59,76,.16)}.result-head h2{margin:4px 0;font-size:24px;overflow-wrap:anywhere}.result-meta{margin:0;color:#d9fffa;font-size:12px}.review-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(245px,.45fr);gap:14px}.review-panel{padding:17px}.review-panel h2{margin:0 0 3px;font-size:18px}.review-panel>p{margin:0 0 10px;color:var(--muted);font-size:12px}.review-section{margin-top:9px;border:1px solid var(--line);border-radius:10px}.review-section h3{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);border-radius:9px 9px 0 0;padding:9px 11px;margin:0;font-size:13px}.review-section.possible h3{background:var(--possible);border-bottom-color:#f2d994}.review-section.missing h3{background:var(--missing);border-bottom-color:#f3c3c3}.review-section.found h3{background:var(--found);border-bottom-color:#c8eedf}.review-section.rejected h3{background:var(--rejected);border-bottom-color:#d4dfea}.review-section.acronym h3{background:var(--acronym);border-bottom-color:#d0dcfa}.review-section.low h3{background:var(--low);border-bottom-color:#f1cdb6}.count-pill{font-size:11px;background:#fff;padding:1px 7px;border-radius:99px;border:1px solid rgba(0,0,0,.08)}.details{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:#fff}.details summary{cursor:pointer;padding:11px 13px;font-weight:750;color:var(--ink);font-size:13px}.details .section{margin:0;border:0;border-top:1px solid var(--line);border-radius:0}.result-actions{display:grid;gap:7px;margin-top:12px}.result-actions .link-button{text-align:center}.quality-note{border-left:4px solid var(--brand);background:#f2fbf9;padding:10px 11px;border-radius:0 9px 9px 0;font-size:12px;margin-top:12px}
-@media(max-width:700px){.grid,.review-layout{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.terms li{display:block}.evidence{margin-top:5px}.top h1{font-size:28px}.result-head h2{font-size:23px}}
+:root {
+  --bg-app: #f4f6f9;
+  --bg-surface: #ffffff;
+  --border-subtle: #d1d5db;
+  --border-strong: #9ca3af;
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #4b5563;
+  --tbd-navy: #1e3a5f;
+  --tbd-navy-hover: #152942;
+  --tbd-blue: #0284c7;
+  --tbd-blue-light: #f0f9ff;
+  --tbd-blue-border: #bae6fd;
+  --success-bg: #f0fdf4;
+  --success-text: #166534;
+  --success-border: #86efac;
+  --warning-bg: #fffbeb;
+  --warning-text: #92400e;
+  --warning-border: #fde68a;
+  --danger-bg: #fef2f2;
+  --danger-text: #991b1b;
+  --danger-border: #fca5a5;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-header {
+  background: var(--tbd-navy);
+  color: #ffffff;
+  border-bottom: 3px solid #0284c7;
+  padding: 24px 0 28px;
+}
+
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.header-title-block h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.header-title-block .institution {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #93c5fd;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: var(--radius-md);
+}
+
+.nav-tabs a {
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.nav-tabs a:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.nav-tabs a.active {
+  background: #ffffff;
+  color: var(--tbd-navy);
+}
+
+.header-description {
+  color: #cbd5e1;
+  font-size: 15px;
+  margin-top: 6px;
+}
+
+.main-content {
+  margin-top: 24px;
+  padding-bottom: 60px;
+}
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.card-intro {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.dict-status-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: var(--tbd-blue-light);
+  border: 1px solid var(--tbd-blue-border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.dict-status-box b {
+  display: block;
+  font-size: 16px;
+  color: var(--tbd-navy);
+}
+
+.dict-status-box span {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.upload-area {
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.upload-area label {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.upload-area input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: #f9fafb;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.form-group select, .form-group input[type="text"], .form-group input[type="password"] {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--text-primary);
+}
+
+.form-group select:focus, .form-group input:focus {
+  border-color: var(--tbd-navy);
+  outline: 2px solid var(--tbd-blue-border);
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--tbd-navy);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--tbd-navy-hover);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.btn-secondary:hover {
+  background: #f3f4f6;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+.notice {
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+}
+
+.notice-ok { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+.notice-warn { background: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
+.notice-danger { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+
+/* Results Screen */
+.summary-table-wrap {
+  margin-bottom: 24px;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.summary-table th {
+  background: #f8fafc;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.summary-table td {
+  padding: 14px 16px;
+  font-size: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: #ffffff;
+  padding: 14px 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+
+.filter-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-btn {
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: #ffffff;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.filter-btn.active, .filter-btn:hover {
+  background: var(--tbd-navy);
+  color: #ffffff;
+  border-color: var(--tbd-navy);
+}
+
+.term-entry {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+
+.term-entry[data-group="missing"] { border-left-color: #dc2626; }
+.term-entry[data-group="abbrev"] { border-left-color: #d97706; }
+.term-entry[data-group="found"] { border-left-color: #16a34a; }
+
+.term-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.term-heading {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.badge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+}
+
+.badge-missing { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.badge-abbrev { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.badge-found { background: #dcfce7; color: #166534; border-color: #86efac; }
+
+.term-context-box {
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-style: normal;
+}
+
+.term-meta-info {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 16px;
+}
+
+.export-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Loading Box */
+#loading-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(30, 58, 95, 0.85);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.loading-box {
+  background: #ffffff;
+  color: var(--text-primary);
+  padding: 32px 40px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.loading-box h3 {
+  font-size: 20px;
+  color: var(--tbd-navy);
+  margin-bottom: 8px;
+}
+
+.loading-box p {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 800px) {
+  .results-grid { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .header-top { flex-direction: column; align-items: flex-start; }
+}
 """
 
 
-SCRIPT = """
-document.addEventListener('DOMContentLoaded',()=>{const form=document.querySelector('#scan-form');if(form)form.addEventListener('submit',()=>{const button=form.querySelector('button');const loading=form.querySelector('.loading');button.disabled=true;button.textContent='Analiz ediliyor...';loading.classList.add('show')});});
-"""
+def _document(content: str, *, active_tab: str = "analyze", subtitle: str = "") -> str:
+    if not subtitle:
+        subtitles = {
+            "analyze": "İngilizce bilişim makalelerindeki teknik terimleri TBD Bilişim Sözlüğü ile denetleyiniz.",
+            "dictionary": "TBD Bilişim Terimleri Sözlüğü ve Kısaltmalar veritabanını inceleyiniz.",
+            "settings": "Bulut API sağlayıcısını ve model parametrelerini yapılandırınız.",
+        }
+        subtitle = subtitles.get(active_tab, "")
+
+    nav = f"""
+    <div class="nav-tabs">
+      <a href="/" class="{'active' if active_tab == 'analyze' else ''}">Makale Analizi</a>
+      <a href="/dictionary" class="{'active' if active_tab == 'dictionary' else ''}">Sözlük Yönetimi</a>
+      <a href="/settings" class="{'active' if active_tab == 'settings' else ''}">API Ayarları</a>
+    </div>
+    """
+
+    return f"""<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Türkçe Terim Etmeni — TBD Bilişim</title>
+  <style>{STYLE}</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="wrap">
+      <div class="header-top">
+        <div class="header-title-block">
+          <div class="institution">Türkiye Bilişim Derneği</div>
+          <h1>Türkçe Terim Etmeni</h1>
+        </div>
+        {nav}
+      </div>
+      <p class="header-description">{html.escape(subtitle)}</p>
+    </div>
+  </header>
+
+  <main class="wrap main-content">
+    {content}
+    <div class="footer">
+      Son karar insan incelemesiyle verilir; sözlük otomatik değiştirilmez.
+      <br>
+      Türkiye Bilişim Derneği (TBD) Bilişimde Özenli Türkçe Çalışma Grubu için hazırlanmıştır.
+    </div>
+  </main>
+
+  <div id="loading-overlay">
+    <div class="loading-box">
+      <h3>Belge Analiz Ediliyor</h3>
+      <p>Makale metni inceleniyor, teknik terimler çıkarılıyor ve güncel TBD sözlük kayıtları ile karşılaştırılıyor. Lütfen bekleyiniz...</p>
+    </div>
+  </div>
+
+  <script>
+    function showLoading() {{
+      var overlay = document.getElementById('loading-overlay');
+      if (overlay) overlay.style.display = 'flex';
+    }}
+
+    function filterTerms(group) {{
+      var items = document.querySelectorAll('.term-entry');
+      var pills = document.querySelectorAll('.filter-btn');
+      pills.forEach(function(p) {{ p.classList.remove('active'); }});
+      if (window.event && window.event.target && window.event.target.classList) {{
+        window.event.target.classList.add('active');
+      }}
+
+      var query = (document.getElementById('term-search')?.value || '').toLowerCase();
+
+      items.forEach(function(item) {{
+        var itemGroup = item.getAttribute('data-group');
+        var termText = item.querySelector('.term-heading')?.textContent.toLowerCase() || '';
+        var matchGroup = (group === 'all' || itemGroup === group);
+        var matchQuery = (!query || termText.includes(query));
+        item.style.display = (matchGroup && matchQuery) ? 'block' : 'none';
+      }});
+    }}
+
+    function searchTerms() {{
+      var activePill = document.querySelector('.filter-btn.active');
+      var group = activePill ? activePill.getAttribute('data-filter') : 'all';
+      filterTerms(group);
+    }}
+  </script>
+</body>
+</html>"""
 
 
-def _document(content: str) -> str:
-    return """<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Türkçe Terim Etmeni</title><style>{}</style></head><body><header class="top"><div class="top-inner"><div class="eyebrow">Yerel PDF Analizi</div><h1>Türkçe Terim Etmeni</h1></div></header><main class="main">{}</main><script>{}</script></body></html>""".format(STYLE, content, SCRIPT)
+def _status_card(service: AnalysisService) -> str:
+    status = service.dictionary_status()
+    return f"""
+    <div class="dict-status-box">
+      <div>
+        <b>Güncel sözlük: {html.escape(status.version)}</b>
+        <span>{status.record_count:,} kayıt · {status.unique_count:,} benzersiz İngilizce terim</span>
+      </div>
+      <a class="btn btn-secondary btn-sm" href="/dictionary">Sözlüğü yönet</a>
+    </div>
+    """
 
 
-def _item_html(item: dict[str, object], group: str) -> str:
-    term = html.escape(str(item.get("term", "")))
-    detail = ""
-    if group == "dictionary_matches":
-        detail = "Türkçe: " + " | ".join(
-            html.escape(str(value)) for value in item.get("translations", [])
-        )
-    elif group == "possible_matches":
-        matches = item.get("possible_dictionary_terms", [])
-        detail = "Olası: " + " | ".join(
-            "{} → {}".format(
-                html.escape(str(value.get("en", ""))),
-                html.escape(str(value.get("tr", ""))),
-            )
-            for value in matches
-            if isinstance(value, dict)
-        )
-    elif group == "missing_terms":
-        priority = {"high": "Yüksek güven", "medium": "Kontrol edilmeli"}.get(
-            str(item.get("review_priority", "high")), "Kontrol edilmeli"
-        )
-        detail = "{} · sözlükte eşleşme bulunamadı".format(priority)
+def index_html(service: AnalysisService, message: str = "", message_type: str = "failed") -> str:
+    notice_cls = "notice-ok" if message_type == "ok" else ("notice-warn" if message_type == "current" else "notice-danger")
+    notice = f'<div class="notice {notice_cls}">{html.escape(message)}</div>' if message else ""
+
+    if service.using_api():
+        status = service.provider_status()
+        if not status["has_key"]:
+            notice += '<div class="notice notice-warn"><b>Bulut API ayarlanmamış.</b> <a href="/settings" style="color:inherit; font-weight:700;">Ayarlar</a> sayfasından sağlayıcı ve anahtar girin ya da yerel Ollama modeli kullanın.</div>'
+        
+        engine_info = f"""
+        <div style="background:#f8fafc; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:20px; font-size:14px; color:var(--text-secondary);">
+          <b>Çalışma Modu:</b> Bulut API (Sağlayıcı: <b>{html.escape(status['provider'])}</b>, Model: <code>{html.escape(status['model'])}</code>). PDF içeriği analiz sırasında bu sağlayıcıya gönderilir.
+          <a href="/settings" style="margin-left:12px; color:var(--tbd-navy); text-decoration:underline; font-weight:600;">Ayarları Değiştir</a>
+        </div>
+        """
+        model_field = ""
     else:
-        detail = "Düşük güvenli aday"
-    pages = ", ".join(str(value) for value in item.get("pages", []))
-    evidence = "Sayfa {} · {} geçiş".format(
-        html.escape(pages or "-"), html.escape(str(item.get("occurrence_count", 0)))
-    )
-    return '<li><div><div class="term-main">{}</div><div class="term-detail">{}</div></div><div class="evidence">{}</div></li>'.format(
-        term, detail, evidence
-    )
-
-
-def result_html(result: dict[str, object], json_name: str, csv_name: str, xlsx_name: str = "") -> str:
-    if not xlsx_name:
-        xlsx_name = csv_name.replace("_terim_raporu.csv", "_terim_raporu.xlsx")
-    raw_missing = result.get("missing_terms", [])
-    raw_missing = raw_missing if isinstance(raw_missing, list) else []
-    reviewable_missing = [
-        item for item in raw_missing
-        if isinstance(item, dict) and item.get("review_priority") != "low"
-    ]
-    # Eski raporlarda öncelik alanı yoktur; geriye dönük olarak ana listede kalır.
-    high_missing = [
-        item for item in reviewable_missing
-        if item.get("review_priority") in (None, "high")
-    ]
-    medium_missing = [
-        item for item in reviewable_missing
-        if item.get("review_priority") == "medium"
-    ]
-    # Eski raporlar açıldığında düşük güvenli adayları ana karar listesine sokma.
-    legacy_low = [
-        item for item in raw_missing
-        if isinstance(item, dict) and item.get("review_priority") == "low"
-    ]
-    possible_values = result.get("possible_matches", [])
-    possible = [item for item in possible_values if isinstance(item, dict)] if isinstance(possible_values, list) else []
-    found_values = result.get("dictionary_matches", [])
-    found = [item for item in found_values if isinstance(item, dict)] if isinstance(found_values, list) else []
-    rejected_values = result.get("rejected_candidates", [])
-    rejected = [item for item in rejected_values if isinstance(item, dict)] if isinstance(rejected_values, list) else []
-    rejected.extend(legacy_low)
-
-    def section(key: str, css_class: str, title: str, values: list[dict[str, object]]) -> str:
-        body = "".join(_item_html(item, key) for item in values)
-        if not body:
-            body = '<div class="empty">Bu grupta terim yok.</div>'
-        return '<div class="review-section {}"><h3>{} <span class="count-pill">{}</span></h3><ul class="terms">{}</ul></div>'.format(
-            css_class, title, len(values), body
+        models, model_error = service.installed_models()
+        configured = service.settings.model if service.settings.model in models else ""
+        selected = configured or (models[0] if len(models) == 1 else "")
+        options = '<option value="" disabled{}>Bir model seçin</option>'.format("" if selected else " selected")
+        options += "".join(
+            '<option value="{}"{}>{}</option>'.format(
+                html.escape(model, quote=True), " selected" if model == selected else "", html.escape(model)
+            )
+            for model in models
         )
+        if not models:
+            options = '<option value="">Ollama modeli bulunamadı</option>'
+        if model_error:
+            notice += f'<div class="notice notice-danger"><b>Analiz motoruna bağlanılamadı.</b> {html.escape(model_error)}</div>'
 
-    missing_section = section(
-        "missing_terms", "missing", "Öncelikli sözlük açıkları", high_missing
-    )
-    medium_section = section(
-        "missing_terms", "low", "İkincil inceleme adayları", medium_missing
-    )
-    possible_section = section("possible_matches", "possible", "Yakın sözlük eşleşmeleri", possible)
-    found_section = section("dictionary_matches", "found", "Sözlükte bulunan terimler", found)
-    rejected_section = section("rejected_candidates", "rejected", "Elenen düşük güvenli adaylar", rejected)
-    metric_values = [
-        ("missing_terms", len(high_missing), "Öncelikli açık"),
-        ("possible_matches", len(possible), "Yakın eşleşme"),
-        ("dictionary_matches", len(found), "Sözlükte bulunan"),
-        ("rejected_candidates", len(rejected), "Elenen"),
-    ]
-    metric_html = "".join(
-        '<div class="metric metric-{}"><b>{}</b><span>{}</span></div>'.format(key, value, label)
-        for key, value, label in metric_values
-    )
-    warnings = result.get("processing_warnings", [])
-    status = result.get("analysis_status", "complete")
-    failed_chunks = result.get("failed_chunk_count", 0)
+        engine_info = """
+        <div style="background:#f8fafc; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:20px; font-size:14px; color:var(--text-secondary);">
+          <b>Çalışma Modu:</b> Yerel Ollama Motoru (Bilgisayarınızdaki yerel model kullanılır).
+          <a href="/settings" style="margin-left:12px; color:var(--tbd-navy); text-decoration:underline; font-weight:600;">Bulut API'ye Geç</a>
+        </div>
+        """
+        model_field = f"""
+        <div class="form-group">
+          <label for="model-select">Yerel analiz modeli</label>
+          <select id="model-select" name="model" required>
+            {options}
+          </select>
+        </div>
+        """
+
+    content = f"""
+    {notice}
+    {_status_card(service)}
+
+    <section class="card">
+      <h2 class="card-title">Makale analizi</h2>
+      <p class="card-intro">Metin katmanı bulunan İngilizce PDF'yi seçin. Sonuçta önce sözlükte bulunmayan terimler gösterilir.</p>
+
+      {engine_info}
+
+      <form action="/analyze" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+        <div class="upload-area">
+          <label for="pdf-input">Makale PDF'si</label>
+          <input type="file" id="pdf-input" name="pdf" accept="application/pdf,.pdf" required>
+        </div>
+
+        {model_field}
+
+        <button class="btn btn-primary" type="submit" style="margin-top:10px; font-size:16px;">
+          Eksik terimleri bul
+        </button>
+      </form>
+    </section>
+    """
+    return _document(content, active_tab="analyze")
+
+
+def result_html(result: dict[str, object], links: dict[str, str]) -> str:
+    missing = [item for item in result.get("missing_terms", []) if isinstance(item, dict)]
+    possible = [item for item in result.get("possible_matches", []) if isinstance(item, dict)]
+    found = [item for item in result.get("dictionary_matches", []) if isinstance(item, dict)]
+    
+    doc_name = str(result.get("document", "Belge"))
+    model_name = str(result.get("model", "Model"))
+    dict_version = str(result.get("dictionary_version", ""))
+    status = str(result.get("analysis_status", "complete"))
+    warnings_list = result.get("processing_warnings", [])
+    first_warn = str(warnings_list[0]) if isinstance(warnings_list, list) and warnings_list else ""
+
     if status == "failed":
-        warning_html = (
-            '<div class="error"><b>Model analizi tamamlanamadı.</b> '
-            'Hiçbir metin parçasından model yanıtı alınamadı. Aşağıdaki sayılar '
-            'yalnız deterministik sözlük taramasıdır; “0 eksik” anlamına gelmez. '
-            'Modeli veya Ollama bağlantısını denetleyip belgeyi yeniden tarayın.</div>'
+        detail_msg = f"<div style='background:#fef2f2; border:1px solid #fca5a5; border-radius:var(--radius-sm); padding:14px 18px; margin:16px 0 20px; color:#991b1b; font-size:14px; word-break:break-word;'><b>Hata Ayrıntısı:</b> {html.escape(first_warn or 'Bilinmeyen bağlantı veya model hatası.')}</div>" if first_warn else ""
+        content = f"""
+        <div class="card" style="border-left: 4px solid var(--danger-text); padding: 24px 28px;">
+          <h2 style="color:var(--danger-text); font-size:20px; margin-bottom:10px;">Analiz Tamamlanamadı</h2>
+          <p style="font-size:15px; color:var(--text-secondary); line-height:1.7;">
+            Model veya API sağlayıcısı belgeyi işleyemediği için analiz tamamlanamadı. <b>Bu sonuç “0 eksik terim” olarak yorumlanmamalıdır.</b> Hatalı durum için boş/geçersiz rapor dosyası üretilmemiştir.
+          </p>
+          {detail_msg}
+          <div style="font-size:14px; color:var(--text-secondary); margin-bottom:20px; line-height:1.6;">
+            <b>Önerilen İşlem:</b> Eğer API hatası (401 Yetkilendirme, 404 Model Bulunamadı veya 429 Kota Aşımı) aldıysanız, lütfen <b>API Ayarları</b> sayfasından seçtiğiniz sağlayıcıyı ve API anahtarınızı kontrol ediniz.
+          </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <a class="btn btn-primary btn-sm" href="/settings">API Ayarlarını Kontrol Et</a>
+            <a class="btn btn-secondary btn-sm" href="/">Yeni Belge Yükle</a>
+          </div>
+        </div>
+        """
+        return _document(content, active_tab="analyze", subtitle=f"Analiz Başarısız: {html.escape(doc_name)}")
+
+    warning = ""
+    if status != "complete":
+        detail_msg = f"<br><span style='color:var(--danger-text); font-size:13px; display:block; margin-top:4px;'><b>Hata Ayrıntısı:</b> {html.escape(first_warn)}</span>" if first_warn else ""
+        warning = '<div class="notice notice-warn"><b>Analiz {}.</b> Bu sonuç “0 eksik terim” olarak yorumlanmamalıdır.{}</div>'.format(
+            "kısmi tamamlandı" if status == "partial" else "tamamlanamadı", detail_msg
         )
-    elif status == "partial":
-        review = result.get("technical_review", {})
-        review_failed = isinstance(review, dict) and review.get("status") == "failed"
-        if failed_chunks:
-            message = (
-                "{} metin parçası model yanıtı olmadan atlandı; "
-                "eksik terim listesi tam olmayabilir."
-            ).format(html.escape(str(failed_chunks)))
-        elif review_failed:
-            message = (
-                "İkinci model doğrulaması tamamlanamadı; sonuçlar kaynak, tekrar "
-                "ve ilk model sinyaliyle puanlandı."
-            )
-        else:
-            message = "Analizin bir bölümü tamamlanamadı; sonuçları dikkatle inceleyin."
-        warning_html = '<div class="warnings"><b>Eksik analiz:</b> {}</div>'.format(message)
-    elif warnings:
-        warning_html = '<div class="warnings">Model doğrulama uyarısı: {}</div>'.format(
-            html.escape(" | ".join(str(value) for value in warnings))
-        )
-    else:
-        warning_html = ""
-    status_label = "Analiz tamamlandı" if status == "complete" else "Analiz eksik kaldı"
-    return '<section class="result-head"><div class="eyebrow">{}</div><h2>{}</h2><p class="result-meta">{} sayfa · Model: {} · Sözlük sürümü: {}</p></section>{}<div class="review-layout"><section class="card review-panel"><h2>Karar listesi</h2><p>Önce aşağıdaki güçlü sözlük açıklarını doğrulayın. İkincil ve denetim listeleri kapalı tutulur.</p>{}{}<details class="details"><summary>İkincil inceleme adayları ({})</summary>{}</details><details class="details"><summary>Sözlükte bulunanlar ({})</summary>{}</details><details class="details"><summary>Elenen adaylar ({})</summary>{}</details></section><aside class="card review-panel"><h2>Rapor özeti</h2><div class="summary">{}</div><div class="quality-note">Ana sayı yalnız yüksek güvenli sözlük açıklarını gösterir. Orta güvenli adaylar kaybolmaz; ikincil listede ve raporlarda tutulur.</div><div class="result-actions"><a class="link-button primary" href="/reports/{}">Excel Raporunu indir</a><a class="link-button" href="/reports/{}">İnceleme CSV’sini indir</a><a class="link-button" href="/reports/{}">Teknik JSON’u indir</a><a class="link-button" href="/">Yeni PDF tara</a></div></aside></div>'.format(
-        status_label,
-        html.escape(str(result.get("document", "Analiz sonucu"))),
-        html.escape(str(result.get("page_count", ""))),
-        html.escape(str(result.get("model", ""))),
-        html.escape(str(result.get("dictionary_version", ""))),
-        warning_html,
-        missing_section,
-        possible_section,
-        len(medium_missing),
-        medium_section,
-        len(found),
-        found_section,
-        len(rejected),
-        rejected_section,
-        metric_html,
-        urllib.parse.quote(xlsx_name),
-        urllib.parse.quote(csv_name),
-        urllib.parse.quote(json_name),
+
+
+    # Render Entries
+    entries_html = []
+    
+    # 1. Missing Terms (İnceleme Gerekli)
+    for item in missing:
+        term = str(item.get("term", ""))
+        context = str(item.get("context", ""))
+        pages = ", ".join(str(p) for p in item.get("pages", []))
+        count = str(item.get("occurrence_count", 1))
+        entries_html.append(f"""
+        <div class="term-entry" data-group="missing">
+          <div class="term-top">
+            <span class="term-heading">{html.escape(term)}</span>
+            <span class="badge badge-missing">Sözlükte Bulunmayan Terim</span>
+          </div>
+          {f'<div class="term-context-box"><b>Metin Bağlamı:</b> “{html.escape(context)}”</div>' if context else ''}
+          <div class="term-meta-info">
+            <span>Sayfa Numaraları: {html.escape(pages or '-')}</span>
+            <span>Metindeki Geçiş Sayısı: {count}</span>
+          </div>
+        </div>
+        """)
+
+    # 2. Possible Matches / Abbreviations
+    for item in possible:
+        term = str(item.get("term", ""))
+        context = str(item.get("context", ""))
+        pages = ", ".join(str(p) for p in item.get("pages", []))
+        count = str(item.get("occurrence_count", 1))
+        suggestions = item.get("possible_dictionary_terms", [])
+        expansions = " | ".join(
+            f"{v.get('en', '')} → {v.get('tr', '')}" for v in suggestions if isinstance(v, dict)
+        ) if isinstance(suggestions, list) else ""
+
+        entries_html.append(f"""
+        <div class="term-entry" data-group="abbrev">
+          <div class="term-top">
+            <span class="term-heading">{html.escape(term)}</span>
+            <span class="badge badge-abbrev">Kısaltma kaynağında</span>
+          </div>
+          {f'<div style="font-size:14px; color:var(--warning-text); margin-bottom:8px;"><b>Kısaltma Açılımı ve Karşılığı:</b> {html.escape(expansions)}</div>' if expansions else ''}
+          {f'<div class="term-context-box"><b>Metin Bağlamı:</b> “{html.escape(context)}”</div>' if context else ''}
+          <div class="term-meta-info">
+            <span>Sayfa Numaraları: {html.escape(pages or '-')}</span>
+            <span>Metindeki Geçiş Sayısı: {count}</span>
+          </div>
+        </div>
+        """)
+
+    # 3. Found Terms
+    for item in found:
+        term = str(item.get("term", ""))
+        translations = ", ".join(str(t) for t in item.get("translations", []))
+        pages = ", ".join(str(p) for p in item.get("pages", []))
+        count = str(item.get("occurrence_count", 1))
+        match_type = str(item.get("match_type", "exact"))
+        tag_label = "Sözlükte Kayıtlı" if match_type == "exact" else "Sözlükte Kayıtlı (Çoğul Eşleşme)"
+
+        entries_html.append(f"""
+        <div class="term-entry" data-group="found">
+          <div class="term-top">
+            <span class="term-heading">{html.escape(term)}</span>
+            <span class="badge badge-found">{tag_label}</span>
+          </div>
+          <div style="font-size:15px; color:var(--success-text); font-weight:700; margin-bottom:6px;">
+            Türkçe Karşılık: {html.escape(translations)}
+          </div>
+          <div class="term-meta-info">
+            <span>Sayfa Numaraları: {html.escape(pages or '-')}</span>
+            <span>Metindeki Geçiş Sayısı: {count}</span>
+          </div>
+        </div>
+        """)
+
+    rendered_entries = "".join(entries_html) if entries_html else '<p style="color:var(--text-muted); text-align:center; padding:20px;">İncelenecek terim bulunamadı.</p>'
+
+    content = f"""
+    {warning}
+
+    <div class="summary-table-wrap">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>İnceleme Gereken (Eksik Terim)</th>
+            <th>TBD Kısaltma Kaynağında</th>
+            <th>Sözlükte Bulunan Terimler</th>
+            <th>Toplam Çıkarılan Terim</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#b91c1c; font-weight:700; font-size:20px;">{len(missing)}</td>
+            <td style="color:#b45309; font-weight:700; font-size:20px;">{len(possible)}</td>
+            <td style="color:#15803d; font-weight:700; font-size:20px;">{len(found)}</td>
+            <td style="font-weight:700; font-size:20px;">{len(missing) + len(possible) + len(found)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="results-grid">
+      <div>
+        <div class="filter-bar">
+          <input type="text" id="term-search" class="filter-input" placeholder="Sonuç listesinde terim arayınız..." oninput="searchTerms()">
+          <div class="filter-tabs">
+            <button class="filter-btn active" data-filter="all" onclick="filterTerms('all')">Tümü ({len(missing) + len(possible) + len(found)})</button>
+            <button class="filter-btn" data-filter="missing" onclick="filterTerms('missing')">Eksikler ({len(missing)})</button>
+            <button class="filter-btn" data-filter="abbrev" onclick="filterTerms('abbrev')">Kısaltmalar ({len(possible)})</button>
+            <button class="filter-btn" data-filter="found" onclick="filterTerms('found')">Bulunanlar ({len(found)})</button>
+          </div>
+        </div>
+
+        <div class="term-list">
+          {rendered_entries}
+        </div>
+      </div>
+
+      <aside>
+        <div class="card" style="padding:20px;">
+          <h3 style="font-size:16px; font-weight:700; color:var(--tbd-navy); margin-bottom:14px; border-bottom:1px solid var(--border-subtle); padding-bottom:6px;">
+            Rapor Dosyaları
+          </h3>
+          <div class="export-panel">
+            <a class="btn btn-primary btn-sm btn-block" href="/reports/{urllib.parse.quote(links['xlsx'])}">Excel Raporunu İndir (.xlsx)</a>
+            <a class="btn btn-secondary btn-sm btn-block" href="/reports/{urllib.parse.quote(links['csv'])}">CSV Raporunu İndir (.csv)</a>
+            <a class="btn btn-secondary btn-sm btn-block" href="/reports/{urllib.parse.quote(links['json'])}">Teknik JSON Dosyası (.json)</a>
+          </div>
+
+          <hr style="border:0; border-top:1px solid var(--border-subtle); margin:18px 0;">
+
+          <div style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
+            <div><b>İncelenen Belge:</b> {html.escape(doc_name)}</div>
+            <div><b>Analiz Modeli:</b> {html.escape(model_name)}</div>
+            <div><b>TBD Sözlük Sürümü:</b> {html.escape(dict_version)}</div>
+          </div>
+
+          <a class="btn btn-secondary btn-block btn-sm" href="/" style="margin-top:18px;">Yeni Belge İncele</a>
+        </div>
+      </aside>
+    </div>
+    """
+    return _document(content, active_tab="analyze", subtitle=f"İnceleme Sonuçları: {html.escape(doc_name)}")
+
+
+def dictionary_html(service: AnalysisService, message: str = "", message_type: str = "ok") -> str:
+    status = service.dictionary_status()
+    abbreviation_status = service.abbreviations.metadata
+    notice_cls = "notice-ok" if message_type == "ok" else "notice-danger"
+    notice = f'<div class="notice {notice_cls}">{html.escape(message)}</div>' if message else ""
+
+    content = f"""
+    {notice}
+
+    <div class="grid-2">
+      <section class="card">
+        <h2 class="card-title">Etkin Sözlük</h2>
+        <p class="card-intro">İngilizce → Türkçe ana bilişim sözlüğü veritabanı.</p>
+        
+        <div style="font-size:15px; line-height:1.9; margin-bottom:24px;">
+          <div><b>Sözlük Sürümü:</b> {html.escape(status.version)}</div>
+          <div><b>Toplam Terim Kaydı:</b> {status.record_count:,}</div>
+          <div><b>Benzersiz İngilizce Terim:</b> {status.unique_count:,}</div>
+          <div><b>Kaynak:</b> {html.escape(status.source)}</div>
+        </div>
+
+        <form action="/dictionary/check" method="post">
+          <button class="btn btn-primary btn-sm" type="submit">TBD sitesini kontrol et</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">Ayrı kısaltma kaynağı</h2>
+        <p class="card-intro">Resmî TBD Kısaltmalar tablosu veritabanı.</p>
+
+        <div style="font-size:15px; line-height:1.9; margin-bottom:24px;">
+          <div><b>Kısaltma Sürümü:</b> {html.escape(str(abbreviation_status.get('version', '')))}</div>
+          <div><b>Okunan Kayıt Sayısı:</b> {int(abbreviation_status.get('raw_record_count', 0)):,}</div>
+          <div><b>Benzersiz Kısaltma Sayısı:</b> {int(abbreviation_status.get('unique_abbreviation_count', 0)):,}</div>
+        </div>
+        <p style="font-size:14px; color:var(--text-muted);">Ana sözlüğe birleştirilmez; eşleşmeler raporda kaynak etiketiyle gösterilir.</p>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2 class="card-title">Sözlük PDF'sini elle yükle</h2>
+      <p class="card-intro">Site otomatik erişime izin vermezse resmî İngilizce–Türkçe PDF burada doğrulanabilir.</p>
+
+      <form action="/dictionary/import" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="dict-pdf">TBD Sözlük PDF Belgesi Seçiniz</label>
+          <input type="file" id="dict-pdf" name="dictionary" accept="application/pdf,.pdf" required>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="submit">Doğrula ve etkinleştir</button>
+      </form>
+    </section>
+    """
+    return _document(content, active_tab="dictionary")
+
+
+def settings_html(service: AnalysisService, message: str = "", message_type: str = "ok") -> str:
+    status = service.provider_status()
+    notice_cls = "notice-ok" if message_type == "ok" else "notice-danger"
+    notice = f'<div class="notice {notice_cls}">{html.escape(message)}</div>' if message else ""
+
+    providers = [
+        ("google", "Google (Gemini)"),
+        ("deepseek", "DeepSeek"),
+        ("openai", "OpenAI"),
+        ("anthropic", "Anthropic (Claude)"),
+        ("ollama", "Yerel Ollama (Cihazdaki Yerel Model)"),
+    ]
+    provider_options = "".join(
+        f'<option value="{name}"{" selected" if name == status["provider"] else ""}>{label}</option>'
+        for name, label in providers
     )
+    key_note = "Kayıtlı bir anahtar var (korunuyor)." if status["has_key"] else "Henüz anahtar girilmedi."
+    key_placeholder = "•••••••••••••••• (Kayıtlı anahtar korunuyor; değiştirmek için yeni giriniz)" if status["has_key"] else "API anahtarını buraya giriniz"
+
+    content = f"""
+    {notice}
+
+    <section class="card">
+      <h2 class="card-title">Bulut API ayarları</h2>
+      <p class="card-intro">API anahtarı yalnızca bu bilgisayardaki yerel ayar dosyasında saklanır; asla Git'e eklenmez ve dışarı sızdırılmaz.</p>
+
+      <div class="notice notice-warn">
+        <b>Mevcut Durum:</b> Sağlayıcı: <b>{html.escape(status['provider'])}</b> · Model: <code>{html.escape(status['model'])}</code> · {key_note}
+      </div>
+
+      <form action="/settings/save" method="post">
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="provider-select">Sağlayıcı</label>
+            <select id="provider-select" name="provider" required>
+              {provider_options}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="model-input">Model Adı</label>
+            <input type="text" id="model-input" name="model" value="{html.escape(status['model'], quote=True)}" placeholder="Kullanmak istediğiniz güncel model adı">
+            <span style="font-size:13px; color:var(--text-muted);">Hesabınızda tanımlı olan güncel model adını yazınız.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="key-input">API Anahtarı</label>
+            <input type="password" id="key-input" name="api_key" value="" placeholder="{key_placeholder}">
+            <span style="font-size:13px; color:var(--text-muted);">Değiştirmek istemiyorsanız bu alanı boş bırakabilirsiniz.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="url-input">Sunucu Adresi (İsteğe bağlı)</label>
+            <input type="text" id="url-input" name="base_url" value="{html.escape(status.get('custom_base_url', ''), quote=True)}" placeholder="Boş bırakılırsa sağlayıcının resmî adresi kullanılır">
+            <span style="font-size:13px; color:var(--text-muted);">Boş bırakıldığında doğrudan resmî bulut adresi kullanılır. Yalnızca özel yerel sunucu veya vekil sunucu (proxy) varsa yazınız.</span>
+          </div>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:16px 20px; margin: 16px 0 24px;">
+          <b style="font-size:15px; display:block; margin-bottom:8px; color:var(--tbd-navy);">Sağlayıcıların Resmî Dokümantasyon Sayfaları:</b>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:10px;">
+            Yapay zekâ sağlayıcıları model isimlerini zamanla güncelleyebilir. Hesabınızın desteklediği güncel modeller ve yetkiler için ilgili bağlantıyı inceleyebilirsiniz:
+          </p>
+          <ul style="font-size:14px; line-height:1.9; padding-left:20px; color:var(--text-secondary);">
+            <li><b>DeepSeek API:</b> <a href="https://api-docs.deepseek.com/" target="_blank" rel="noopener">https://api-docs.deepseek.com/</a></li>
+            <li><b>OpenAI API:</b> <a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener">https://platform.openai.com/docs/models</a></li>
+            <li><b>Anthropic Claude API:</b> <a href="https://docs.anthropic.com/en/docs/about-claude/models" target="_blank" rel="noopener">https://docs.anthropic.com/en/docs/about-claude/models</a></li>
+            <li><b>Google Gemini API:</b> <a href="https://ai.google.dev/gemini-api/docs/models/gemini" target="_blank" rel="noopener">https://ai.google.dev/gemini-api/docs/models/gemini</a></li>
+          </ul>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Ayarları Kaydet</button>
+      </form>
+    </section>
+    """
+    return _document(content, active_tab="settings", subtitle="Analiz modeli sağlayıcı ayarları")
 
 
-def _preferred_installed_model(models: list[str], configured: str) -> str:
-    """Yalnız açık OLLAMA_MODEL ayarı kuruluysa ön seçim yapar."""
-    return configured if configured in models else ""
 
 
-def _model_label(name: str, selected: bool = False) -> str:
-    suffix = " · ortam ayarı" if selected else ""
-    return "{}{}".format(name, suffix)
-
-
-def _setup_html() -> str:
-    """Model seçimi ve her bilgisayarda görünen kısa kurulum yönergesi."""
-    return """<details class="card setup"><summary>Kurulum ve model rehberi</summary><div class="setup-content"><h2>Model seçimi</h2>
-<p class="intro">Uygulama belirli bir modele bağlı değildir. Ollama'da kurulu modeller otomatik listelenir; her analizde kullanacağınız modeli siz seçersiniz.</p>
-<div class="model-grid"><div class="model-card recommended"><b>Küçük modeller · Önerilen: qwen3.5:2b</b><p>Daha hızlı ve düşük bellek kullanımı</p></div>
-<div class="model-card recommended"><b>Orta modeller · Önerilen: qwen3.5:4b</b><p>Hız ve terim bulma dengesi</p></div>
-<div class="model-card recommended"><b>Büyük modeller · Önerilen: qwen3.5:9b</b><p>Daha güçlü donanım ve daha uzun analiz</p></div></div>
-<h2>Kurulum</h2>
-<div class="setup-grid"><div class="setup-step"><b>macOS</b><ol>
-<li><a href="https://ollama.com/download" target="_blank" rel="noreferrer">Ollama'yı indirip kurun</a>.</li>
-<li>Terminal'i açın ve seçtiğiniz güncel model için <code>ollama pull MODEL_ETIKETI</code> komutunu çalıştırın.</li>
-<li>Bu sayfayı yenileyin.</li></ol></div>
-<div class="setup-step"><b>Windows</b><ol>
-<li><a href="https://ollama.com/download" target="_blank" rel="noreferrer">Ollama'yı indirip kurun</a>.</li>
-<li>PowerShell'i açın ve seçtiğiniz güncel model için <code>ollama pull MODEL_ETIKETI</code> komutunu çalıştırın.</li>
-<li>Bu sayfayı yenileyin.</li></ol></div></div></div></details>"""
-
-
-class WebApplication:
-    def __init__(self, settings: Optional[Settings] = None) -> None:
-        self.settings = settings or Settings()
-        self.dictionary = DictionaryIndex.load(self.settings.dictionary_path)
-
-    def model_status(self) -> tuple[list[str], Optional[str]]:
-        try:
-            client = OllamaClient(self.settings.ollama_url, self.settings.model, timeout=2)
-            return client.installed_models(), None
-        except OllamaError as error:
-            return [], str(error)
-
-    def index_html(self, error_message: str = "") -> str:
-        models, connection_error = self.model_status()
-        selected = ""
-        if connection_error:
-            status = '<div><span class="dot bad"></span><b>Ollama bağlantısı yok</b><br><small>{}</small></div>'.format(
-                html.escape(connection_error)
-            )
-            options = '<option value="">Ollama kurulmadı veya çalışmıyor</option>'
-            model_disabled = " disabled"
-            submit_disabled = " disabled"
-        else:
-            status = '<div><span class="dot ok"></span><b>Ollama hazır</b><br><small>{} model bulundu</small></div>'.format(
-                len(models)
-            )
-            selected = _preferred_installed_model(models, self.settings.model)
-            placeholder = '<option value="" disabled{}>Bir model seçin</option>'.format(
-                "" if selected else " selected"
-            )
-            options = placeholder + "".join(
-                '<option value="{}"{}>{}</option>'.format(
-                    html.escape(name, quote=True),
-                    " selected" if name == selected else "",
-                    html.escape(_model_label(name, name == selected)),
-                )
-                for name in models
-            )
-            if not models:
-                options = '<option value="">Kurulu Ollama modeli bulunamadı</option>'
-                model_disabled = " disabled"
-                submit_disabled = " disabled"
-            else:
-                model_disabled = ""
-                submit_disabled = ""
-        error_box = '<div class="error"><b>Analiz tamamlanamadı:</b> {}</div>'.format(
-            html.escape(error_message)
-        ) if error_message else ""
-        selected_label = _model_label(selected, True) if selected else "Model seçin"
-        content = '{}<div class="card"><div class="status">{}<small>Sözlük: {:,} terim</small></div><p class="intro">PDF’yi seçin; uygulama yalnız sözlükte bulunmayan, incelenmeye değer terimleri öne çıkarsın.</p><form id="scan-form" action="/analyze" method="post" enctype="multipart/form-data"><div class="grid"><div class="field drop"><label>İngilizce makaleyi seçin</label><input type="file" name="pdf" accept="application/pdf,.pdf" required></div></div><details class="model-settings"><summary>{}</summary><div class="field model-picker"><label>Ollama modeli</label><select id="model-select" name="model" required{}>{}</select></div></details><button class="button" type="submit"{}>Eksik terimleri bul</button><span class="loading">Analiz sürüyor...</span></form></div>{}'.format(
-            error_box, status, len(self.dictionary), html.escape(selected_label),
-            model_disabled, options, submit_disabled, _setup_html()
-        )
-        return _document(content)
-
-    def latest_result_html(self) -> str | None:
-        """Son kaydedilen raporu, sonuç ekranını doğrudan açan kullanıcılar için sunar."""
-        reports = sorted(
-            self.settings.output_dir.glob("**/*_terms.json"),
-            key=lambda path: path.stat().st_mtime,
-            reverse=True,
-        )
-        for json_path in reports:
-            try:
-                result = json.loads(json_path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                continue
-            if not isinstance(result, dict):
-                continue
-            stem = json_path.name.removesuffix("_terms.json")
-            # Değerlendirme çalışmaları model/belge gibi birden fazla alt
-            # klasörde tutulabilir. Yalnız son klasör adını kullanmak sonuç
-            # ekranını açsa bile indirme bağlantılarını 404'e düşürüyordu.
-            report_dir = json_path.parent.relative_to(self.settings.output_dir)
-            json_rel = str(report_dir / json_path.name)
-            csv_rel = str(report_dir / f"{stem}_terim_raporu.csv")
-            xlsx_rel = str(report_dir / f"{stem}_terim_raporu.xlsx")
-            return _document(result_html(result, json_rel, csv_rel, xlsx_rel))
-        return None
-
-    def analyze(self, filename: str, pdf_bytes: bytes, model: str) -> tuple[dict[str, object], Path, Path]:
-        safe_name = Path(filename or "belge.pdf").name
-        if not safe_name.casefold().endswith(".pdf") or not pdf_bytes.startswith(b"%PDF-"):
-            raise ValueError("Geçerli bir PDF dosyası seçin.")
-        if len(pdf_bytes) > MAX_UPLOAD_BYTES:
-            raise ValueError("PDF 50 MB sınırını aşıyor.")
-        temporary = None
-        try:
-            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as file:
-                file.write(pdf_bytes)
-                temporary = Path(file.name)
-            client = OllamaClient(
-                self.settings.ollama_url, model, timeout=self.settings.timeout_seconds
-            )
-            report_model = model
-            client.check_model()
-            result = analyze_pdf(
-                temporary,
-                self.dictionary,
-                client,
-                report_model,
-                self.settings.chunk_size,
-                self.settings.chunk_overlap,
-            )
-            result["document"] = safe_name
-            json_path, csv_path = write_reports(result, self.settings.output_dir)
-            return result, json_path, csv_path
-        finally:
-            if temporary is not None:
-                temporary.unlink(missing_ok=True)
-
-
-def _multipart(handler: BaseHTTPRequestHandler) -> tuple[dict[str, str], dict[str, tuple[str, bytes]]]:
+def _multipart(
+    handler: BaseHTTPRequestHandler,
+) -> tuple[dict[str, str], dict[str, list[tuple[str, bytes]]]]:
     try:
         length = int(handler.headers.get("Content-Length", "0"))
     except ValueError as error:
         raise ValueError("Geçersiz istek boyutu.") from error
-    if length <= 0 or length > MAX_UPLOAD_BYTES + 1024 * 1024:
+    if length <= 0 or length > MAX_REQUEST_BYTES:
         raise ValueError("Yükleme boyutu geçersiz veya çok büyük.")
-    content_type = handler.headers.get("Content-Type", "")
     raw = handler.rfile.read(length)
     message = BytesParser(policy=default).parsebytes(
-        ("Content-Type: {}\r\nMIME-Version: 1.0\r\n\r\n".format(content_type)).encode()
-        + raw
+        ("Content-Type: {}\r\nMIME-Version: 1.0\r\n\r\n".format(handler.headers.get("Content-Type", ""))).encode() + raw
     )
     if not message.is_multipart():
         raise ValueError("Form verisi okunamadı.")
     fields: dict[str, str] = {}
-    files: dict[str, tuple[str, bytes]] = {}
+    files: dict[str, list[tuple[str, bytes]]] = {}
     for part in message.iter_parts():
         name = part.get_param("name", header="content-disposition")
         if not name:
             continue
         payload = part.get_payload(decode=True) or b""
-        filename = part.get_filename()
-        if filename:
-            files[name] = (filename, payload)
+        if part.get_filename():
+            files.setdefault(name, []).append(
+                (part.get_filename() or "dosya", payload)
+            )
         else:
             fields[name] = payload.decode(part.get_content_charset() or "utf-8")
     return fields, files
 
 
-class ApplicationServer(ThreadingHTTPServer):
-    def __init__(self, address, application: WebApplication) -> None:
-        self.application = application
-        super().__init__(address, RequestHandler)
+def _urlencoded(handler: BaseHTTPRequestHandler) -> dict[str, str]:
+    try:
+        length = int(handler.headers.get("Content-Length", "0"))
+    except ValueError as error:
+        raise ValueError("Geçersiz istek boyutu.") from error
+    if length <= 0 or length > MAX_REQUEST_BYTES:
+        raise ValueError("Form boyutu geçersiz veya çok büyük.")
+    content_type = handler.headers.get("Content-Type", "")
+    if not content_type.startswith("application/x-www-form-urlencoded"):
+        raise ValueError("Form verisi okunamadı.")
+    try:
+        raw = handler.rfile.read(length).decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("Form verisi okunamadı.") from error
+    values = urllib.parse.parse_qs(raw, keep_blank_values=True, strict_parsing=True)
+    return {key: value[-1] for key, value in values.items() if value}
 
 
-class RequestHandler(BaseHTTPRequestHandler):
-    server: ApplicationServer
+class Server(ThreadingHTTPServer):
+    def __init__(self, address, service: AnalysisService) -> None:
+        self.service = service
+        super().__init__(address, Handler)
+
+
+class Handler(BaseHTTPRequestHandler):
+    server: Server
 
     def do_GET(self) -> None:
         path = urllib.parse.urlparse(self.path).path
+        if path == "/healthz":
+            self._health(); return
         if path == "/":
-            self._html(self.server.application.index_html())
-            return
-        if path == "/analyze":
-            latest = self.server.application.latest_result_html()
-            if latest:
-                self._html(latest)
-            else:
-                self._html(self.server.application.index_html("Henüz bir rapor yok. Lütfen PDF seçip analizi başlatın."))
-            return
+            self._html(index_html(self.server.service)); return
+        if path == "/dictionary":
+            self._html(dictionary_html(self.server.service)); return
+        if path == "/settings":
+            self._html(settings_html(self.server.service)); return
         if path.startswith("/reports/"):
-            self._report(path[len("/reports/") :])
-            return
+            self._report(path[len("/reports/"):]); return
         self.send_error(404)
 
     def do_POST(self) -> None:
-        if urllib.parse.urlparse(self.path).path != "/analyze":
+        path = urllib.parse.urlparse(self.path).path
+        try:
+            if path == "/analyze":
+                fields, files = _multipart(self)
+                if "pdf" not in files:
+                    raise ValueError("Makale PDF'sini seçin.")
+                filename, payload = files["pdf"][0]
+                result, json_path, csv_path, xlsx_path = self.server.service.analyze_upload(
+                    filename, payload, fields.get("model", "")
+                )
+                base = self.server.service.settings.output_dir
+                links = {
+                    "json": str(json_path.relative_to(base)) if json_path.name and json_path.is_file() else "",
+                    "csv": str(csv_path.relative_to(base)) if csv_path.name and csv_path.is_file() else "",
+                    "xlsx": str(xlsx_path.relative_to(base)) if xlsx_path.name and xlsx_path.is_file() else "",
+                }
+                self._html(result_html(result, links)); return
+            if path == "/settings/save":
+                fields = _urlencoded(self)
+                from .provider_store import ProviderConfig
+                existing = self.server.service.provider_store.load()
+                submitted_key = fields.get("api_key", "").strip()
+                final_key = submitted_key if submitted_key else existing.api_key
+                config = ProviderConfig(
+                    provider=fields.get("provider", "openai"),
+                    api_key=final_key,
+                    model=fields.get("model", "").strip(),
+                    base_url=fields.get("base_url", "").strip(),
+                )
+                self.server.service.save_provider_config(config)
+                self._html(settings_html(self.server.service, "API ayarları kaydedildi.", "ok")); return
+            if path == "/dictionary/check":
+                settings = self.server.service.settings
+                result = check_and_update(
+                    self.server.service.dictionaries,
+                    page_url=settings.dictionary_page_url,
+                    pdf_url=settings.dictionary_pdf_url,
+                    timeout=settings.update_timeout_seconds,
+                )
+                self._html(dictionary_html(self.server.service, result.message, result.status)); return
+            if path == "/dictionary/import":
+                _, files = _multipart(self)
+                if "dictionary" not in files:
+                    raise ValueError("Sözlük PDF'sini seçin.")
+                _, payload = files["dictionary"][0]
+                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as target:
+                    target.write(payload); temporary = Path(target.name)
+                try:
+                    status = self.server.service.dictionaries.import_pdf(temporary)
+                finally:
+                    temporary.unlink(missing_ok=True)
+                self._html(dictionary_html(self.server.service, "{} sürümlü sözlük etkin.".format(status.version), "ok")); return
             self.send_error(404)
-            return
-        try:
-            fields, files = _multipart(self)
-            if "pdf" not in files:
-                raise ValueError("Bir PDF dosyası seçin.")
-            filename, content = files["pdf"]
-            model = fields.get("model", "").strip()
-            if not model:
-                raise ValueError("Bir model seçin.")
-            result, json_path, csv_path = self.server.application.analyze(
-                filename, content, model
-            )
-            report_dir = json_path.parent.relative_to(
-                self.server.application.settings.output_dir
-            )
-            stem = json_path.name.removesuffix("_terms.json")
-            json_rel = str(report_dir / json_path.name)
-            csv_rel = str(report_dir / csv_path.name)
-            xlsx_rel = str(report_dir / f"{stem}_terim_raporu.xlsx")
-            self._html(_document(result_html(result, json_rel, csv_rel, xlsx_rel)))
+        except AnalysisBusyError as error:
+            self._html(index_html(self.server.service, str(error), "current"), 503)
         except Exception as error:
-            self._html(self.server.application.index_html(str(error)), status=400)
+            if path.startswith("/dictionary"):
+                self._html(dictionary_html(self.server.service, str(error), "failed"), 400)
+            else:
+                self._html(index_html(self.server.service, str(error), "failed"), 400)
 
-    def _report(self, encoded_name: str) -> None:
-        rel_path = Path(urllib.parse.unquote(encoded_name))
-        output_dir = self.server.application.settings.output_dir.resolve()
-        path = (output_dir / rel_path).resolve()
-        try:
-            if not path.is_relative_to(output_dir) or not path.is_file() or path.suffix not in {".csv", ".json", ".xlsx"}:
-                self.send_error(404)
-                return
-        except (ValueError, AttributeError):
-            if output_dir not in path.parents or not path.is_file() or path.suffix not in {".csv", ".json", ".xlsx"}:
-                self.send_error(404)
-                return
-        content = path.read_bytes()
-        if path.suffix == ".csv":
-            content_type = "text/csv; charset=utf-8"
-        elif path.suffix == ".xlsx":
-            content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        else:
-            content_type = "application/json; charset=utf-8"
-        self.send_response(200)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Content-Disposition", 'attachment; filename="{}"'.format(path.name))
-        self.send_header("Content-Length", str(len(content)))
-        self.end_headers()
-        self.wfile.write(content)
+    def _report(self, encoded: str) -> None:
+        root = self.server.service.settings.output_dir.resolve()
+        candidate = (root / Path(urllib.parse.unquote(encoded))).resolve()
+        if root not in candidate.parents or not candidate.is_file() or candidate.suffix not in {".json", ".csv", ".xlsx"}:
+            self.send_error(404); return
+        payload = candidate.read_bytes()
+        content_type = {".json":"application/json; charset=utf-8", ".csv":"text/csv; charset=utf-8", ".xlsx":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}[candidate.suffix]
+        self.send_response(200); self.send_header("Content-Type", content_type); self.send_header("Content-Disposition", 'attachment; filename="{}"'.format(candidate.name)); self._security_headers(); self.send_header("Content-Length", str(len(payload))); self.end_headers(); self.wfile.write(payload)
 
     def _html(self, content: str, status: int = 200) -> None:
         payload = content.encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_response(status); self.send_header("Content-Type", "text/html; charset=utf-8"); self.send_header("Cache-Control", "no-store"); self._security_headers(); self.send_header("Content-Length", str(len(payload))); self.end_headers(); self.wfile.write(payload)
+
+    def _health(self) -> None:
+        payload = b'{"status":"ok"}\n'
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
+        self._security_headers()
         self.send_header("Content-Length", str(len(payload)))
         self.end_headers()
         self.wfile.write(payload)
+
+    def _security_headers(self) -> None:
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'self'; "
+            "frame-ancestors 'none'; base-uri 'none'",
+        )
 
     def log_message(self, format: str, *args: object) -> None:
         return
 
 
-def serve(host: str = "127.0.0.1", port: int = 8765, open_browser: bool = True) -> None:
-    application = WebApplication()
-    server = ApplicationServer((host, port), application)
-    url = "http://{}:{}".format(host, port)
-    print("Türkçe Terim Etmeni arayüzü: {}".format(url), flush=True)
-    print("Durdurmak için Control-C tuşlarına basın.", flush=True)
+def validate_bind_host(host: str) -> str:
+    normalized = host.strip().strip("[]")
+    if normalized.casefold() in LOOPBACK_HOST_NAMES:
+        return normalized
+    try:
+        address = ipaddress.ip_address(normalized)
+    except ValueError as error:
+        raise ValueError(
+            "HTTPS ve kimlik doğrulama eklenmeden yalnız localhost kullanılabilir."
+        ) from error
+    if not address.is_loopback:
+        raise ValueError(
+            "HTTPS ve kimlik doğrulama eklenmeden yalnız localhost kullanılabilir."
+        )
+    return normalized
+
+
+def serve(
+    host: str = "127.0.0.1", port: int = 8876, *, open_browser: bool = True
+) -> None:
+    host = validate_bind_host(host)
+    service = AnalysisService(Settings())
+    server = Server((host, port), service)
+    url_host = "[{}]".format(host) if ":" in host else host
+    url = "http://{}:{}".format(url_host, port)
+    print("Türkiye Bilişim Derneği — Bilişim Terimleri Denetim Sistemi: {}".format(url), flush=True)
+    print("Durdurmak için Control-C tuşlarına basınız.", flush=True)
     if open_browser:
         threading.Timer(0.6, webbrowser.open, args=(url,)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nArayüz kapatıldı.")
+        print("\nSistem kapatıldı.")
     finally:
         server.server_close()

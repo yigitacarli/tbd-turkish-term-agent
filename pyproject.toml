@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tbd-dictionary-control"
-version = "0.1.0"
+version = "1.0.0"
 description = "PDF belgelerindeki İngilizce bilişim terimlerini Türkçe sözlükle karşılaştıran yerel araç"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -15,8 +15,8 @@ dependencies = [
 
 [project.scripts]
 tbd-dictionary-control = "terim_etmeni.cli:main"
-turkce-terim-etmeni-v2 = "terim_etmeni_v2.cli:main"
+turkce-terim-etmeni = "terim_etmeni.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["terim_etmeni*", "terim_etmeni_v2*"]
+include = ["terim_etmeni*"]

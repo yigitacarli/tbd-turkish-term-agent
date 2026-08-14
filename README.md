@@ -1,263 +1,152 @@
 # Türkçe Terim Etmeni
 
-> **V2 geliştirmesi başladı.** Çalışan V1 bu dosyalarla birlikte korunmaktadır.
-> Yeni geliştirme bağlamı için önce [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md),
-> [DECISIONS.md](DECISIONS.md) ve [V2_ROADMAP.md](V2_ROADMAP.md) okunmalıdır.
+İngilizce bir bilişim makalesi (PDF) yükleyin; program makaledeki teknik terimleri
+bir dil modeliyle çıkarır, güncel TBD Bilişim Sözlüğü ile **kod seviyesinde** karşılaştırır
+ve sözlükte bulunmayan terimleri öne çıkarır. Sözlüğe otomatik terim eklemez.
 
-## V2'yi çalıştırma
-
-V2, V1'i değiştirmeden ayrı paket ve giriş noktası kullanır:
+## Çalıştırma
 
 ```bash
-python3 run_v2.py
+python3 run.py                 # sunucuyu başlatır, tarayıcıyı açar
+python3 run.py serve --no-browser
 ```
-
-Bu komut yerel V2 sunucusunu başlatır ve tarayıcıyı otomatik açar. Tarayıcının
-otomatik açılması istenmezse `python3 run_v2.py serve --no-browser` kullanılır.
-
-V2 geliştirme sunucusu varsayılan olarak aynı anda tek analiz çalıştırır. Hedef
-sunucunun kapasitesi ölçüldükten sonra sınır örneğin
-`MAX_CONCURRENT_ANALYSES=2 python3 run_v2.py` ile artırılabilir. Kimlik doğrulama
-ve HTTPS eklenmeden uygulama yalnız `localhost`/loopback adresinde çalışır; genel
-ağa bağlanmayı reddeder. Yerel sağlık kontrolü `GET /healthz` adresindedir.
-Kurum sunucusu zorunlu değildir. İleride istenirse gerekli teknik ve veri
-politikası bilgileri `DEPLOYMENT_READINESS.md` dosyasında toplanmıştır.
 
 Arayüz `http://127.0.0.1:8876` adresinde açılır. Ana sayfada makale analizi,
-`/evaluation` sayfasında gerçek raporlardan iç değerlendirme kümesi hazırlama,
-`/dictionary` sayfasında ise etkin sözlük sürümü, TBD sitesini kontrol etme ve
-resmî sözlük PDF'sini elle doğrulama bulunur.
+`/dictionary` sayfasında sözlük yönetimi, `/settings` sayfasında bulut API ayarları bulunur.
 
-Sözlük durumunu terminalden görmek için:
+### Komut satırı
 
 ```bash
-python3 run_v2.py dictionary status
+python3 run.py scan MAKALE.pdf --model MODEL       # tek PDF analizi (yerel model için --model gerekli)
+python3 run.py dictionary status                   # etkin sözlük durumu
+python3 run.py dictionary check                    # TBD sitesinde güncelleme ara
+python3 run.py abbreviations status                # kısaltma kaynağı durumu
+python3 run.py evaluate-expected EXPECTED.json RAPOR.json   # basit eksik-terim ölçümü
 ```
 
-Ayrı TBD kısaltma kaynağının sürüm ve kayıt durumunu görmek için:
+## Analiz motoru (model) seçimi
+
+Program iki motorla çalışır; hangisini kullanacağını kendisi anlar:
+
+- **Bulut API** (önerilen): `/settings` sayfasından sağlayıcı, anahtar ve model girin.
+  Bir API anahtarı kayıtlıysa tarama otomatik olarak API'yi kullanır.
+- **Yerel Ollama**: API anahtarı yoksa yerel Ollama modeli kullanılır; model her
+  analizde arayüzden seçilir.
+
+Ortam değişkeni ile de çalıştırılabilir (`.env`):
+
+```env
+MODEL_PROVIDER=api        # açıkça API'ye zorlar (api | ollama | boş=otomatik)
+API_PROVIDER=deepseek     # openai | deepseek | anthropic | google
+API_KEY=sk-...
+API_MODEL=deepseek-chat
+API_BASE_URL=             # boşsa sağlayıcının varsayılanı kullanılır
+```
+
+Desteklenen varsayılan modeller: openai=`gpt-4o-mini`, deepseek=`deepseek-v4-flash`,
+anthropic=`claude-sonnet-4-20250514`, google=`gemini-2.0-flash`. Anahtar asla kaynak
+koda yazılmaz; `/settings` üzerinden girilen değerler yerel `data/runtime/provider.json`
+dosyasında tutulur (Git'e eklenmez).
+
+## İşlem hattı
+
+```
+PDF → metin çıkarımı → parçalama → LLM terim çıkarımı (few-shot)
+   → normalizasyon → deterministik sözlük araması → eksik terimler
+```
+
+- LLM yalnızca teknik terim adayı üretir; sözlük karşılaştırması yapmaz.
+- Sözlük araması normalize edilmiş İngilizce terimler üzerinden kesin eşleşmeyle
+  (Python `dict`) yapılır: `FOUND` / `NOT_FOUND`.
+- Metinde gerçekten geçmeyen model çıktıları rapora alınmaz.
+- Aynı terim birden çok parçada bulunursa bir kez gösterilir; her terim bağlamı ve
+  sayfa bilgisiyle raporlanır.
+- DeepSeek ve OpenAI uyumlu sağlayıcılarda API'nin JSON modu kullanılır. Model her
+  parçada en fazla sekiz, belge bağlamına özgü olmayan sözlük adayı döndürmek üzere
+  istenir; bu bir regex filtresi değil, çıkarım talimatının parçasıdır.
+
+## Tek makale kalite kontrolü
+
+Yeni model, prompt veya sağlayıcıyı tüm PDF'lerde denemeden önce tek bir makale
+üzerinde ölçün. Uzman tarafından gözden geçirilmiş **eksiksiz** eksik-terim listesini
+oluşturun:
+
+```json
+{"expected_missing_terms": ["agentic workflow", "tool orchestration"]}
+```
+
+Ardından üretilen JSON raporuyla karşılaştırın:
 
 ```bash
-python3 run_v2.py abbreviations status
+python3 run.py evaluate-expected expected.json output/MODEL/MAKALE/MAKALE_terms.json
 ```
 
-Resmî kısaltmalar PDF'sini ana sözlüğe eklemeden doğrulanmış JSON'a dönüştürmek
-için `python3 run_v2.py abbreviations convert KAYNAK.pdf --output KISALTMALAR.json`
-kullanılır. V2, kısaltma eşleşmelerini ana sözlük eşleşmesi saymaz; sonuçta
-`Kısaltma kaynağında` başlığı ve teknik JSON'da kaynak etiketiyle gösterir.
+Komut doğru bulunan, kaçırılan ve listede olmaması gereken aday sayılarını; precision
+ve recall değerlerini verir. Beklenen liste eksiksiz değilse precision sonucu geçerli
+bir kalite ölçümü değildir.
 
-İnsan tarafından etiketli gerçek makalelerde V1/V2 sonuçlarını çevrimdışı karşılaştırmak için
-`evaluation/README.md` içindeki kabul kümesi biçimi ve `evaluate` komutu
-kullanılır. Araç kaydedilmiş JSON raporlarından teknik-terim ve sözlük-açığı
-hassasiyet/yakalama oranlarını hesaplar; yeni model çağrısı yapmaz.
+## Sonuçlar
 
-Erişilebilir alan uzmanı yoksa web arayüzündeki **İç değerlendirme** sayfası bir
-veya daha fazla V1/V2 JSON raporunu birleştirir. Proje sahibi her adayı
-`Sözlükte var`, `Gerçek sözlük açığı` veya `Gürültü` olarak işaretler ve kabul
-kümesini JSON olarak indirir. Bu çıktı `internal_review` statüsündedir; uzman
-onayı olarak sunulmaz.
+Raporlar `output/<model>/<pdf-adı>/` altında oluşur:
 
-Yeni V2 analizleri ayrıca rapor klasörüne bir `candidate_snapshot.json` dosyası
-yazar. Bu dosya, aynı Qwen adaylarını modele yeniden çağrı yapmadan güncel V2
-filtrelerinden geçirmek için `run_v2.py replay SNAPSHOT --output RAPOR.json`
-komutuyla kullanılabilir. Bu geliştirme/ölçüm aracıdır; ana kullanıcı akışını
-değiştirmez.
+- `<ad>_terms.json` — makinece okunur tam sonuç
+- `<ad>_terim_raporu.csv` — Excel uyumlu (UTF-8 BOM)
+- `<ad>_terim_raporu.xlsx` — biçimli Excel raporu
 
-V2'nin sözlük güncellemesi yeni PDF'yi önce geçici alanda dönüştürür ve kayıt
-sayılarını doğrular. Başarısız bir indirme veya PDF düzeni değişikliği son sağlam
-sözlüğü bozmaz. V2 raporları `output_v2/`, yönetilen sözlük sürümleri ise
-`data/v2_runtime/` altında tutulur; her ikisi de çalışma zamanı verisidir ve Git'e
-eklenmez.
-
-Türkçe Terim Etmeni, metin katmanı bulunan PDF belgelerindeki İngilizce bilişim
-terimlerini çıkarır ve Bilişimde Özenli Türkçe sitesinden hazırlanmış yerel
-İngilizce–Türkçe sözlükle karşılaştırır. Sözlükte bulunmayan adayları sayfa ve
-geçiş bilgileriyle gösterir; Excel, CSV ve JSON raporu üretir.
-
-PDF içeriği ve model çalışması yerel bilgisayarda kalır. Sistem hibrit bir akış
-kullanır: yerel model ve kontrollü metin kalıpları aday üretir; sözlük eşleşmesi,
-metindeki kanıt, aday kaynağı ve model doğrulaması birlikte puanlanır. Yalnız
-puan eşiğini geçen sözlük açıkları ana inceleme listesinde gösterilir.
-
-## Gereksinimler
-
-- Python 3.9+
-- [Ollama](https://ollama.com/)
-- Ollama içinde yapılandırılmış çıktı verebilen güncel bir model
-- Metin seçilebilen bir PDF
-
-```bash
-ollama pull MODEL_ETIKETI
-```
-
-## Yapay zekâ motoru ve platform desteği
-
-Bu teslim sürümü **yerel Ollama** ile çalışır: PDF ve terim sonuçları bilgisayardan
-çıkmaz. Uygulama herhangi bir modeli kalıcı varsayılan yapmaz; Ollama'da kurulu
-modeller arayüzde listelenir ve kullanıcı her analiz için modeli açıkça seçer.
-İstenirse `OLLAMA_MODEL` ortam değişkeniyle kuruma özel bir ön seçim yapılabilir.
-
-OpenAI, Azure OpenAI veya başka bir kurum API'si bu sürümde henüz uygulanmamıştır.
-Bu tür bir entegrasyon için kurumun sağlayıcı, anahtar yönetimi, maliyet ve veri
-politikası kararları gerekir; arayüz desteklemediği bir API seçeneğini göstermez.
-
-Uygulamanın çalışma şekli Windows, macOS ve Linux'ta aynıdır: Python, Ollama ve
-aynı model gerekir. Fark yalnızca ilk kurulum ve başlatma komutlarındadır.
-
-Donanıma göre önerilen yerel modeller ve nihai seçim için kabul deneyi
-[MODEL_REHBERI.md](MODEL_REHBERI.md) içinde açıklanmıştır.
+Ana görünüm sözlükte bulunmayan terimleri (`missing_terms`) öne çıkarır; sözlükte
+bulunanlar ve kısaltma kaynağından gelen olası eşleşmeler ayrı gruplarda gösterilir.
 
 ## Kurulum
-
-Proje klasöründe:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
+python3 run.py
 ```
 
-Windows PowerShell'de sanal ortamı etkinleştirme komutu:
+Yerel Ollama kullanacaksanız bir model indirin:
 
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-Arayüzü Windows'ta başlatmak için:
-
-```powershell
-python run_v2.py
+```bash
+ollama pull MODEL_ETIKETI
 ```
 
 ## Kolay kullanım
 
-İlk kurulum yapıldıktan sonra komut yazmadan başlatmak için:
-
-- **macOS:** `BASLAT_APPLE.command` dosyasına çift tıklayın. Bu, macOS için en kolay
-  günlük kullanım yöntemidir.
-- **Windows:** `BASLAT_WINDOWS.bat` dosyasına çift tıklayın. Pencere açık kaldığı sürece
-  arayüz çalışır.
-
-Her iki başlatıcı da `http://127.0.0.1:8876` adresinde V2 arayüzünü açar. PDF
-seçin, modeli seçin ve analizden sonra önce yüksek öncelikli adayları inceleyin.
-Hedef bilgisayardaki ilk kurulum ve ölçümlü kabul adımları
-[KISISSEL_BILGISAYAR_KABUL.md](KISISSEL_BILGISAYAR_KABUL.md) dosyasındadır.
-
-## V2 komut satırı kullanımı
-
-Arayüzü başlatmak için:
-
-```bash
-python3 run_v2.py
-```
-
-PDF seçildikten sonra sonuçlar ekranda incelenebilir ve raporlar indirilebilir.
-Model parçalarından biri okunamazsa arayüz analizi `kısmi` veya `başarısız`
-olarak işaretler; böyle bir durum “sözlükte olmayan terim yok” anlamına gelmez.
-Uygulamayı kapatmak için açık terminal penceresinde `Control-C` kullanılır.
-
-Tarayıcının otomatik açılmaması için:
-
-```bash
-python3 run_v2.py serve --no-browser
-```
-
-Sözlük güncellemesini denetlemek için:
-
-```bash
-python3 run_v2.py dictionary check
-```
-
-V2 ana kullanıcı akışını tarayıcı arayüzü üzerinden çalıştırır; model her analizde
-listeden açıkça seçilir. `OLLAMA_MODEL` yalnız isteğe bağlı ön seçim, `OLLAMA_URL`
-ise yerel Ollama adresi içindir.
-
-## Korunan V1 komutları
-
-V1, karşılaştırma ve geri dönüş amacıyla korunur; günlük kullanım için V2'yi
-kullanın. V1 arayüzü `python3 run.py`, V1 tek-PDF komutu ise aşağıdaki gibidir:
-
-```bash
-python3 run.py scan makale.pdf --model MODEL_ETIKETI
-```
-
-## Sonuçlar
-
-Arayüz ve terminal dört grup gösterir:
-
-- **Bulunan:** Sözlükte tam eşleşen terimler
-- **Olası:** Açılımı sözlükte bulunan kısaltma gibi insan kararı isteyen eşleşmeler
-- **Öncelikli açık:** Sözlükte karşılığı bulunmayan yüksek güvenli adaylar
-- **İkincil aday:** Orta güvenli, kaybolmaması için raporda tutulan fakat ana sayıyı
-  şişirmeyen adaylar
-- **Elenen:** Düşük güvenli adaylar; denetim amacıyla raporda korunur
-
-V2 raporları çakışmayı önlemek için `output_v2/<model>/<pdf-adı>/` altında
-oluşur. Her analiz ayrıca aynı adayları Ollama çağırmadan yeniden denetlemek için
-bir `candidate_snapshot.json` kaydeder.
-
-- `<ad>_terim_raporu.csv`
-- `<ad>_terim_raporu.xlsx`
-- `<ad>_terms.json`
-
-CSV, Excel ile uyumlu UTF-8 BOM biçimindedir. Satırlar önce karar gerektiren
-adayları gösterir: **İnceleme gerekli** ve **Yakın eşleşme** satırları en üstte,
-ardından bilgi ve elenen adaylar gelir. `öncelik` ve `önerilen işlem` sütunları
-sözlük sorumlusunun hangi satırı ele alacağını açıklar; uygulama sözlüğe otomatik
-terim eklemez.
-
-Web arayüzündeki büyük sayı yalnız yüksek güvenli açıkları gösterir. Orta güvenli
-adaylar kapalı **İkincil inceleme adayları** bölümünde ve indirilen raporlarda
-korunur. Böylece küçük modellerin belirsiz önerileri ana sonucu şişirmez.
-
-Güvenli tire ve düzenli tekil-çoğul farkları sözlük tarafından kapsanmış sayılır.
-Kısaltma açılımı gibi karar gerektiren yakın eşleşmeler **Olası** grubunda insan
-doğrulamasına bırakılır.
+- **macOS:** `BASLAT_APPLE.command` dosyasına çift tıklayın.
+- **Windows:** `BASLAT_WINDOWS.bat` dosyasına çift tıklayın.
 
 ## Test
 
-Testler Ollama çağırmadan çalışır:
-
 ```bash
-PYTHONPYCACHEPREFIX=/private/tmp/terim-etmeni-pycache PYTHONPATH=src python3 -m unittest discover -s tests_v2 -v
 PYTHONPYCACHEPREFIX=/private/tmp/terim-etmeni-pycache PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
 ## Sözlük
 
-Uygulama `data/tbd_dictionary_2026_coordinate.json` dosyasını kullanır. Kaynak:
-[Bilişimde Özenli Türkçe](https://bilisimde.ozenliturkce.org.tr/). Teslim veya
-kurumsal dağıtım öncesinde sözlüğün kullanım ve yeniden dağıtım koşulları kurum
-tarafından doğrulanmalıdır.
-
-## Bilinen sınırlar
-
-- Görüntü olarak taranmış PDF'lerde OCR yapılmaz.
-- Küçük yerel modeller bazı terimleri atlayabilir veya yanlış aday üretebilir. Varsayılan
-  ayarlar tek model geçişi ve 6.000 karakterlik parça kullanır; özellikle ayrıntılı
-  inceleme gerektiğinde daha büyük bir model seçilebilir.
-- Modelin hiç önermediği bazı terimler kontrollü teknik baş kalıpları, açık
-  kısaltma tanımları ve tekrarlanan teknik öbeklerle geri kazanılır. Bu adaylar
-  model kararına ek olarak kaynak ve tekrar sinyalleriyle puanlanır; zayıf cümle
-  parçaları ana inceleme listesine alınmaz.
-- Sonuçlar otomatik öneridir; nihai liste uzman incelemesinden geçirilmelidir.
-- Aynı adlı PDF yeniden taranırsa önceki raporun üzerine yazılır.
-- Ollama hedef bilgisayarda kurulu değilse uygulama model indirmez; açıklayıcı hata
-  verir.
+Etkin sözlük `data/tbd_dictionary_2026_coordinate.json`; kaynak
+[Bilişimde Özenli Türkçe](https://bilisimde.ozenliturkce.org.tr/). Kısaltmalar ayrı
+bir kaynak olarak `data/tbd_abbreviations_2025_03_17.json` içindedir ve ana sözlüğe
+birleştirilmez.
 
 ## Proje yapısı
 
 ```text
-data/                     Yerel sözlük
-src/terim_etmeni_v2/      Etkin V2 kaynak kodu
-tests_v2/                 V2 otomatik testleri
-output_v2/                V2 üretilen raporları
-BASLAT_APPLE.command      macOS V2 başlatıcısı
-BASLAT_WINDOWS.bat        Windows V2 başlatıcısı
-run_v2.py                 Günlük V2 giriş noktası
-src/terim_etmeni/         Korunan V1 kaynak kodu
-tests/                    Korunan V1 otomatik testleri
-run.py                    Korunan V1 giriş noktası
-pyproject.toml            Paket ve bağımlılık tanımı
-AI_HANDOFF.md             Yeni yapay zekâ sohbeti için teknik devir notu
-KISISSEL_BILGISAYAR_KABUL.md Hedef bilgisayarda ilk çalışma listesi
+data/                       Yerel sözlük ve kısaltma kaynağı
+src/terim_etmeni/           Uygulama kaynak kodu
+tests/                      Otomatik testler
+output/                     Üretilen raporlar
+evaluation/                 Basit eksik-terim değerlendirme örnekleri
+docs/                       Proje bağlamı ve karar kayıtları
+run.py                      Giriş noktası
+BASLAT_APPLE.command        macOS başlatıcısı
+BASLAT_WINDOWS.bat          Windows başlatıcısı
 ```
+
+## Bilinen sınırlar
+
+- Taranmış (görüntü) PDF'lerde OCR yapılmaz.
+- Küçük yerel modeller bazı terimleri atlayabilir; en eksiksiz eksik-terim listesi
+  güçlü bir bulut modelinden gelir.
+- Sonuçlar otomatik öneridir; nihai liste uzman incelemesinden geçirilmelidir.
+- Aynı adlı PDF yeniden taranırsa önceki raporun üzerine yazılır.

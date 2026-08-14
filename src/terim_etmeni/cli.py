@@ -1,135 +1,131 @@
-"""Türkçe Terim Etmeni komut satırı arayüzü."""
+"""Komut satırı."""
 from __future__ import annotations
 
 import argparse
-import sys
+import json
 from pathlib import Path
 
+from .abbreviation_pdf import convert_abbreviation_pdf
 from .config import Settings
-from .dictionary import DictionaryFormatError, DictionaryIndex
-from .ollama_client import OllamaClient, OllamaError
-from .pdf_reader import PDFReadError
-from .pipeline import analyze_pdf
-from .reporting import format_terminal_report, write_reports
-
-
-def _pdf_files(input_path: Path) -> list[Path]:
-    if input_path.is_file():
-        return [input_path] if input_path.suffix.casefold() == ".pdf" else []
-    if input_path.is_dir():
-        return sorted(
-            (path for path in input_path.rglob("*.pdf") if path.is_file()),
-            key=lambda path: str(path).casefold(),
-        )
-    return []
+from .dictionary_update import check_and_update
+from .expected_evaluation import (
+    ExpectedEvaluationError,
+    evaluate_expected,
+    format_expected,
+    load_expected,
+)
+from .service import AnalysisService
 
 
 def build_parser() -> argparse.ArgumentParser:
-    defaults = Settings()
-    parser = argparse.ArgumentParser(
-        prog="tbd-dictionary-control",
-        description="PDF'lerdeki İngilizce bilişim terimlerini yerel sözlükle karşılaştırır.",
-    )
-    subparsers = parser.add_subparsers(dest="command", required=True)
-    scan = subparsers.add_parser("scan", help="Bir PDF'yi veya PDF klasörünü tara")
-    scan.add_argument("input", type=Path, help="PDF dosyası veya PDF klasörü")
-    scan.add_argument("--dictionary", type=Path, default=defaults.dictionary_path)
-    scan.add_argument("--output-dir", type=Path, default=defaults.output_dir)
-    scan.add_argument("--model", default=defaults.model)
-    scan.add_argument("--ollama-url", default=defaults.ollama_url)
-    scan.add_argument("--chunk-size", type=int, default=defaults.chunk_size)
-    scan.add_argument("--overlap", type=int, default=defaults.chunk_overlap)
-    scan.add_argument("--timeout", type=int, default=defaults.timeout_seconds)
-    serve_parser = subparsers.add_parser("serve", help="Yerel tarayıcı arayüzünü başlat")
+    parser = argparse.ArgumentParser(prog="turkce-terim-etmeni")
+    sub = parser.add_subparsers(dest="command", required=True)
+    serve_parser = sub.add_parser("serve", help="Web arayüzünü başlat")
     serve_parser.add_argument("--host", default="127.0.0.1")
-    serve_parser.add_argument("--port", type=int, default=8765)
+    serve_parser.add_argument("--port", type=int, default=8876)
     serve_parser.add_argument(
         "--no-browser", action="store_true", help="Tarayıcıyı otomatik açma"
     )
+    scan = sub.add_parser("scan", help="Tek bir PDF'yi analiz et ve raporla")
+    scan.add_argument("pdf", type=Path)
+    scan.add_argument(
+        "--model",
+        default="",
+        help="Kullanılacak model. Ollama için zorunlu; API sağlayıcısı için isteğe bağlı.",
+    )
+    dictionary = sub.add_parser("dictionary", help="Sözlük durumunu veya güncellemesini yönet")
+    dictionary_sub = dictionary.add_subparsers(dest="dictionary_command", required=True)
+    dictionary_sub.add_parser("status", help="Etkin sözlüğü göster")
+    importer = dictionary_sub.add_parser("import", help="Resmî sözlük PDF'sini doğrula ve etkinleştir")
+    importer.add_argument("pdf", type=Path)
+    dictionary_sub.add_parser("check", help="TBD sitesinde güncelleme ara")
+    abbreviations = sub.add_parser(
+        "abbreviations", help="Ayrı TBD kısaltma kaynağını incele veya dönüştür"
+    )
+    abbreviation_sub = abbreviations.add_subparsers(
+        dest="abbreviation_command", required=True
+    )
+    abbreviation_sub.add_parser("status", help="Etkin kısaltma kaynağını göster")
+    abbreviation_convert = abbreviation_sub.add_parser(
+        "convert", help="Resmî kısaltmalar PDF'sini doğrulanmış JSON'a dönüştür"
+    )
+    abbreviation_convert.add_argument("pdf", type=Path)
+    abbreviation_convert.add_argument("--output", type=Path, required=True)
+    expected = sub.add_parser(
+        "evaluate-expected",
+        help="Bir raporu makale bazlı beklenen eksik-terim listesiyle ölç",
+    )
+    expected.add_argument("expected", type=Path)
+    expected.add_argument("result", type=Path)
+    expected.add_argument("--output", type=Path, help="Ölçümü JSON olarak yaz")
     return parser
 
 
-def run_scan(args: argparse.Namespace) -> int:
-    files = _pdf_files(args.input)
-    if not files:
-        print("PDF bulunamadı: {}".format(args.input), file=sys.stderr)
-        return 2
-
-    if not args.model:
-        print(
-            "Model seçilmedi. Kurulu modelleri 'ollama list' ile görün ve "
-            "--model MODEL_ETIKETI parametresini kullanın.",
-            file=sys.stderr,
-        )
-        return 2
-
-    try:
-        dictionary = DictionaryIndex.load(args.dictionary)
-        client = OllamaClient(args.ollama_url, args.model, timeout=args.timeout)
-        client.check_model()
-    except (DictionaryFormatError, OllamaError) as error:
-        print("Başlatma hatası: {}".format(error), file=sys.stderr)
-        return 2
-
-    failures = 0
-    print(
-        "{} PDF, {} sözlük terimi, model: {}".format(
-            len(files), len(dictionary), args.model
-        ),
-        flush=True,
-    )
-    for index, pdf_path in enumerate(files, start=1):
-        print("[{}/{}] {}".format(index, len(files), pdf_path.name), flush=True)
-        try:
-            result = analyze_pdf(
-                pdf_path=pdf_path,
-                dictionary=dictionary,
-                provider=client,
-                model_name=args.model,
-                chunk_size=args.chunk_size,
-                chunk_overlap=args.overlap,
-            )
-            json_path, csv_path = write_reports(result, args.output_dir)
-            counts = result["counts"]
-            print(
-                "  bulunan: {dictionary_matches}, olası: {possible_matches}, eksik: {missing_terms}".format(
-                    **counts
-                )
-            )
-            warnings = result.get("processing_warnings", [])
-            failed_chunks = int(result.get("failed_chunk_count", 0) or 0)
-            if failed_chunks:
-                print(
-                    "  uyarı: {}/{} parça model yanıtı olmadan atlandı".format(
-                        failed_chunks, result.get("chunk_count", 0)
-                    ),
-                    file=sys.stderr,
-                )
-            review = result.get("technical_review", {})
-            if isinstance(review, dict) and review.get("status") == "failed":
-                print(
-                    "  uyarı: ikinci model doğrulaması tamamlanamadı; birleşik puan kullanıldı",
-                    file=sys.stderr,
-                )
-            print(format_terminal_report(result))
-            print("  raporlar: {}, {}".format(json_path, csv_path))
-        except (PDFReadError, OllamaError, ValueError, OSError) as error:
-            failures += 1
-            print("  hata: {}".format(error), file=sys.stderr)
-    return 1 if failures else 0
-
-
 def main(argv=None) -> int:
-    args = build_parser().parse_args(argv)
-    if args.command == "scan":
-        return run_scan(args)
+    parser = build_parser()
+    args = parser.parse_args(argv)
     if args.command == "serve":
-        from .web_app import serve
+        from .web_app import serve, validate_bind_host
+        try:
+            host = validate_bind_host(args.host)
+        except ValueError as error:
+            parser.error(str(error))
+        serve(host, args.port, open_browser=not args.no_browser); return 0
+    if args.command == "scan":
+        from terim_etmeni.reporting import format_terminal_report
 
-        serve(args.host, args.port, open_browser=not args.no_browser)
+        service = AnalysisService(Settings())
+        model = args.model or service.settings.model
+        try:
+            result, json_path, csv_path, _ = service.analyze_path(args.pdf, model)
+        except Exception as error:
+            parser.error(str(error))
+        print(format_terminal_report(result))
+        print("JSON raporu: {}".format(json_path))
+        print("CSV raporu: {}".format(csv_path))
         return 0
+    if args.command == "evaluate-expected":
+        try:
+            expected_terms = load_expected(args.expected)
+            report = json.loads(Path(args.result).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError, ExpectedEvaluationError) as error:
+            parser.error(str(error))
+        result = evaluate_expected(expected_terms, report)
+        print(format_expected(result))
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(
+                json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            print("JSON ölçüm özeti: {}".format(args.output))
+        return 0
+    if args.command == "abbreviations" and args.abbreviation_command == "convert":
+        data = convert_abbreviation_pdf(args.pdf)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print("Kısaltma dizini: {}".format(args.output))
+        return 0
+    service = AnalysisService(Settings())
+    if args.command == "abbreviations" and args.abbreviation_command == "status":
+        print(
+            json.dumps(
+                service.abbreviations.metadata,
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return 0
+    if args.dictionary_command == "status":
+        print(json.dumps(service.dictionary_status().as_dict(), ensure_ascii=False, indent=2)); return 0
+    if args.dictionary_command == "import":
+        status = service.dictionaries.import_pdf(args.pdf)
+        print(json.dumps(status.as_dict(), ensure_ascii=False, indent=2)); return 0
+    if args.dictionary_command == "check":
+        settings = service.settings
+        result = check_and_update(service.dictionaries, page_url=settings.dictionary_page_url, pdf_url=settings.dictionary_pdf_url, timeout=settings.update_timeout_seconds)
+        print(result.message); return 0 if result.status != "failed" else 1
     return 2
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

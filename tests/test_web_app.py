@@ -3,212 +3,172 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import patch
 
 from terim_etmeni.config import Settings
-from terim_etmeni.dictionary import DictionaryIndex
+from terim_etmeni.service import AnalysisService
 from terim_etmeni.web_app import (
-    WebApplication,
-    _multipart,
-    _preferred_installed_model,
+    dictionary_html,
+    index_html,
     result_html,
+    Handler,
+    validate_bind_host,
 )
 
 
-class WebApplicationTests(unittest.TestCase):
-    def setUp(self):
-        self.result = {
-            "document": "sample.pdf",
-            "model": "qwen:latest",
-            "dictionary_version": "test",
-            "page_count": 1,
-            "counts": {
-                "dictionary_matches": 1,
-                "possible_matches": 1,
-                "missing_terms": 1,
-                "rejected_candidates": 0,
-            },
-            "dictionary_matches": [
+class WebAppTests(unittest.TestCase):
+    def test_server_rejects_non_loopback_bind_addresses(self):
+        self.assertEqual(validate_bind_host("localhost"), "localhost")
+        self.assertEqual(validate_bind_host("127.0.0.1"), "127.0.0.1")
+        self.assertEqual(validate_bind_host("::1"), "::1")
+        for host in ("0.0.0.0", "::", "192.168.1.10", "server.example"):
+            with self.subTest(host=host), self.assertRaisesRegex(
+                ValueError, "yalnız localhost"
+            ):
+                validate_bind_host(host)
+
+    def test_health_endpoint_is_minimal_and_has_security_headers(self):
+        handler = object.__new__(Handler)
+        statuses = []
+        headers = {}
+        handler.send_response = statuses.append
+        handler.send_header = headers.__setitem__
+        handler.end_headers = lambda: None
+        handler.wfile = io.BytesIO()
+
+        handler._health()
+
+        self.assertEqual(statuses, [200])
+        self.assertEqual(json.loads(handler.wfile.getvalue()), {"status": "ok"})
+        self.assertEqual(headers["X-Frame-Options"], "DENY")
+        self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
+        self.assertIn(
+            "frame-ancestors 'none'", headers["Content-Security-Policy"]
+        )
+
+    def service(self, root):
+        dictionary = root / "dictionary.json"
+        dictionary.write_text(
+            json.dumps({"metadata": {"version": "2026-08-13"}, "terms": [{"en": "AI", "tr": "YZ"}]}),
+            encoding="utf-8",
+        )
+        abbreviations = root / "abbreviations.json"
+        abbreviations.write_text(
+            json.dumps(
                 {
-                    "term": "machine learning",
-                    "translations": ["makine öğrenmesi"],
-                    "pages": [1],
-                    "occurrence_count": 1,
-                }
-            ],
-            "possible_matches": [
-                {
-                    "term": "neural networks",
-                    "possible_dictionary_terms": [
-                        {"en": "neural network", "tr": "sinir ağı"}
+                    "metadata": {"version": "2025-03-17"},
+                    "abbreviations": [
+                        {
+                            "abbreviation": "AI",
+                            "expansion": "Artificial Intelligence",
+                            "turkish": "yapay zekâ",
+                        }
                     ],
-                    "pages": [1],
-                    "occurrence_count": 2,
                 }
-            ],
-            "missing_terms": [
-                {
-                    "term": "semantic photon router",
-                    "pages": [1],
-                    "occurrence_count": 1,
-                }
-            ],
-            "rejected_candidates": [],
-        }
+            ),
+            encoding="utf-8",
+        )
+        settings = Settings(
+            bootstrap_dictionary=dictionary,
+            bootstrap_abbreviations=abbreviations,
+            dictionary_state_dir=root / "state",
+            output_dir=root / "output",
+            provider_config_file=root / "provider.json",
+        )
+        service = AnalysisService(settings)
+        service.installed_models = lambda: (["test-model"], "")
+        return service
 
-    def test_result_page_contains_all_groups_and_downloads(self):
-        rendered = result_html(self.result, "sample_terms.json", "sample_report.csv")
-        self.assertIn("Sözlükte bulunanlar", rendered)
-        self.assertIn("semantic photon router", rendered)
-        self.assertIn("Karar listesi", rendered)
-        self.assertIn("Öncelikli sözlük açıkları", rendered)
-        self.assertIn("İkincil inceleme adayları", rendered)
-        self.assertIn("Yakın sözlük eşleşmeleri", rendered)
-        self.assertIn("İnceleme CSV’sini indir", rendered)
-        self.assertIn("sample_report.csv", rendered)
-
-    def test_result_page_moves_legacy_low_priority_terms_to_audit_details(self):
-        result = dict(self.result)
-        result["counts"] = dict(self.result["counts"], missing_terms=2)
-        result["missing_terms"] = list(self.result["missing_terms"]) + [
-            {
-                "term": "DNS",
-                "pages": [1],
-                "occurrence_count": 2,
-                "review_priority": "low",
-                "reason": "single_word_review",
-            }
-        ]
-        rendered = result_html(result, "sample_terms.json", "sample_report.csv")
-        self.assertIn("Elenen adaylar (1)", rendered)
-        self.assertIn("Ana sayı yalnız yüksek güvenli", rendered)
-
-    def test_result_page_separates_medium_candidates_from_primary_count(self):
-        result = dict(self.result)
-        result["missing_terms"] = [
-            dict(self.result["missing_terms"][0], review_priority="high"),
-            {
-                "term": "secondary candidate",
-                "pages": [1],
-                "occurrence_count": 1,
-                "review_priority": "medium",
-            },
-        ]
-        rendered = result_html(result, "sample_terms.json", "sample_report.csv")
-        self.assertIn("Öncelikli açık", rendered)
-        self.assertIn("İkincil inceleme adayları (1)", rendered)
-        self.assertIn("secondary candidate", rendered)
-
-    def test_latest_result_keeps_nested_report_path_in_download_links(self):
+    def test_main_page_keeps_dictionary_and_article_flow_simple(self):
         with tempfile.TemporaryDirectory() as directory:
-            output_dir = Path(directory)
-            report_dir = output_dir / "evaluation" / "qwen35-4b" / "sample"
-            report_dir.mkdir(parents=True)
-            (report_dir / "sample_terms.json").write_text(
-                json.dumps(self.result), encoding="utf-8"
-            )
-            app = object.__new__(WebApplication)
-            app.settings = Settings(output_dir=output_dir)
-
-            rendered = app.latest_result_html()
-
-        self.assertIsNotNone(rendered)
-        self.assertIn(
-            "/reports/evaluation/qwen35-4b/sample/sample_terms.json",
-            rendered,
-        )
-        self.assertIn(
-            "/reports/evaluation/qwen35-4b/sample/sample_terim_raporu.xlsx",
-            rendered,
-        )
-
-    def test_failed_analysis_is_not_presented_as_zero_missing_success(self):
-        result = dict(self.result)
-        result["analysis_status"] = "failed"
-        result["failed_chunk_count"] = 5
-        result["processed_chunk_count"] = 0
-        result["processing_warnings"] = ["invalid JSON"]
-        rendered = result_html(result, "sample_terms.json", "sample_report.csv")
-        self.assertIn("Analiz eksik kaldı", rendered)
-        self.assertIn("Model analizi tamamlanamadı", rendered)
-        self.assertIn("“0 eksik” anlamına gelmez", rendered)
-
-    def test_model_is_preselected_only_by_explicit_environment_setting(self):
-        models = ["future-model:latest", "qwen3.5:2b"]
-        self.assertEqual(_preferred_installed_model(models, ""), "")
-        self.assertEqual(_preferred_installed_model(models, "missing"), "")
-        self.assertEqual(
-            _preferred_installed_model(models, "future-model:latest"),
-            "future-model:latest",
-        )
-
-    def test_index_shows_ollama_status_and_upload_form(self):
-        app = object.__new__(WebApplication)
-        app.settings = Settings()
-        app.dictionary = DictionaryIndex(
-            [{"en": "machine learning", "tr": "makine öğrenmesi"}]
-        )
-        with patch.object(
-            app,
-            "model_status",
-            return_value=(["qwen3.5:2b", "granite4.1:3b", "gemma3:4b"], None),
-        ):
-            rendered = app.index_html()
-        self.assertIn("Ollama hazır", rendered)
-        self.assertIn('type="file"', rendered)
-        self.assertIn("qwen3.5:2b", rendered)
-        self.assertIn("granite4.1:3b", rendered)
-        self.assertIn("gemma3:4b", rendered)
-        self.assertIn('<option value="" disabled selected>Bir model seçin</option>', rendered)
-        self.assertNotIn('<option value="qwen3.5:2b" selected', rendered)
-        self.assertIn("Kurulum ve model rehberi", rendered)
-        self.assertIn("Uygulama belirli bir modele bağlı değildir", rendered)
-        self.assertIn("Küçük modeller", rendered)
-        self.assertIn("Orta modeller", rendered)
-        self.assertIn("Büyük modeller", rendered)
-        self.assertIn("Önerilen: qwen3.5:2b", rendered)
-        self.assertIn("Önerilen: qwen3.5:4b", rendered)
-        self.assertIn("Önerilen: qwen3.5:9b", rendered)
+            rendered = index_html(self.service(Path(directory)))
+        self.assertIn("Güncel sözlük: 2026-08-13", rendered)
+        self.assertIn("Makale PDF'si", rendered)
         self.assertIn("Eksik terimleri bul", rendered)
-        self.assertIn("Model seçin", rendered)
-        self.assertNotIn('id="model-help"', rendered)
 
-    def test_index_does_not_show_default_model_when_ollama_is_unavailable(self):
-        app = object.__new__(WebApplication)
-        app.settings = Settings()
-        app.dictionary = DictionaryIndex([])
-        with patch.object(app, "model_status", return_value=([], "connection refused")):
-            rendered = app.index_html()
-        self.assertIn("Ollama bağlantısı yok", rendered)
-        self.assertIn("Ollama kurulmadı veya çalışmıyor", rendered)
-        self.assertNotIn('<option value="qwen3.5:2b"', rendered)
-        self.assertIn('<select id="model-select" name="model" required disabled>', rendered)
-        self.assertIn('<button class="button" type="submit" disabled>', rendered)
-        self.assertIn("Kurulum ve model rehberi", rendered)
-        self.assertIn("ollama pull MODEL_ETIKETI", rendered)
-        self.assertIn("macOS", rendered)
-        self.assertIn("Windows", rendered)
+    def test_main_page_uses_api_mode_when_a_key_is_configured(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            service = self.service(root)
+            from terim_etmeni.provider_store import ProviderConfig
+            service.save_provider_config(
+                ProviderConfig("deepseek", "secret", "deepseek-chat")
+            )
+            rendered = index_html(service)
+        self.assertIn("Bulut API", rendered)
+        self.assertIn("deepseek", rendered)
+        self.assertNotIn("Yerel analiz modeli", rendered)
 
-    def test_multipart_parser_reads_pdf_and_model(self):
-        boundary = "test-boundary"
-        body = (
-            "--{0}\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\n"
-            "qwen:latest\r\n"
-            "--{0}\r\nContent-Disposition: form-data; name=\"pdf\"; filename=\"test.pdf\"\r\n"
-            "Content-Type: application/pdf\r\n\r\n%PDF-test\r\n"
-            "--{0}--\r\n"
-        ).format(boundary).encode()
-        handler = SimpleNamespace(
-            headers={
-                "Content-Length": str(len(body)),
-                "Content-Type": "multipart/form-data; boundary={}".format(boundary),
+    def test_dictionary_management_is_a_separate_page(self):
+        with tempfile.TemporaryDirectory() as directory:
+            rendered = dictionary_html(self.service(Path(directory)))
+        self.assertIn("TBD sitesini kontrol et", rendered)
+        self.assertIn("Sözlük PDF'sini elle yükle", rendered)
+        self.assertIn("Ayrı kısaltma kaynağı", rendered)
+        self.assertIn("Ana sözlüğe birleştirilmez", rendered)
+
+    def test_result_separates_abbreviation_source_from_dictionary_matches(self):
+        rendered = result_html(
+            {
+                "analysis_status": "complete",
+                "dictionary_version": "v1",
+                "model": "test",
+                "missing_terms": [],
+                "dictionary_matches": [],
+                "possible_matches": [
+                    {
+                        "term": "DNS",
+                        "pages": [1],
+                        "occurrence_count": 2,
+                        "match_source": "tbd_abbreviations",
+                        "possible_dictionary_terms": [
+                            {"en": "Domain Name System", "tr": "alan adı sistemi"}
+                        ],
+                    }
+                ],
             },
-            rfile=io.BytesIO(body),
+            {"json": "a.json", "csv": "a.csv", "xlsx": "a.xlsx"},
         )
-        fields, files = _multipart(handler)
-        self.assertEqual(fields["model"], "qwen:latest")
-        self.assertEqual(files["pdf"], ("test.pdf", b"%PDF-test"))
+        self.assertIn("Kısaltma kaynağında", rendered)
+        self.assertIn("Domain Name System", rendered)
+        self.assertIn("alan adı sistemi", rendered)
+
+    def test_result_shows_term_context(self):
+        rendered = result_html(
+            {
+                "analysis_status": "complete",
+                "dictionary_version": "v1",
+                "model": "test",
+                "missing_terms": [
+                    {
+                        "term": "agentic workflow",
+                        "found_in_dictionary": False,
+                        "context": "An agentic workflow runs here.",
+                        "pages": [1],
+                        "occurrence_count": 1,
+                    }
+                ],
+                "possible_matches": [],
+                "dictionary_matches": [],
+            },
+            {"json": "a.json", "csv": "a.csv", "xlsx": "a.xlsx"},
+        )
+        self.assertIn("agentic workflow", rendered)
+        self.assertIn("An agentic workflow runs here.", rendered)
+
+    def test_result_warns_when_analysis_is_partial(self):
+        rendered = result_html(
+            {
+                "analysis_status": "partial",
+                "dictionary_version": "v1",
+                "model": "test",
+                "missing_terms": [],
+                "possible_matches": [],
+                "dictionary_matches": [],
+            },
+            {"json": "a.json", "csv": "a.csv", "xlsx": "a.xlsx"},
+        )
+        self.assertIn("0 eksik terim", rendered)
+        self.assertIn("Analiz kısmi tamamlandı", rendered)
 
 
 if __name__ == "__main__":
