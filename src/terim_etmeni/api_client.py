@@ -44,6 +44,33 @@ def provider_default_model(provider: str) -> str:
     return PROVIDER_DEFAULTS.get(provider, ("", ""))[1]
 
 
+def _parse_retry_delay(detail: str, default: float = 20.0) -> float:
+    """API 429 yanıtındaki bekleme süresini (retryDelay) ayıklar."""
+    try:
+        data = json.loads(detail)
+        details = data.get("error", {}).get("details", [])
+        if isinstance(details, list):
+            for item in details:
+                if isinstance(item, dict) and "retryDelay" in item:
+                    val = str(item["retryDelay"]).rstrip("s")
+                    return max(float(val), 1.0)
+        msg = data.get("error", {}).get("message", "")
+        import re
+        match = re.search(r"retry in ([0-9.]+)s", msg, flags=re.IGNORECASE)
+        if match:
+            return max(float(match.group(1)), 1.0)
+    except Exception:
+        pass
+    import re
+    match = re.search(r"retry in ([0-9.]+)s", detail, flags=re.IGNORECASE)
+    if match:
+        try:
+            return max(float(match.group(1)), 1.0)
+        except Exception:
+            pass
+    return default
+
+
 class ApiClient:
     """OpenAI-uyumlu, Anthropic veya Google API üzerinden aday üreten istemci."""
 
@@ -260,22 +287,39 @@ class ApiClient:
         return text
 
     def _request(
-        self, url: str, payload: dict[str, object], headers: dict[str, str]
+        self,
+        url: str,
+        payload: dict[str, object],
+        headers: dict[str, str],
+        max_retries: int = 4,
     ) -> dict[str, object]:
         data = json.dumps(payload).encode("utf-8")
-        request = urllib.request.Request(url, data=data, headers=headers, method="POST")
-        try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                result = json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as error:
-            detail = error.read().decode("utf-8", errors="replace")
-            raise ApiClientError(
-                "API HTTP hatası {}: {}".format(error.code, detail)
-            ) from error
-        except (urllib.error.URLError, TimeoutError) as error:
-            raise ApiClientError("API'ye bağlanılamadı.") from error
-        except json.JSONDecodeError as error:
-            raise ApiClientError("API geçersiz bir HTTP yanıtı döndürdü.") from error
-        if not isinstance(result, dict):
-            raise ApiClientError("API yanıtının biçimi beklenenden farklı.")
-        return result
+        last_error: Exception | None = None
+        for attempt in range(max_retries + 1):
+            request = urllib.request.Request(url, data=data, headers=headers, method="POST")
+            try:
+                with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                    result = json.loads(response.read().decode("utf-8"))
+                if not isinstance(result, dict):
+                    raise ApiClientError("API yanıtının biçimi beklenenden farklı.")
+                return result
+            except urllib.error.HTTPError as error:
+                detail = error.read().decode("utf-8", errors="replace")
+                if error.code == 429 and attempt < max_retries:
+                    delay = _parse_retry_delay(detail, default=15.0 * (attempt + 1))
+                    import time
+                    time.sleep(delay + 1.0)
+                    continue
+                raise ApiClientError(
+                    "API HTTP hatası {}: {}".format(error.code, detail)
+                ) from error
+            except (urllib.error.URLError, TimeoutError) as error:
+                last_error = error
+                if attempt < max_retries:
+                    import time
+                    time.sleep(2.0 * (attempt + 1))
+                    continue
+                raise ApiClientError("API'ye bağlanılamadı.") from error
+            except json.JSONDecodeError as error:
+                raise ApiClientError("API geçersiz bir HTTP yanıtı döndürdü.") from error
+        raise last_error or ApiClientError("API isteği tamamlanamadı.")

@@ -182,7 +182,34 @@ class ApiClientTests(unittest.TestCase):
         client = ApiClient("google", "secret", "gemini 2.5 flash")
         self.assertEqual(client.model, "gemini-2.5-flash")
 
+    def test_rate_limit_429_retries_and_succeeds(self):
+        import io
+        import urllib.error
+        client = ApiClient("google", "secret", "gemini-2.5-flash", timeout=5)
+        attempts = 0
+
+        def fake_open(request, timeout):
+            nonlocal attempts
+            attempts += 1
+            if attempts == 1:
+                fp = io.BytesIO(b'{"error": {"code": 429, "message": "Resource exhausted. retry in 0.1s"}}')
+                raise urllib.error.HTTPError(request.full_url, 429, "Too Many Requests", {}, fp)
+            return _response(
+                {
+                    "candidates": [
+                        {"content": {"parts": [{"text": '{"terms": ["smart contract"]}'}]}}
+                    ]
+                }
+            )
+
+        with patch("urllib.request.urlopen", side_effect=fake_open), patch("time.sleep") as mock_sleep:
+            terms = client.extract_terms("text")
+        self.assertEqual([t.term for t in terms], ["smart contract"])
+        self.assertEqual(attempts, 2)
+        mock_sleep.assert_called()
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
