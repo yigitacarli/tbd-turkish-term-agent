@@ -22,30 +22,30 @@ LOOPBACK_HOST_NAMES = {"localhost"}
 
 STYLE = """
 :root {
-  --bg-app: #f4f6f9;
+  --bg-app: #f1f5f9;
   --bg-surface: #ffffff;
-  --border-subtle: #d1d5db;
-  --border-strong: #9ca3af;
-  --text-primary: #111827;
-  --text-secondary: #374151;
-  --text-muted: #4b5563;
+  --border-subtle: #cbd5e1;
+  --border-strong: #94a3b8;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
   --tbd-navy: #1e3a5f;
-  --tbd-navy-hover: #152942;
+  --tbd-navy-hover: #0f2942;
   --tbd-blue: #0284c7;
   --tbd-blue-light: #f0f9ff;
   --tbd-blue-border: #bae6fd;
-  --success-bg: #f0fdf4;
-  --success-text: #166534;
-  --success-border: #86efac;
+  --success-bg: #ecfdf5;
+  --success-text: #065f46;
+  --success-border: #a7f3d0;
   --warning-bg: #fffbeb;
   --warning-text: #92400e;
   --warning-border: #fde68a;
   --danger-bg: #fef2f2;
   --danger-text: #991b1b;
   --danger-border: #fca5a5;
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,16 +53,16 @@ body {
   background: var(--bg-app);
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 18px;
+  line-height: 1.75;
   -webkit-font-smoothing: antialiased;
 }
 
 .app-header {
   background: var(--tbd-navy);
   color: #ffffff;
-  border-bottom: 3px solid #0284c7;
-  padding: 24px 0 28px;
+  border-bottom: 4px solid var(--tbd-blue);
+  padding: 26px 0 30px;
 }
 
 .wrap {
@@ -76,160 +76,207 @@ body {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 18px;
   margin-bottom: 12px;
 }
 
 .header-title-block h1 {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.01em;
 }
 
 .header-title-block .institution {
-  font-size: 13px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #93c5fd;
-  font-weight: 600;
-  margin-bottom: 2px;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 
 .nav-tabs {
   display: flex;
-  gap: 6px;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 4px;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px;
   border-radius: var(--radius-md);
 }
 
 .nav-tabs a {
   color: #e2e8f0;
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 20px;
   border-radius: var(--radius-sm);
   transition: all 0.15s ease;
 }
 
 .nav-tabs a:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
 }
 
 .nav-tabs a.active {
   background: #ffffff;
   color: var(--tbd-navy);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .header-description {
-  color: #cbd5e1;
-  font-size: 15px;
+  color: #e2e8f0;
+  font-size: 17px;
   margin-top: 6px;
+  line-height: 1.6;
 }
 
 .main-content {
-  margin-top: 24px;
-  padding-bottom: 60px;
+  margin-top: 28px;
+  padding-bottom: 70px;
 }
 
 .card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-  padding: 24px 28px;
-  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  padding: 32px 36px;
+  margin-bottom: 28px;
 }
 
 .card-title {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
-  color: var(--text-primary);
-  border-bottom: 2px solid #e5e7eb;
-  padding-bottom: 8px;
-  margin-bottom: 16px;
+  color: #0f2942;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
 }
 
 .card-intro {
-  font-size: 15px;
+  font-size: 18px;
   color: var(--text-secondary);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  line-height: 1.7;
 }
 
-.dict-status-box {
+.dict-status-strip {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  background: var(--tbd-blue-light);
-  border: 1px solid var(--tbd-blue-border);
+  gap: 20px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-left: 5px solid var(--tbd-navy);
   border-radius: var(--radius-md);
-  padding: 16px 20px;
-  margin-bottom: 24px;
+  padding: 20px 28px;
+  margin-bottom: 28px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
 }
 
-.dict-status-box b {
+.dict-status-info .dict-title {
   display: block;
-  font-size: 16px;
-  color: var(--tbd-navy);
+  font-size: 19px;
+  font-weight: 700;
+  color: #0f2942;
+  margin-bottom: 2px;
 }
 
-.dict-status-box span {
-  font-size: 14px;
+.dict-status-info .dict-counts {
+  font-size: 16px;
   color: var(--text-secondary);
 }
 
-.upload-area {
-  border: 2px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: #ffffff;
-  padding: 24px;
-  margin-bottom: 20px;
-}
-
-.upload-area label {
-  display: block;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.upload-area input[type="file"] {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  font-size: 15px;
+.engine-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: #f8fafc;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  background: #f9fafb;
+  padding: 16px 22px;
+  margin-bottom: 26px;
+  font-size: 16px;
+  color: #1e293b;
+  line-height: 1.6;
+}
+
+.upload-zone {
+  background: #ffffff;
+  border: 2px dashed #94a3b8;
+  border-radius: var(--radius-md);
+  padding: 26px 30px;
+  margin-bottom: 26px;
+  transition: border-color 0.15s ease;
+}
+
+.upload-zone:hover {
+  border-color: var(--tbd-navy);
+}
+
+.upload-label-title {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.upload-hint {
+  display: block;
+  font-size: 16px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.file-input-field {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 17px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: #f8fafc;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.file-chosen-banner {
+  margin-top: 14px;
+  padding: 12px 18px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--radius-sm);
+  color: #065f46;
+  font-size: 17px;
 }
 
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
 }
 
 .form-group {
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 }
 
 .form-group label {
   display: block;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 6px;
+  color: #0f172a;
+  margin-bottom: 8px;
 }
 
 .form-group select, .form-group input[type="text"], .form-group input[type="password"] {
   width: 100%;
-  padding: 10px 14px;
-  font-size: 15px;
+  padding: 13px 16px;
+  font-size: 17px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: #ffffff;
@@ -238,13 +285,13 @@ body {
 
 .form-group select:focus, .form-group input:focus {
   border-color: var(--tbd-navy);
-  outline: 2px solid var(--tbd-blue-border);
+  outline: 3px solid var(--tbd-blue-border);
 }
 
 .btn {
   display: inline-block;
-  padding: 12px 24px;
-  font-size: 15px;
+  padding: 14px 28px;
+  font-size: 16px;
   font-weight: 700;
   text-align: center;
   text-decoration: none;
@@ -270,12 +317,18 @@ body {
 }
 
 .btn-secondary:hover {
-  background: #f3f4f6;
+  background: #f8fafc;
+  border-color: var(--text-primary);
 }
 
 .btn-sm {
-  padding: 8px 16px;
-  font-size: 14px;
+  padding: 10px 20px;
+  font-size: 15px;
+}
+
+.btn-lg {
+  padding: 16px 40px;
+  font-size: 19px;
 }
 
 .btn-block {
@@ -284,10 +337,11 @@ body {
 }
 
 .notice {
-  padding: 14px 18px;
+  padding: 16px 22px;
   border-radius: var(--radius-sm);
-  font-size: 15px;
-  margin-bottom: 20px;
+  font-size: 17px;
+  line-height: 1.6;
+  margin-bottom: 24px;
   border: 1px solid transparent;
 }
 
@@ -297,7 +351,7 @@ body {
 
 /* Results Screen */
 .summary-table-wrap {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .summary-table {
@@ -307,66 +361,71 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   overflow: hidden;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
 }
 
 .summary-table th {
   background: #f8fafc;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: #1e293b;
   text-align: left;
-  padding: 12px 16px;
+  padding: 16px 20px;
   border-bottom: 2px solid var(--border-subtle);
 }
 
 .summary-table td {
-  padding: 14px 16px;
-  font-size: 16px;
+  padding: 18px 20px;
+  font-size: 24px;
+  font-weight: 700;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .results-grid {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 24px;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
   align-items: start;
 }
 
 .filter-bar {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
   align-items: center;
   background: #ffffff;
-  padding: 14px 18px;
+  padding: 18px 22px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
 }
 
 .filter-input {
   flex: 1;
-  min-width: 220px;
-  padding: 10px 14px;
-  font-size: 15px;
+  min-width: 240px;
+  padding: 12px 18px;
+  font-size: 17px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
 }
 
 .filter-tabs {
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .filter-btn {
-  padding: 8px 14px;
-  font-size: 14px;
-  font-weight: 600;
+  padding: 10px 18px;
+  font-size: 16px;
+  font-weight: 700;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   background: #ffffff;
   color: var(--text-secondary);
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .filter-btn.active, .filter-btn:hover {
@@ -378,10 +437,11 @@ body {
 .term-entry {
   background: #ffffff;
   border: 1px solid var(--border-subtle);
-  border-left: 4px solid var(--border-strong);
+  border-left: 6px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  padding: 16px 20px;
-  margin-bottom: 12px;
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.03);
 }
 
 .term-entry[data-group="missing"] { border-left-color: #dc2626; }
@@ -392,19 +452,19 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .term-heading {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #0f172a;
 }
 
 .badge {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 4px 10px;
+  padding: 6px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
 }
@@ -414,36 +474,39 @@ body {
 .badge-found { background: #dcfce7; color: #166534; border-color: #86efac; }
 
 .term-context-box {
-  font-size: 14px;
-  color: var(--text-secondary);
+  font-size: 17px;
+  line-height: 1.75;
+  color: #334155;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  margin-bottom: 8px;
+  padding: 14px 18px;
+  margin: 12px 0;
   font-style: normal;
 }
 
 .term-meta-info {
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: 15px;
+  color: #64748b;
   display: flex;
-  gap: 16px;
+  gap: 20px;
+  font-weight: 600;
 }
 
 .export-panel {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .footer {
   text-align: center;
   color: var(--text-muted);
-  font-size: 14px;
-  margin-top: 40px;
-  padding-top: 20px;
+  font-size: 16px;
+  margin-top: 50px;
+  padding-top: 24px;
   border-top: 1px solid var(--border-subtle);
+  line-height: 1.7;
 }
 
 /* Loading Box */
@@ -451,34 +514,35 @@ body {
   display: none;
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(30, 58, 95, 0.85);
+  background: rgba(15, 23, 42, 0.88);
   z-index: 9999;
   justify-content: center;
   align-items: center;
   color: #ffffff;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 
 .loading-box {
   background: #ffffff;
   color: var(--text-primary);
-  padding: 32px 40px;
+  padding: 38px 46px;
   border-radius: var(--radius-md);
   text-align: center;
-  max-width: 500px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 560px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
 .loading-box h3 {
-  font-size: 20px;
+  font-size: 24px;
   color: var(--tbd-navy);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .loading-box p {
-  font-size: 14px;
+  font-size: 17px;
   color: var(--text-secondary);
+  line-height: 1.7;
 }
 
 @media (max-width: 800px) {
@@ -550,6 +614,15 @@ def _document(content: str, *, active_tab: str = "analyze", subtitle: str = "") 
       if (overlay) overlay.style.display = 'flex';
     }}
 
+    function displayChosenFile(input) {{
+      var banner = document.getElementById('file-chosen-banner');
+      var nameSpan = document.getElementById('file-chosen-name');
+      if (input.files && input.files[0]) {{
+        if (nameSpan) nameSpan.textContent = input.files[0].name;
+        if (banner) banner.style.display = 'block';
+      }}
+    }}
+
     function filterTerms(group) {{
       var items = document.querySelectorAll('.term-entry');
       var pills = document.querySelectorAll('.filter-btn');
@@ -582,10 +655,10 @@ def _document(content: str, *, active_tab: str = "analyze", subtitle: str = "") 
 def _status_card(service: AnalysisService) -> str:
     status = service.dictionary_status()
     return f"""
-    <div class="dict-status-box">
-      <div>
-        <b>Güncel sözlük: {html.escape(status.version)}</b>
-        <span>{status.record_count:,} kayıt · {status.unique_count:,} benzersiz İngilizce terim</span>
+    <div class="dict-status-strip">
+      <div class="dict-status-info">
+        <span class="dict-title">Güncel sözlük: {html.escape(status.version)}</span>
+        <span class="dict-counts">{status.record_count:,} kayıt · {status.unique_count:,} benzersiz İngilizce terim</span>
       </div>
       <a class="btn btn-secondary btn-sm" href="/dictionary">Sözlüğü yönet</a>
     </div>
@@ -602,9 +675,9 @@ def index_html(service: AnalysisService, message: str = "", message_type: str = 
             notice += '<div class="notice notice-warn"><b>Bulut API ayarlanmamış.</b> <a href="/settings" style="color:inherit; font-weight:700;">Ayarlar</a> sayfasından sağlayıcı ve anahtar girin ya da yerel Ollama modeli kullanın.</div>'
         
         engine_info = f"""
-        <div style="background:#f8fafc; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:20px; font-size:14px; color:var(--text-secondary);">
-          <b>Çalışma Modu:</b> Bulut API (Sağlayıcı: <b>{html.escape(status['provider'])}</b>, Model: <code>{html.escape(status['model'])}</code>). PDF içeriği analiz sırasında bu sağlayıcıya gönderilir.
-          <a href="/settings" style="margin-left:12px; color:var(--tbd-navy); text-decoration:underline; font-weight:600;">Ayarları Değiştir</a>
+        <div class="engine-info-row">
+          <span><b>Çalışma Modu:</b> Bulut API (Sağlayıcı: <b>{html.escape(status['provider'])}</b>, Model: <code>{html.escape(status['model'])}</code>). PDF içeriği analiz sırasında bu sağlayıcıya gönderilir.</span>
+          <a class="btn btn-secondary btn-sm" href="/settings">Ayarları Değiştir</a>
         </div>
         """
         model_field = ""
@@ -625,13 +698,13 @@ def index_html(service: AnalysisService, message: str = "", message_type: str = 
             notice += f'<div class="notice notice-danger"><b>Analiz motoruna bağlanılamadı.</b> {html.escape(model_error)}</div>'
 
         engine_info = """
-        <div style="background:#f8fafc; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:12px 16px; margin-bottom:20px; font-size:14px; color:var(--text-secondary);">
-          <b>Çalışma Modu:</b> Yerel Ollama Motoru (Bilgisayarınızdaki yerel model kullanılır).
-          <a href="/settings" style="margin-left:12px; color:var(--tbd-navy); text-decoration:underline; font-weight:600;">Bulut API'ye Geç</a>
+        <div class="engine-info-row">
+          <span><b>Çalışma Modu:</b> Yerel Ollama Motoru (Bilgisayarınızdaki yerel model kullanılır).</span>
+          <a class="btn btn-secondary btn-sm" href="/settings">Bulut API'ye Geç</a>
         </div>
         """
         model_field = f"""
-        <div class="form-group">
+        <div class="form-group" style="margin-top:20px;">
           <label for="model-select">Yerel analiz modeli</label>
           <select id="model-select" name="model" required>
             {options}
@@ -650,16 +723,22 @@ def index_html(service: AnalysisService, message: str = "", message_type: str = 
       {engine_info}
 
       <form action="/analyze" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-        <div class="upload-area">
-          <label for="pdf-input">Makale PDF'si</label>
-          <input type="file" id="pdf-input" name="pdf" accept="application/pdf,.pdf" required>
+        <div class="upload-zone">
+          <label class="upload-label-title" for="pdf-input">Makale PDF'si</label>
+          <span class="upload-hint">İncelemek istediğiniz İngilizce bilimsel makaleyi seçiniz (Yalnızca .pdf formatı)</span>
+          <input type="file" id="pdf-input" class="file-input-field" name="pdf" accept="application/pdf,.pdf" required onchange="displayChosenFile(this)">
+          <div id="file-chosen-banner" class="file-chosen-banner" style="display:none;">
+            <b>Seçilen Dosya:</b> <span id="file-chosen-name"></span>
+          </div>
         </div>
 
         {model_field}
 
-        <button class="btn btn-primary" type="submit" style="margin-top:10px; font-size:16px;">
-          Eksik terimleri bul
-        </button>
+        <div style="margin-top:24px;">
+          <button class="btn btn-primary btn-lg" type="submit">
+            Eksik terimleri bul
+          </button>
+        </div>
       </form>
     </section>
     """
@@ -797,10 +876,10 @@ def result_html(result: dict[str, object], links: dict[str, str]) -> str:
         </thead>
         <tbody>
           <tr>
-            <td style="color:#b91c1c; font-weight:700; font-size:20px;">{len(missing)}</td>
-            <td style="color:#b45309; font-weight:700; font-size:20px;">{len(possible)}</td>
-            <td style="color:#15803d; font-weight:700; font-size:20px;">{len(found)}</td>
-            <td style="font-weight:700; font-size:20px;">{len(missing) + len(possible) + len(found)}</td>
+            <td style="color:#b91c1c; font-weight:700; font-size:28px;">{len(missing)}</td>
+            <td style="color:#b45309; font-weight:700; font-size:28px;">{len(possible)}</td>
+            <td style="color:#15803d; font-weight:700; font-size:28px;">{len(found)}</td>
+            <td style="font-weight:700; font-size:28px; color:#0f2942;">{len(missing) + len(possible) + len(found)}</td>
           </tr>
         </tbody>
       </table>
@@ -824,25 +903,25 @@ def result_html(result: dict[str, object], links: dict[str, str]) -> str:
       </div>
 
       <aside>
-        <div class="card" style="padding:20px;">
-          <h3 style="font-size:16px; font-weight:700; color:var(--tbd-navy); margin-bottom:14px; border-bottom:1px solid var(--border-subtle); padding-bottom:6px;">
+        <div class="card" style="padding:28px 24px;">
+          <h3 style="font-size:18px; font-weight:700; color:var(--tbd-navy); margin-bottom:16px; border-bottom:2px solid var(--border-subtle); padding-bottom:8px;">
             Rapor Dosyaları
           </h3>
           <div class="export-panel">
-            <a class="btn btn-primary btn-sm btn-block" href="/reports/{urllib.parse.quote(links['xlsx'])}">Excel Raporunu İndir (.xlsx)</a>
-            <a class="btn btn-secondary btn-sm btn-block" href="/reports/{urllib.parse.quote(links['csv'])}">CSV Raporunu İndir (.csv)</a>
-            <a class="btn btn-secondary btn-sm btn-block" href="/reports/{urllib.parse.quote(links['json'])}">Teknik JSON Dosyası (.json)</a>
+            <a class="btn btn-primary btn-block" href="/reports/{urllib.parse.quote(links['xlsx'])}" style="font-size:16px; padding:12px 18px;">Excel Raporunu İndir (.xlsx)</a>
+            <a class="btn btn-secondary btn-block" href="/reports/{urllib.parse.quote(links['csv'])}" style="font-size:15px; padding:11px 18px;">CSV Raporunu İndir (.csv)</a>
+            <a class="btn btn-secondary btn-block" href="/reports/{urllib.parse.quote(links['json'])}" style="font-size:15px; padding:11px 18px;">Teknik JSON Dosyası (.json)</a>
           </div>
 
-          <hr style="border:0; border-top:1px solid var(--border-subtle); margin:18px 0;">
+          <hr style="border:0; border-top:1px solid var(--border-subtle); margin:22px 0;">
 
-          <div style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
+          <div style="font-size:15px; color:var(--text-secondary); line-height:1.8;">
             <div><b>İncelenen Belge:</b> {html.escape(doc_name)}</div>
             <div><b>Analiz Modeli:</b> {html.escape(model_name)}</div>
             <div><b>TBD Sözlük Sürümü:</b> {html.escape(dict_version)}</div>
           </div>
 
-          <a class="btn btn-secondary btn-block btn-sm" href="/" style="margin-top:18px;">Yeni Belge İncele</a>
+          <a class="btn btn-secondary btn-block" href="/" style="margin-top:22px; font-size:16px; font-weight:700; padding:12px 18px;">Yeni Belge İncele</a>
         </div>
       </aside>
     </div>
@@ -864,7 +943,7 @@ def dictionary_html(service: AnalysisService, message: str = "", message_type: s
         <h2 class="card-title">Etkin Sözlük</h2>
         <p class="card-intro">İngilizce → Türkçe ana bilişim sözlüğü veritabanı.</p>
         
-        <div style="font-size:15px; line-height:1.9; margin-bottom:24px;">
+        <div style="font-size:17px; line-height:2.0; margin-bottom:28px;">
           <div><b>Sözlük Sürümü:</b> {html.escape(status.version)}</div>
           <div><b>Toplam Terim Kaydı:</b> {status.record_count:,}</div>
           <div><b>Benzersiz İngilizce Terim:</b> {status.unique_count:,}</div>
@@ -872,7 +951,7 @@ def dictionary_html(service: AnalysisService, message: str = "", message_type: s
         </div>
 
         <form action="/dictionary/check" method="post">
-          <button class="btn btn-primary btn-sm" type="submit">TBD sitesini kontrol et</button>
+          <button class="btn btn-primary" type="submit">TBD sitesini kontrol et</button>
         </form>
       </section>
 
@@ -880,12 +959,12 @@ def dictionary_html(service: AnalysisService, message: str = "", message_type: s
         <h2 class="card-title">Ayrı kısaltma kaynağı</h2>
         <p class="card-intro">Resmî TBD Kısaltmalar tablosu veritabanı.</p>
 
-        <div style="font-size:15px; line-height:1.9; margin-bottom:24px;">
+        <div style="font-size:17px; line-height:2.0; margin-bottom:28px;">
           <div><b>Kısaltma Sürümü:</b> {html.escape(str(abbreviation_status.get('version', '')))}</div>
           <div><b>Okunan Kayıt Sayısı:</b> {int(abbreviation_status.get('raw_record_count', 0)):,}</div>
           <div><b>Benzersiz Kısaltma Sayısı:</b> {int(abbreviation_status.get('unique_abbreviation_count', 0)):,}</div>
         </div>
-        <p style="font-size:14px; color:var(--text-muted);">Ana sözlüğe birleştirilmez; eşleşmeler raporda kaynak etiketiyle gösterilir.</p>
+        <p style="font-size:15px; color:var(--text-muted);">Ana sözlüğe birleştirilmez; eşleşmeler raporda kaynak etiketiyle gösterilir.</p>
       </section>
     </div>
 
@@ -896,9 +975,9 @@ def dictionary_html(service: AnalysisService, message: str = "", message_type: s
       <form action="/dictionary/import" method="post" enctype="multipart/form-data">
         <div class="form-group">
           <label for="dict-pdf">TBD Sözlük PDF Belgesi Seçiniz</label>
-          <input type="file" id="dict-pdf" name="dictionary" accept="application/pdf,.pdf" required>
+          <input type="file" id="dict-pdf" name="dictionary" class="file-input-field" accept="application/pdf,.pdf" required>
         </div>
-        <button class="btn btn-secondary btn-sm" type="submit">Doğrula ve etkinleştir</button>
+        <button class="btn btn-secondary btn-sm" type="submit" style="margin-top:10px;">Doğrula ve etkinleştir</button>
       </form>
     </section>
     """
@@ -947,28 +1026,28 @@ def settings_html(service: AnalysisService, message: str = "", message_type: str
           <div class="form-group">
             <label for="model-input">Model Adı</label>
             <input type="text" id="model-input" name="model" value="{html.escape(status['model'], quote=True)}" placeholder="Kullanmak istediğiniz güncel model adı">
-            <span style="font-size:13px; color:var(--text-muted);">Hesabınızda tanımlı olan güncel model adını yazınız.</span>
+            <span style="font-size:15px; color:var(--text-muted); display:block; margin-top:6px;">Hesabınızda tanımlı olan güncel model adını yazınız.</span>
           </div>
 
           <div class="form-group">
             <label for="key-input">API Anahtarı</label>
             <input type="password" id="key-input" name="api_key" value="" placeholder="{key_placeholder}">
-            <span style="font-size:13px; color:var(--text-muted);">Değiştirmek istemiyorsanız bu alanı boş bırakabilirsiniz.</span>
+            <span style="font-size:15px; color:var(--text-muted); display:block; margin-top:6px;">Değiştirmek istemiyorsanız bu alanı boş bırakabilirsiniz.</span>
           </div>
 
           <div class="form-group">
             <label for="url-input">Sunucu Adresi (İsteğe bağlı)</label>
             <input type="text" id="url-input" name="base_url" value="{html.escape(status.get('custom_base_url', ''), quote=True)}" placeholder="Boş bırakılırsa sağlayıcının resmî adresi kullanılır">
-            <span style="font-size:13px; color:var(--text-muted);">Boş bırakıldığında doğrudan resmî bulut adresi kullanılır. Yalnızca özel yerel sunucu veya vekil sunucu (proxy) varsa yazınız.</span>
+            <span style="font-size:15px; color:var(--text-muted); display:block; margin-top:6px;">Boş bırakıldığında doğrudan resmî bulut adresi kullanılır. Yalnızca özel vekil sunucu varsa yazınız.</span>
           </div>
         </div>
 
-        <div style="background:#f8fafc; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:16px 20px; margin: 16px 0 24px;">
-          <b style="font-size:15px; display:block; margin-bottom:8px; color:var(--tbd-navy);">Sağlayıcıların Resmî Dokümantasyon Sayfaları:</b>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:10px;">
-            Yapay zekâ sağlayıcıları model isimlerini zamanla güncelleyebilir. Hesabınızın desteklediği güncel modeller ve yetkiler için ilgili bağlantıyı inceleyebilirsiniz:
+        <div style="background:#f8fafc; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:20px 24px; margin: 20px 0 28px;">
+          <b style="font-size:17px; display:block; margin-bottom:10px; color:var(--tbd-navy);">Sağlayıcıların Resmî Dokümantasyon Sayfaları:</b>
+          <p style="font-size:15px; color:var(--text-secondary); margin-bottom:12px; line-height:1.7;">
+            Yapay zekâ sağlayıcıları model isimlerini zamanla güncelleyebilir. Hesabınızın desteklediği güncel modeller için resmî bağlantıları inceleyebilirsiniz:
           </p>
-          <ul style="font-size:14px; line-height:1.9; padding-left:20px; color:var(--text-secondary);">
+          <ul style="font-size:16px; line-height:2.0; padding-left:24px; color:var(--text-secondary);">
             <li><b>DeepSeek API:</b> <a href="https://api-docs.deepseek.com/" target="_blank" rel="noopener">https://api-docs.deepseek.com/</a></li>
             <li><b>OpenAI API:</b> <a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener">https://platform.openai.com/docs/models</a></li>
             <li><b>Anthropic Claude API:</b> <a href="https://docs.anthropic.com/en/docs/about-claude/models" target="_blank" rel="noopener">https://docs.anthropic.com/en/docs/about-claude/models</a></li>
@@ -976,7 +1055,7 @@ def settings_html(service: AnalysisService, message: str = "", message_type: str
           </ul>
         </div>
 
-        <button class="btn btn-primary" type="submit">Ayarları Kaydet</button>
+        <button class="btn btn-primary btn-lg" type="submit">Ayarları Kaydet</button>
       </form>
     </section>
     """
