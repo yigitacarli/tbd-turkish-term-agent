@@ -25,6 +25,10 @@ class Settings:
     output_dir: Path = PROJECT_ROOT / "output_v2"
     ollama_url: str = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
     model: str = os.environ.get("OLLAMA_MODEL", "")
+    model_provider: str = os.environ.get("MODEL_PROVIDER", "ollama")
+    api_base_url: str = os.environ.get("API_BASE_URL", "")
+    api_key: str = os.environ.get("API_KEY", "")
+    api_model: str = os.environ.get("API_MODEL", "")
     dictionary_page_url: str = os.environ.get(
         "TBD_DICTIONARY_PAGE_URL",
         "https://bilisimde.ozenliturkce.org.tr/onerilen-tum-terimler-ingilizce-turkce/",

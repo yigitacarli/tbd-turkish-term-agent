@@ -325,3 +325,19 @@ Bu kayıt append-only mantığıyla kullanılmalıdır. Eski karar silinmez; de�
   `%83,2 / %52,3`ten `%84,6 / %57,8`e çıktı; yeni yanlış pozitif oluşmadı.
   Tekil kullanımlı gürültü öbekleri (`client originated requests` vb.) aynı
   eşiğin dışında kaldığı için gürültü eleme oranı değişmedi.
+
+## ADR-026 — OpenAI uyumlu bulut API sağlayıcısını Ollama'nın yanına ekleme
+
+- Tarih: 2026-08-14
+- Durum: Kabul edildi
+- Karar: V2'ye OpenAI uyumlu `/chat/completions` bitiş noktasını konuşan
+  `ApiClient` sağlayıcısı eklendi. `MODEL_PROVIDER=api` ile seçilir; `API_BASE_URL`,
+  `API_KEY` ve `API_MODEL` ortam değişkenleriyle yapılandırılır. İstemler ve JSON
+  ayrıştırma mantığı `ollama_client` içinden yeniden kullanılır; sağlayıcı yine
+  yalnız aday üretir, sözlük üyeliği kararı vermez. Yerel Ollama varsayılan olarak
+  kalır; API anahtarı veya adres verilmeden API moduna geçilmez.
+- Gerekçe: Belgeler gizli olmadığı için bulut modeli güçlü bir doğruluk kaynağıdır.
+  OpenAI, DeepSeek ve birçok sağlayıcı aynı uyumlu biçimi kullandığından tek kod
+  birden çok sağlayıcıyı destekler. Yerel küçük modelin (qwen3.5:2b/4b) gerçek
+  açık yakalaması ölçümde `%40-46` bandındadır; güçlü API modeli aday kapsamını
+  artırır ancak kesin kazanç aynı kabul kümesinde ölçülmeden iddia edilmez.

@@ -10,6 +10,7 @@ from terim_etmeni.ollama_client import OllamaClient
 from terim_etmeni.reporting import write_reports
 
 from .abbreviation_index import AbbreviationIndex
+from .api_client import ApiClient, ApiClientError
 from .config import Settings
 from .dictionary_store import DictionaryStatus, DictionaryStore
 from .replay import (
@@ -41,6 +42,10 @@ class AnalysisService:
         return self.dictionaries.status()
 
     def installed_models(self) -> tuple[list[str], str]:
+        if self.settings.model_provider == "api":
+            if not self.settings.api_base_url or not self.settings.api_key:
+                return [], "API ayarları eksik: API_BASE_URL ve API_KEY ortam değişkenleri gerekir."
+            return [self.settings.api_model], ""
         try:
             client = OllamaClient(
                 self.settings.ollama_url,
@@ -50,6 +55,27 @@ class AnalysisService:
             return client.installed_models(), ""
         except RuntimeError as error:
             return [], str(error)
+
+    def _api_client(self, model: str) -> ApiClient:
+        if not self.settings.api_base_url or not self.settings.api_key:
+            raise ApiClientError(
+                "API ayarları eksik: API_BASE_URL ve API_KEY ortam değişkenleri gerekir."
+            )
+        return ApiClient(
+            self.settings.api_base_url,
+            model,
+            self.settings.api_key,
+            timeout=self.settings.timeout_seconds,
+        )
+
+    def _provider(self, model: str):
+        if self.settings.model_provider == "api":
+            return self._api_client(model)
+        return OllamaClient(
+            self.settings.ollama_url,
+            model.strip(),
+            timeout=self.settings.timeout_seconds,
+        )
 
     def analyze_upload(
         self, filename: str, content: bytes, model: str
@@ -70,11 +96,7 @@ class AnalysisService:
                 target.write(content)
                 temporary = Path(target.name)
             dictionary = self.dictionaries.load_index()
-            client = OllamaClient(
-                self.settings.ollama_url,
-                model.strip(),
-                timeout=self.settings.timeout_seconds,
-            )
+            client = self._provider(model)
             client.check_model()
             started_at = time.perf_counter()
             snapshot = capture_candidate_snapshot(

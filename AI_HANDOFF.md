@@ -212,6 +212,13 @@
   4b `%84,6 / %46,5`; 4b aynı hassasiyette daha yüksek yakalama sağladı. Fark
   küçük olduğundan tek başına kesin model üstünlüğü kanıtı değildir; daha güçlü
   model (veya API) gerçek kazanç için ayrı deneme gerektirir.
+- OpenAI uyumlu bulut API sağlayıcısı eklendi (ADR-026). `MODEL_PROVIDER=api`
+  ile `API_BASE_URL`, `API_KEY`, `API_MODEL` ortam değişkenleri kullanılır;
+  istemler ve JSON ayrıştırma Ollama istemcisinden yeniden kullanılır. Yerel
+  Ollama varsayılan olarak kalır; sağlayıcı seçimi kod değişikliği gerektirmez.
+  Belge gizli olmadığı için kurum sağlayıcısı ve sunucu kararı verildiğinde aynı
+  kod birden çok OpenAI-uyumlu API'yi (OpenAI, DeepSeek vb.) destekler. Henüz
+  gerçek bir API anahtarıyla uçtan uca denenmedi; adil kazanç ölçümü bekler.
 
 ## V1 referans bilgisi
 
