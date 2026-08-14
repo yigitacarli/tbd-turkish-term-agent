@@ -341,3 +341,18 @@ Bu kayıt append-only mantığıyla kullanılmalıdır. Eski karar silinmez; de�
   birden çok sağlayıcıyı destekler. Yerel küçük modelin (qwen3.5:2b/4b) gerçek
   açık yakalaması ölçümde `%40-46` bandındadır; güçlü API modeli aday kapsamını
   artırır ancak kesin kazanç aynı kabul kümesinde ölçülmeden iddia edilmez.
+
+## ADR-027 — Bulut API ayarlarını arayüzden girmek ve çoklu sağlayıcı desteği
+
+- Tarih: 2026-08-14
+- Durum: Kabul edildi
+- Karar: Kullanıcı API sağlayıcısını, anahtarını, model adını ve isteğe bağlı
+  adresi web arayüzündeki `/settings` sayfasından girer; değerler yerel
+  `data/v2_runtime/provider.json` dosyasında saklanır (Git'e eklenmez). Ücreti
+  kullanıcı öder; uygulama herhangi bir sağlayıcıyı sabitlemez. `ApiClient`
+  OpenAI-uyumlu, Anthropic ve Google (Gemini) olmak üzere dört sağlayıcıyı ortak
+  arayüzle destekler; DeepSeek OpenAI-uyumlu varsayılan adresiyle ayrı bir seçenektir.
+- Gerekçe: Anahtar ve ücret sorumluluğu kullanıcıya aittir; ortam değişkeni
+  düzenlemek hedef kullanıcı için zordur. Arayüzden giriş, profesörün kendi
+  sağlayıcısını tek adımda tanımlamasını sağlar. Aynı istem ve JSON ayrıştırma
+  mantığı tüm sağlayıcılarda yeniden kullanıldığı için model davranışı sabit kalır.

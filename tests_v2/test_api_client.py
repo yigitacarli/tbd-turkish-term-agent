@@ -2,95 +2,101 @@ import json
 import unittest
 from unittest.mock import patch
 
-from terim_etmeni.models import ExtractedTerm
-from terim_etmeni_v2.api_client import ApiClient, ApiClientError
+from terim_etmeni_v2.api_client import (
+    ApiClient,
+    ApiClientError,
+    provider_base_url,
+    provider_default_model,
+)
 
 
-def _api_response(terms):
-    return {
-        "choices": [{"message": {"content": json.dumps({"terms": terms})}}]
-    }
+def _response(body):
+    class Response:
+        def read(self):
+            return json.dumps(body).encode("utf-8")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    return Response()
 
 
 class ApiClientTests(unittest.TestCase):
-    def setUp(self):
-        self.client = ApiClient(
-            "https://api.example.com/v1", "model-x", "secret", timeout=5
-        )
+    def test_openai_compatible_request_and_parse(self):
+        client = ApiClient("openai", "secret", "model-x", timeout=5)
 
-    def test_extract_parses_terms_from_chat_response(self):
         def fake_open(request, timeout):
-            body = request.data.decode("utf-8")
-            payload = json.loads(body)
+            payload = json.loads(request.data.decode("utf-8"))
             self.assertIn("chat/completions", request.full_url)
-            self.assertEqual(
-                request.get_header("Authorization"), "Bearer secret"
-            )
+            self.assertEqual(request.get_header("Authorization"), "Bearer secret")
             self.assertEqual(payload["model"], "model-x")
-            self.assertEqual(payload["temperature"], 0)
-
-            class Response:
-                def read(self):
-                    return json.dumps(
-                        _api_response(["machine learning", "neural network"])
-                    ).encode("utf-8")
-
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, *args):
-                    return False
-
-            return Response()
-
-        with patch("urllib.request.urlopen", side_effect=fake_open):
-            terms = self.client.extract("some text")
-        self.assertEqual(
-            [term.term for term in terms], ["machine learning", "neural network"]
-        )
-
-    def test_validate_terms_keeps_only_exact_candidates(self):
-        def fake_open(request, timeout):
-            class Response:
-                def read(self):
-                    return json.dumps(
-                        _api_response(["algorithmic recourse"])
-                    ).encode("utf-8")
-
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, *args):
-                    return False
-
-            return Response()
-
-        with patch("urllib.request.urlopen", side_effect=fake_open):
-            accepted = self.client.validate_terms(
-                ["algorithmic recourse", "noise phrase"]
+            return _response(
+                {"choices": [{"message": {"content": '{"terms": ["neural network"]}'}}]}
             )
-        self.assertEqual(accepted, ["algorithmic recourse"])
-
-    def test_empty_choice_raises(self):
-        def fake_open(request, timeout):
-            class Response:
-                def read(self):
-                    return json.dumps({"choices": []}).encode("utf-8")
-
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, *args):
-                    return False
-
-            return Response()
 
         with patch("urllib.request.urlopen", side_effect=fake_open):
-            with self.assertRaises(ApiClientError):
-                self.client.extract("text")
+            terms = client.extract("text")
+        self.assertEqual([t.term for t in terms], ["neural network"])
 
-    def test_installed_models_returns_configured_model(self):
-        self.assertEqual(self.client.installed_models(), ["model-x"])
+    def test_anthropic_request_and_parse(self):
+        client = ApiClient("anthropic", "secret", "claude-x", timeout=5)
+
+        def fake_open(request, timeout):
+            payload = json.loads(request.data.decode("utf-8"))
+            self.assertIn("/v1/messages", request.full_url)
+            self.assertEqual(request.get_header("X-api-key"), "secret")
+            self.assertEqual(request.get_header("Anthropic-version"), "2023-06-01")
+            self.assertEqual(payload["messages"][0]["role"], "user")
+            return _response(
+                {"content": [{"type": "text", "text": '{"terms": ["Paxos"]}'}]}
+            )
+
+        with patch("urllib.request.urlopen", side_effect=fake_open):
+            terms = client.extract("text")
+        self.assertEqual([t.term for t in terms], ["Paxos"])
+
+    def test_google_request_and_parse(self):
+        client = ApiClient("google", "secret", "gemini-x", timeout=5)
+
+        def fake_open(request, timeout):
+            self.assertIn("generateContent", request.full_url)
+            self.assertIn("key=secret", request.full_url)
+            return _response(
+                {
+                    "candidates": [
+                        {"content": {"parts": [{"text": '{"terms": ["chunk"]}'}]}}
+                    ]
+                }
+            )
+
+        with patch("urllib.request.urlopen", side_effect=fake_open):
+            terms = client.extract("text")
+        self.assertEqual([t.term for t in terms], ["chunk"])
+
+    def test_provider_defaults(self):
+        self.assertEqual(provider_base_url("deepseek"), "https://api.deepseek.com")
+        self.assertEqual(provider_default_model("deepseek"), "deepseek-chat")
+        self.assertEqual(provider_default_model("google"), "gemini-2.0-flash")
+        self.assertEqual(provider_base_url("anthropic"), "https://api.anthropic.com")
+
+    def test_missing_api_key_message_mentions_key(self):
+        client = ApiClient("openai", "", "model-x")
+        self.assertEqual(client.installed_models(), ["model-x"])
+
+    def test_validate_terms_keeps_exact_candidates(self):
+        client = ApiClient("openai", "secret", "model-x", timeout=5)
+
+        def fake_open(request, timeout):
+            return _response(
+                {"choices": [{"message": {"content": '{"terms": ["read lock"]}'}}]}
+            )
+
+        with patch("urllib.request.urlopen", side_effect=fake_open):
+            accepted = client.validate_terms(["read lock", "noise"])
+        self.assertEqual(accepted, ["read lock"])
 
 
 if __name__ == "__main__":

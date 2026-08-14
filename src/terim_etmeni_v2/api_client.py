@@ -1,16 +1,17 @@
-"""OpenAI uyumlu bulut API'si üzerinden terim adayı üreten sağlayıcı.
+"""Birden çok bulut sağlayıcısını destekleyen terim adayı üreticisi.
 
-Yerel Ollama istemcisiyle aynı ``TermProvider`` arayüzünü uygular; yalnızca
-istek taşıma katmanı farklıdır. İstemler ve JSON ayrıştırma mantığı
-``terim_etmeni.ollama_client`` içinden yeniden kullanılır, böylece modelin aday
-üretme ve teknik inceleme davranışı iki sağlayıcıda da aynı kalır.
+OpenAI, DeepSeek, Anthropic ve Google (Gemini) için tek ortak arayüz sağlar.
+İstemler ve JSON ayrıştırma mantığı ``terim_etmeni.ollama_client`` içinden yeniden
+kullanılır; yalnızca HTTP istek biçimi ve yanıt ayrıştırma sağlayıcıya göre değişir.
 
-Sözlük üyeliği kararını bu sağlayıcı vermez; yalnızca aday üretir (ADR-002).
+Sağlayıcı yalnız aday üretir; sözlük üyeliği kararını deterministik katman verir
+(ADR-002).
 """
 from __future__ import annotations
 
 import json
 import urllib.error
+import urllib.parse
 import urllib.request
 
 from terim_etmeni.models import ExtractedTerm
@@ -24,31 +25,51 @@ from terim_etmeni.ollama_client import (
 )
 
 
+# Sağlayıcı varsayılanları: (adres, varsayılan model, tür)
+PROVIDER_DEFAULTS = {
+    "openai": ("https://api.openai.com/v1", "gpt-4o-mini"),
+    "deepseek": ("https://api.deepseek.com", "deepseek-chat"),
+    "anthropic": ("https://api.anthropic.com", "claude-sonnet-4-20250514"),
+    "google": ("https://generativelanguage.googleapis.com", "gemini-2.0-flash"),
+}
+
+_ANTHROPIC_VERSION = "2023-06-01"
+
+
 class ApiClientError(RuntimeError):
     pass
 
 
+def provider_base_url(provider: str) -> str:
+    return PROVIDER_DEFAULTS.get(provider, (provider, ""))[0]
+
+
+def provider_default_model(provider: str) -> str:
+    return PROVIDER_DEFAULTS.get(provider, ("", ""))[1]
+
+
 class ApiClient:
-    """OpenAI uyumlu ``/chat/completions`` bitiş noktasını konuşan aday üretici."""
+    """OpenAI-uyumlu, Anthropic veya Google API üzerinden aday üreten istemci."""
 
     def __init__(
         self,
-        base_url: str,
-        model: str,
+        provider: str,
         api_key: str,
+        model: str,
+        base_url: str = "",
         timeout: int = 240,
         review_passes: int = 1,
     ) -> None:
-        self.base_url = base_url.rstrip("/")
-        self.model = model
+        self.provider = provider
         self.api_key = api_key
+        self.model = model
+        self.base_url = (base_url or provider_base_url(provider)).rstrip("/")
         self.timeout = timeout
         if review_passes not in (1, 2):
             raise ValueError("İnceleme geçişi sayısı 1 veya 2 olmalı.")
         self.review_passes = review_passes
 
     def installed_models(self) -> list[str]:
-        # Bulut API'sinde "kurulu model" listesi yoktur; ayarlanan model tek seçenektir.
         return [self.model] if self.model else []
 
     def check_model(self) -> None:
@@ -69,7 +90,6 @@ class ApiClient:
         return output
 
     def validate_terms(self, terms: list[str]) -> list[str]:
-        """Adayların teknik terim niteliğini bulut modeliyle temkinli doğrular."""
         unique = list(dict.fromkeys(term for term in terms if term.strip()))
         accepted: list[str] = []
         for start in range(0, len(unique), 30):
@@ -93,15 +113,6 @@ class ApiClient:
         system: str = SYSTEM_PROMPT,
         max_tokens: int = 256,
     ) -> list[ExtractedTerm]:
-        payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": user_prompt},
-            ],
-            "temperature": 0,
-            "max_tokens": max_tokens,
-        }
         last_error: Exception | None = None
         parsed: dict[str, object] | None = None
         for attempt in range(2):
@@ -109,14 +120,8 @@ class ApiClient:
             effective_prompt = (
                 user_prompt if not attempt else retry_instruction + "\n\n" + user_prompt
             )
-            messages = [
-                {"role": "system", "content": system},
-                {"role": "user", "content": effective_prompt},
-            ]
-            request_payload = dict(payload)
-            request_payload["messages"] = messages
             try:
-                content = self._chat(request_payload)
+                content = self._chat(system, effective_prompt, max_tokens)
             except ApiClientError as error:
                 last_error = error
                 continue
@@ -126,7 +131,7 @@ class ApiClient:
             try:
                 parsed = _json_from_text(content)
                 break
-            except Exception as error:  # JSON ayrıştırma hatası -> yeniden dene
+            except Exception as error:
                 last_error = error
         if parsed is None:
             raise last_error or ApiClientError("Model geçerli JSON döndürmedi.")
@@ -147,17 +152,107 @@ class ApiClient:
                 output.append(ExtractedTerm(term=term))
         return output
 
-    def _chat(self, payload: dict[str, object]) -> str:
-        data = json.dumps(payload).encode("utf-8")
-        request = urllib.request.Request(
+    def _chat(self, system: str, user_prompt: str, max_tokens: int) -> str:
+        if self.provider == "anthropic":
+            return self._anthropic_chat(system, user_prompt, max_tokens)
+        if self.provider == "google":
+            return self._google_chat(system, user_prompt, max_tokens)
+        return self._openai_compatible_chat(system, user_prompt, max_tokens)
+
+    def _openai_compatible_chat(self, system: str, user_prompt: str, max_tokens: int) -> str:
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": 0,
+            "max_tokens": max_tokens,
+        }
+        result = self._request(
             self.base_url + "/chat/completions",
-            data=data,
+            payload,
             headers={
                 "Content-Type": "application/json",
                 "Authorization": "Bearer {}".format(self.api_key),
             },
-            method="POST",
         )
+        choices = result.get("choices")
+        if not isinstance(choices, list) or not choices:
+            raise ApiClientError("API yanıtında 'choices' bulunamadı.")
+        message = choices[0].get("message")
+        if not isinstance(message, dict):
+            raise ApiClientError("API yanıtında 'message' bulunamadı.")
+        content = message.get("content")
+        if not isinstance(content, str):
+            raise ApiClientError("API yanıtında 'content' bulunamadı.")
+        return content
+
+    def _anthropic_chat(self, system: str, user_prompt: str, max_tokens: int) -> str:
+        payload = {
+            "model": self.model,
+            "system": system,
+            "messages": [{"role": "user", "content": user_prompt}],
+            "max_tokens": max_tokens,
+        }
+        result = self._request(
+            self.base_url + "/v1/messages",
+            payload,
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": self.api_key,
+                "anthropic-version": _ANTHROPIC_VERSION,
+            },
+        )
+        content = result.get("content")
+        if not isinstance(content, list) or not content:
+            raise ApiClientError("API yanıtında 'content' bulunamadı.")
+        text = ""
+        for block in content:
+            if isinstance(block, dict) and isinstance(block.get("text"), str):
+                text += block["text"]
+        if not text:
+            raise ApiClientError("API yanıtında metin bulunamadı.")
+        return text
+
+    def _google_chat(self, system: str, user_prompt: str, max_tokens: int) -> str:
+        payload = {
+            "system_instruction": {"parts": [{"text": system}]},
+            "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
+            "generationConfig": {"temperature": 0, "maxOutputTokens": max_tokens},
+        }
+        endpoint = "/v1beta/models/{}:generateContent".format(self.model)
+        if "?" in endpoint:
+            endpoint += "&"
+        else:
+            endpoint += "?"
+        endpoint += "key=" + urllib.parse.quote(self.api_key)
+        result = self._request(
+            self.base_url + endpoint,
+            payload,
+            headers={"Content-Type": "application/json"},
+        )
+        candidates = result.get("candidates")
+        if not isinstance(candidates, list) or not candidates:
+            raise ApiClientError("API yanıtında 'candidates' bulunamadı.")
+        candidate = candidates[0]
+        if not isinstance(candidate, dict):
+            raise ApiClientError("API yanıt biçimi beklenenden farklı.")
+        content = candidate.get("content", {})
+        parts = content.get("parts", []) if isinstance(content, dict) else []
+        text = ""
+        for part in parts:
+            if isinstance(part, dict) and isinstance(part.get("text"), str):
+                text += part["text"]
+        if not text:
+            raise ApiClientError("API yanıtında metin bulunamadı.")
+        return text
+
+    def _request(
+        self, url: str, payload: dict[str, object], headers: dict[str, str]
+    ) -> dict[str, object]:
+        data = json.dumps(payload).encode("utf-8")
+        request = urllib.request.Request(url, data=data, headers=headers, method="POST")
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 result = json.loads(response.read().decode("utf-8"))
@@ -172,13 +267,4 @@ class ApiClient:
             raise ApiClientError("API geçersiz bir HTTP yanıtı döndürdü.") from error
         if not isinstance(result, dict):
             raise ApiClientError("API yanıtının biçimi beklenenden farklı.")
-        choices = result.get("choices")
-        if not isinstance(choices, list) or not choices:
-            raise ApiClientError("API yanıtında 'choices' bulunamadı.")
-        message = choices[0].get("message")
-        if not isinstance(message, dict):
-            raise ApiClientError("API yanıtında 'message' bulunamadı.")
-        content = message.get("content")
-        if not isinstance(content, str):
-            raise ApiClientError("API yanıtında 'content' bulunamadı.")
-        return content
+        return result

@@ -10,9 +10,10 @@ from terim_etmeni.ollama_client import OllamaClient
 from terim_etmeni.reporting import write_reports
 
 from .abbreviation_index import AbbreviationIndex
-from .api_client import ApiClient, ApiClientError
+from .api_client import ApiClient, ApiClientError, provider_base_url
 from .config import Settings
 from .dictionary_store import DictionaryStatus, DictionaryStore
+from .provider_store import ProviderConfig, ProviderConfigStore
 from .replay import (
     capture_candidate_snapshot,
     replay_snapshot,
@@ -34,6 +35,9 @@ class AnalysisService:
         self.abbreviations = AbbreviationIndex.load(
             self.settings.bootstrap_abbreviations
         )
+        self.provider_config = ProviderConfigStore(
+            self.settings.provider_config_file
+        )
         self._analysis_slots = threading.BoundedSemaphore(
             self.settings.max_concurrent_analyses
         )
@@ -41,11 +45,24 @@ class AnalysisService:
     def dictionary_status(self) -> DictionaryStatus:
         return self.dictionaries.status()
 
+    def save_provider_config(self, config: ProviderConfig) -> None:
+        self.provider_config.save(config)
+
+    def provider_status(self) -> dict[str, str]:
+        config = self.provider_config.load()
+        return {
+            "provider": config.provider,
+            "model": config.model,
+            "base_url": config.base_url or provider_base_url(config.provider),
+            "has_key": bool(config.api_key),
+        }
+
     def installed_models(self) -> tuple[list[str], str]:
         if self.settings.model_provider == "api":
-            if not self.settings.api_base_url or not self.settings.api_key:
-                return [], "API ayarları eksik: API_BASE_URL ve API_KEY ortam değişkenleri gerekir."
-            return [self.settings.api_model], ""
+            config = self.provider_config.resolved(self.settings.api_model)
+            if not config.api_key:
+                return [], "API anahtarı ayarlanmamış. Ayarlar sayfasından girin."
+            return [config.model], ""
         try:
             client = OllamaClient(
                 self.settings.ollama_url,
@@ -57,14 +74,21 @@ class AnalysisService:
             return [], str(error)
 
     def _api_client(self, model: str) -> ApiClient:
-        if not self.settings.api_base_url or not self.settings.api_key:
-            raise ApiClientError(
-                "API ayarları eksik: API_BASE_URL ve API_KEY ortam değişkenleri gerekir."
+        config = self.provider_config.resolved(self.settings.api_model)
+        if not config.api_key:
+            raise ApiClientError("API anahtarı ayarlanmamış. Ayarlar sayfasından girin.")
+        if model and model != config.model:
+            config = ProviderConfig(
+                provider=config.provider,
+                api_key=config.api_key,
+                model=model,
+                base_url=config.base_url,
             )
         return ApiClient(
-            self.settings.api_base_url,
-            model,
-            self.settings.api_key,
+            config.provider,
+            config.api_key,
+            config.model,
+            base_url=config.base_url,
             timeout=self.settings.timeout_seconds,
         )
 

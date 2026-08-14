@@ -38,7 +38,7 @@ def _document(
             if management
             else "Güncel sözlükle makaledeki eksik teknik terimleri bulun"
         )
-    nav = '<div class="nav"><a href="/">Makale analizi</a><a href="/evaluation">İç değerlendirme</a><a href="/dictionary">Sözlük yönetimi</a></div>'
+    nav = '<div class="nav"><a href="/">Makale analizi</a><a href="/evaluation">İç değerlendirme</a><a href="/dictionary">Sözlük yönetimi</a><a href="/settings">API ayarları</a></div>'
     return """<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Türkçe Terim Etmeni V2</title><style>{}</style></head><body><header class="top"><div class="wrap"><small>V2</small><h1>Türkçe Terim Etmeni</h1><p>{}</p>{}</div></header><main class="wrap main">{}<div class="footer">Son karar insan incelemesiyle verilir; sözlük otomatik değiştirilmez.</div></main></body></html>""".format(STYLE, html.escape(subtitle), nav, content)
 
 
@@ -143,6 +143,28 @@ def evaluation_html(message: str = "") -> str:
         notice
     )
     return _document(content, subtitle="Gerçek makaleler için iç kalite değerlendirmesi")
+
+
+def settings_html(service: AnalysisService, message: str = "", message_type: str = "ok") -> str:
+    status = service.provider_status()
+    notice = '<div class="notice {}">{}</div>'.format(message_type, html.escape(message)) if message else ""
+    provider_options = "".join(
+        '<option value="{}"{}>{}</option>'.format(
+            name, " selected" if name == status["provider"] else "", name
+        )
+        for name in ("openai", "deepseek", "anthropic", "google")
+    )
+    key_note = "Kayıtlı bir anahtar var." if status["has_key"] else "Henüz anahtar girilmedi."
+    content = """{}<section class="card"><h2>Bulut API ayarları</h2><p class="muted">Anahtar yalnızca bu bilgisayardaki yerel ayar dosyasına kaydedilir; Git'e eklenmez. Model işi bulutta çalışır; PDF içeriği analiz sırasında seçilen sağlayıcıya gönderilir.</p><div class="notice current">Şu anki durum: sağlayıcı <b>{}</b>, model <b>{}</b>. {}</div><form action="/settings/save" method="post"><div class="grid"><div class="field"><label>Sağlayıcı</label><select name="provider" required>{}</select></div><div class="field"><label>Model adı</label><input type="text" name="model" value="{}" placeholder="ör. deepseek-chat, gpt-4o-mini"></div><div class="field"><label>API anahtarı</label><input type="password" name="api_key" value="" placeholder="Anahtarı girin"></div><div class="field"><label>Adres (isteğe bağlı)</label><input type="text" name="base_url" value="{}" placeholder="boş bırakılırsa varsayılan kullanılır"></div></div><p class="muted">Varsayılan modeller: openai=gpt-4o-mini, deepseek=deepseek-chat, anthropic=claude-sonnet-4-20250514, google=gemini-2.0-flash.</p><button class="button" type="submit">Kaydet</button></form></section>""".format(
+        notice,
+        html.escape(status["provider"]),
+        html.escape(status["model"]),
+        html.escape(key_note),
+        provider_options,
+        html.escape(status["model"], quote=True),
+        html.escape(status["base_url"], quote=True),
+    )
+    return _document(content, subtitle="Analiz modeli sağlayıcı ayarları")
 
 
 def evaluation_label_html(template: dict[str, object]) -> str:
@@ -325,6 +347,8 @@ class Handler(BaseHTTPRequestHandler):
             self._html(evaluation_html()); return
         if path == "/dictionary":
             self._html(dictionary_html(self.server.service)); return
+        if path == "/settings":
+            self._html(settings_html(self.server.service)); return
         if path.startswith("/reports/"):
             self._report(path[len("/reports/"):]); return
         self.send_error(404)
@@ -367,6 +391,17 @@ class Handler(BaseHTTPRequestHandler):
                     acceptance,
                     "internal_acceptance_set.json",
                 ); return
+            if path == "/settings/save":
+                fields = _urlencoded(self)
+                from .provider_store import ProviderConfig
+                config = ProviderConfig(
+                    provider=fields.get("provider", "openai"),
+                    api_key=fields.get("api_key", ""),
+                    model=fields.get("model", "").strip(),
+                    base_url=fields.get("base_url", "").strip(),
+                )
+                self.server.service.save_provider_config(config)
+                self._html(settings_html(self.server.service, "API ayarları kaydedildi.", "ok")); return
             if path == "/dictionary/check":
                 settings = self.server.service.settings
                 result = check_and_update(
