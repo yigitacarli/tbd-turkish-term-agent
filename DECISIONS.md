@@ -309,3 +309,19 @@ Bu kayıt append-only mantığıyla kullanılmalıdır. Eski karar silinmez; de�
   yer kazancına kıyasla fazla taşır. LFS ayrı bir araç gerektirir ve mevcut
   akışa somut yarar getirmez. Kurum dağıtımı kesinleşirse bu karar yeniden
   değerlendirilir.
+
+## ADR-025 — En az iki kez geçen çok sözcüklü öbeği genel İngilizce filtresinden koruma
+
+- Tarih: 2026-08-14
+- Durum: Kabul edildi
+- Karar: V2 replay politikasında en az iki sözcükten oluşan ve belgede iki veya
+  daha fazla kez geçen adaylar, yalnızca genel İngilizce sözcüklerden oluştuğu
+  gerekçesiyle elenmeyecek. Tek sözcüklü genel İngilizce adaylar ve yalnızca bir
+  kez geçen çok sözcüklü düz yazı parçaları eskisi gibi elenir.
+- Gerekçe: `read lock`, `write lock`, `operation log`, `replication factor`,
+  `distributed transactions`, `external consistency` gibi gerçek teknik terimler
+  sıradan İngilizce sözcüklerden oluşur. Beş sabit snapshot ve 734 etikette bu
+  kural 13 gerçek açığı geri kazandı: açık terim hassasiyeti/yakalama
+  `%83,2 / %52,3`ten `%84,6 / %57,8`e çıktı; yeni yanlış pozitif oluşmadı.
+  Tekil kullanımlı gürültü öbekleri (`client originated requests` vb.) aynı
+  eşiğin dışında kaldığı için gürültü eleme oranı değişmedi.

@@ -196,6 +196,12 @@
   Sözlük verisinin Git'te düz izlenmesi, LFS ve geçmiş yeniden yazmanın ertelenmesi
   ADR-024 olarak kaydedildi. Eski `7a76` ve `f4ef` Codex worktree'leri bayat kalmış
   ve temizlenebilir.
+- 2026-08-14 ikinci devir: Beş sabit snapshot'ta yeni bir ölçümlü V2 replay
+  iyileştirmesi eklendi (ADR-025): en az iki kez geçen çok sözcüklü genel İngilizce
+  öbekler artık elenmiyor. Gerçek açık hassasiyeti/yakalama `%83,2 / %52,3`ten
+  `%84,6 / %57,8`e çıktı; yanlış pozitif ve gürültü eleme değişmedi. Kalan doğruluk
+  açığı hâlâ büyük ölçüde model aday kalitesinden (qwen3.5:2b) gelir; daha büyük
+  model (`qwen3.5:4b`) aynı kabul kümesinde ölçülmeden üstünlük iddiası yapılmamalıdır.
 
 ## V1 referans bilgisi
 

@@ -195,6 +195,46 @@ class ReplayTests(unittest.TestCase):
         self.assertIn("CPU power", rejected)
         self.assertIn("prevent double-spending", rejected)
 
+    def test_v2_keeps_recurring_multiword_common_english_phrases(self):
+        pages = [
+            PageText(
+                1,
+                "A read lock and a write lock protect the operation log. "
+                "The operation log stores the read lock and write lock records.",
+            )
+        ]
+        evidence = [
+            TermEvidence(
+                term=term,
+                pages={1},
+                occurrence_count=occurrence_count,
+                candidate_sources={"model"},
+            )
+            for term, occurrence_count in (
+                ("read lock", 2),
+                ("write lock", 2),
+                ("operation log", 2),
+                ("client originated requests", 1),
+            )
+        ]
+        snapshot = build_candidate_snapshot(
+            document="locks.pdf",
+            model="qwen3.5:2b",
+            pages=pages,
+            model_evidence=evidence,
+            chunk_count=1,
+            processed_chunk_count=1,
+            technical_review_accepted_terms=(),
+        )
+        result = replay_snapshot(snapshot, DictionaryIndex([]))
+
+        self.assertEqual(
+            {item["term"] for item in result["missing_terms"]},
+            {"read lock", "write lock", "operation log"},
+        )
+        rejected = {item["term"] for item in result["rejected_candidates"]}
+        self.assertIn("client originated requests", rejected)
+
     def test_v2_keeps_only_reviewed_model_plurals(self):
         pages = [
             PageText(

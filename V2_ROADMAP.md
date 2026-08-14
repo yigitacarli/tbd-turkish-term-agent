@@ -30,6 +30,9 @@
     n-gramları koru; beş sabit snapshot'ta gerilemesiz kazancı doğrula.
   - [x] Yalnız model kaynağından gelen, model incelemesinin kabul ettiği düzenli
     tek sözcüklü çoğulları koru; iki bağımsız belgede gerilemesiz kazancı doğrula.
+  - [x] En az iki kez geçen çok sözcüklü genel İngilizce öbekleri elenen filtre
+    kuralını daralt; beş sabit snapshot'ta açık terim hassasiyeti/yakalamayı
+    `%83,2 / %52,3`ten `%84,6 / %57,8`e taşı ve yanlış pozitif artışı olmadığını doğrula.
 
 ## V2.2 — Kısaltmalar
 

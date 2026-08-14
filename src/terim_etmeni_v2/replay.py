@@ -45,6 +45,19 @@ def _is_v2_common_english(term: str) -> bool:
     return _is_common_english(term)
 
 
+def _is_recurring_multiword_phrase(item: dict[str, object]) -> bool:
+    """En az iki kez geçen çok sözcüklü öbeği genel İngilizce filtresinden korur.
+
+    ``read lock``, ``write lock``, ``operation log``, ``replication factor``,
+    ``distributed transactions`` gibi gerçek teknik terimler sıradan İngilizce
+    sözcüklerden oluşur. Bu tür bir öbek teknik metinde tekrar ettiğinde kasıtlı
+    bir kavramdır; tekil kullanımlı düz yazı parçası değildir.
+    """
+    term = str(item.get("term", ""))
+    occurrence_count = int(item.get("occurrence_count", 0) or 0)
+    return len(term.split()) >= 2 and occurrence_count >= 2
+
+
 def _is_reviewed_titlecase_technical_pattern(
     item: dict[str, object], model_accepted: bool | None
 ) -> bool:
@@ -367,7 +380,7 @@ def replay_snapshot(
             base["reason"] = reason
             rejected.append(base)
             continue
-        if _is_v2_common_english(item.term):
+        if _is_v2_common_english(item.term) and not _is_recurring_multiword_phrase(base):
             base["reason"] = "common_english_word"
             rejected.append(base)
             continue
