@@ -202,6 +202,16 @@
   `%84,6 / %57,8`e çıktı; yanlış pozitif ve gürültü eleme değişmedi. Kalan doğruluk
   açığı hâlâ büyük ölçüde model aday kalitesinden (qwen3.5:2b) gelir; daha büyük
   model (`qwen3.5:4b`) aynı kabul kümesinde ölçülmeden üstünlük iddiası yapılmamalıdır.
+- `qwen3.5:4b` aynı beş belgede çalıştırıldı. Mevcut 734 etiketlik kabul kümesi
+  2b adaylarından üretildiği için 4b'yi adil ölçemedi (4b'nin 94 yeni tahmini
+  etiketsiz kaldı ve yanlış pozitif gibi göründü). Proje sahibinin isteğiyle
+  2b∪4b birleşiminden `evaluation/five_article_union_internal_review.json`
+  (890 etiket) üretildi; yeni 156 terim yapay zekâ tarafından
+  `internal_review` statüsünde etiketlendi ve uzman onayı değildir. Bu adil
+  kümede iki model birbirine yakın çıktı: 2b açık-terim P/R `%84,6 / %41,4`,
+  4b `%84,6 / %46,5`; 4b aynı hassasiyette daha yüksek yakalama sağladı. Fark
+  küçük olduğundan tek başına kesin model üstünlüğü kanıtı değildir; daha güçlü
+  model (veya API) gerçek kazanç için ayrı deneme gerektirir.
 
 ## V1 referans bilgisi
 
