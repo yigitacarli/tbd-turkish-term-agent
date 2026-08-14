@@ -1,4 +1,4 @@
-"""Analiz sonuçlarını JSON ve CSV biçimlerinde kaydetme."""
+"""Analiz sonuçlarını XLSX, CSV ve JSON biçimlerinde kaydetme modülü."""
 from __future__ import annotations
 
 import csv
@@ -9,7 +9,7 @@ from pathlib import Path
 
 try:
     import openpyxl
-    from openpyxl.styles import Alignment, Font, PatternFill
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     from openpyxl.utils import get_column_letter
 
     _HAS_OPENPYXL = True
@@ -24,20 +24,13 @@ STATUS_LABELS = {
     "rejected_candidates": "Elenen aday",
 }
 
-_REVIEW_DETAILS = {
-    "dictionary_matches": ("Bilgi", "İşlem gerekmez", "Sözlükte doğrudan Türkçe karşılık bulundu."),
-    "possible_matches": ("Orta", "Yakın eşleşmeyi doğrula", "Yazım veya tekil-çoğul farkı nedeniyle yakın sözlük eşleşmesi bulundu."),
-    "missing_terms": ("Yüksek", "Terimi insan incelemesine al", "Sözlükte eşleşme bulunamadı; otomatik ekleme yapılmadı."),
-    "rejected_candidates": ("Düşük", "Yok say", "Biçimsel gürültü veya düşük güvenli aday olarak elendi."),
-}
-
 
 def _pages(item: dict[str, object]) -> str:
     return ", ".join(str(page) for page in item.get("pages", []))
 
 
 def report_rows(result: dict[str, object]) -> list[dict[str, object]]:
-    """Excel'de karar vermeyi kolaylaştıran, öncelik sıralı satırlar üretir."""
+    """CSV ve veri aktarımı için zenginleştirilmiş satırlar üretir."""
     rows: list[dict[str, object]] = []
     for group in ("missing_terms", "possible_matches", "dictionary_matches", "rejected_candidates"):
         status = STATUS_LABELS[group]
@@ -54,24 +47,48 @@ def report_rows(result: dict[str, object]) -> list[dict[str, object]]:
                 for value in suggestions
                 if isinstance(value, dict)
             ) if isinstance(suggestions, list) else ""
-            priority, action, explanation = _REVIEW_DETAILS[group]
+
+            match_type = str(item.get("match_type", ""))
+            if match_type == "singular_variant":
+                type_label = "Sözlükte Bulundu (Çoğul Eşleşme)"
+            elif match_type == "exact":
+                type_label = "Sözlükte Kayıtlı"
+            elif group == "possible_matches":
+                type_label = "TBD Kısaltması"
+            else:
+                type_label = "Sözlükte Yok (Eksik Terim)"
+
             if group == "missing_terms":
                 priority = {
                     "high": "Yüksek",
                     "medium": "Orta",
                     "low": "Düşük",
                 }.get(str(item.get("review_priority", "high")), "Yüksek")
-                explanation = (
-                    "Sözlükte eşleşme bulunamadı; kaynak, tekrar ve model "
-                    "doğrulaması birlikte değerlendirilerek {} güven puanı aldı."
-                ).format(item.get("review_score", "-"))
+                action = "Terimi insan incelemesine al"
+                explanation = "TBD Bilişim Sözlüğü'nde bulunamadı; uzman incelemesi ve Türkçe karşılık önerisi bekleniyor."
+            elif group == "possible_matches":
+                priority = "Orta"
+                action = "Kısaltma açılımını doğrula"
+                explanation = "TBD Kısaltmalar tablosunda açılımı ve Türkçe karşılığı bulundu."
+            elif group == "dictionary_matches":
+                priority = "Bilgi"
+                action = "İşlem gerekmez"
+                explanation = "Sözlükte doğrudan Türkçe karşılık bulundu."
+            else:
+                priority = "Düşük"
+                action = "Yok say"
+                explanation = "Biçimsel gürültü veya düşük güvenli aday olarak elendi."
+
             rows.append(
                 {
                     "İnceleme Durumu": status,
+                    "Eşleşme Türü": type_label,
                     "Öncelik": priority,
                     "Önerilen İşlem": action,
                     "İngilizce Terim": item.get("term", ""),
                     "Türkçe Karşılık": ", ".join(str(value) for value in translations),
+                    "Makaledeki Bağlam (Örnek Cümle)": item.get("context", ""),
+                    "Önerilen Türkçe Karşılık (Komite)": "",
                     "Yakın Sözlük Eşleşmesi": suggestion_text,
                     "Kanıt Sayfaları": _pages(item),
                     "PDF'deki Geçiş Sayısı": item.get("occurrence_count", 0),
@@ -82,13 +99,12 @@ def report_rows(result: dict[str, object]) -> list[dict[str, object]]:
 
 
 def format_terminal_report(result: dict[str, object]) -> str:
-    """Terminale kısa, karar odaklı bir özet yazar; ayrıntılar CSV'dedir."""
-    lines = ["", "=== TERİM RAPORU ===", "CSV'de önce yüksek öncelikli inceleme adayları yer alır."]
+    """Terminale kısa, karar odaklı bir özet yazar."""
+    lines = ["", "=== TERİM RAPORU ===", "CSV ve Excel'de önce yüksek öncelikli inceleme adayları yer alır."]
     titles = {
+        "missing_terms": "SÖZLÜKTE OLMAYANLAR (İNCELEME GEREKLİ)",
+        "possible_matches": "TBD KISALTMALARI / YAKIN EŞLEŞMELER",
         "dictionary_matches": "SÖZLÜKTE BULUNANLAR",
-        "possible_matches": "OLASI EŞLEŞMELER",
-        "missing_terms": "SÖZLÜKTE OLMAYANLAR",
-        "rejected_candidates": "ELENEN DÜŞÜK GÜVENLİ ADAYLAR",
     }
     for group, title in titles.items():
         items = result.get(group, [])
@@ -96,9 +112,6 @@ def format_terminal_report(result: dict[str, object]) -> str:
         lines.extend(["", "{} ({})".format(title, len(values))])
         if not values:
             lines.append("  - Yok")
-            continue
-        if group == "rejected_candidates":
-            lines.append("  - Ayrıntılar CSV raporunda.")
             continue
         for item in values[:10]:
             if not isinstance(item, dict):
@@ -125,160 +138,258 @@ def format_terminal_report(result: dict[str, object]) -> str:
                 )
             )
         if len(values) > 10:
-            lines.append("  - … {} aday daha; ayrıntılar CSV raporunda.".format(len(values) - 10))
+            lines.append("  - … {} aday daha; ayrıntılar Excel/CSV raporunda.".format(len(values) - 10))
     return "\n".join(lines)
 
 
 def _export_styled_xlsx(
     result: dict[str, object],
-    rows: list[dict[str, object]],
-    fieldnames: list[str],
     xlsx_path: Path,
 ) -> None:
+    """İki sekmeli, yüksek kontrastlı ve insan incelemesine hazır Excel (.xlsx) raporu üretir."""
     if not _HAS_OPENPYXL:
         return
 
-    from openpyxl.styles import Border, Side
-
     wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Terim Raporu"
-    ws.views.sheetView[0].showGridLines = True
-
-    counts = result.get("counts", {})
-    if not isinstance(counts, dict):
-        counts = {}
+    # Varsayılan sayfayı temizle
+    wb.remove(wb.active)
 
     doc_name = Path(str(result.get("document", "Dokuman"))).name
     model_name = str(result.get("model") or "Belirtilmedi")
+    dict_version = str(result.get("dictionary_version") or "2026-07-20")
 
-    # Title Banner (Row 1-2)
-    ws.merge_cells("A1:I1")
-    title_cell = ws["A1"]
-    title_cell.value = f"📊 TBD TERİM ANALİZ RAPORU — {doc_name}"
-    title_cell.font = Font(name="Calibri", size=14, bold=True, color="1F4E79")
-    title_cell.alignment = Alignment(vertical="center")
-    ws.row_dimensions[1].height = 25
-
-    ws.merge_cells("A2:I2")
-    sub_cell = ws["A2"]
-    sub_cell.value = f"Kullanılan Model: {model_name} | Toplam Terim Adayı: {len(rows)} | Kaynak: TBD Bilişim Sözlüğü"
-    sub_cell.font = Font(name="Calibri", size=10, italic=True, color="595959")
-    sub_cell.alignment = Alignment(vertical="center")
-    ws.row_dimensions[2].height = 18
-
-    # KPI Summary Cards (Row 4-5)
-    cards = [
-        ("SÖZLÜKTE BULUNDU", counts.get("dictionary_matches", 0), "E2EFDA", "375623", "A4:B4", "A5:B5"),
-        ("YAKIN EŞLEŞME", counts.get("possible_matches", 0), "FFF2CC", "7F6000", "C4:D4", "C5:D5"),
-        ("İNCELENMESİ GEREKLİ", counts.get("missing_terms", 0), "FCE4D6", "C65911", "E4:F4", "E5:F5"),
-        ("ELENEN ADAY", counts.get("rejected_candidates", 0), "F2F2F2", "595959", "G4:H4", "G5:H5"),
-    ]
-
-    for label, val, bg_color, fg_color, m1, m2 in cards:
-        ws.merge_cells(m1)
-        ws.merge_cells(m2)
-        top_c = ws[m1.split(":")[0]]
-        val_c = ws[m2.split(":")[0]]
-
-        top_c.value = label
-        top_c.font = Font(name="Calibri", size=9, bold=True, color=fg_color)
-        top_c.fill = PatternFill(start_color=bg_color, fill_type="solid")
-        top_c.alignment = Alignment(horizontal="center", vertical="center")
-
-        val_c.value = val
-        val_c.font = Font(name="Calibri", size=16, bold=True, color=fg_color)
-        val_c.fill = PatternFill(start_color=bg_color, fill_type="solid")
-        val_c.alignment = Alignment(horizontal="center", vertical="center")
-
-    ws.row_dimensions[4].height = 18
-    ws.row_dimensions[5].height = 24
-
-    # Header Row (Row 7)
-    header_row = 7
-    ws.row_dimensions[header_row].height = 26
-    header_fill = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
-    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
-
-    for col_idx, h_text in enumerate(fieldnames, 1):
-        cell = ws.cell(row=header_row, column=col_idx, value=h_text)
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-
-    status_styles = {
-        "Sözlükte bulundu": (PatternFill(start_color="E2EFDA", fill_type="solid"), Font(name="Calibri", size=10, bold=True, color="274E13")),
-        "Yakın eşleşme": (PatternFill(start_color="FFF2CC", fill_type="solid"), Font(name="Calibri", size=10, bold=True, color="B25900")),
-        "İnceleme gerekli": (PatternFill(start_color="FCE4D6", fill_type="solid"), Font(name="Calibri", size=10, bold=True, color="C65911")),
-        "Elenen aday": (PatternFill(start_color="EDEDED", fill_type="solid"), Font(name="Calibri", size=10, bold=True, color="595959")),
-    }
-
-    priority_styles = {
-        "Yüksek": (PatternFill(start_color="FADBD8", fill_type="solid"), Font(name="Calibri", size=10, bold=True, color="78281F")),
-        "Orta": (PatternFill(start_color="FCF3CF", fill_type="solid"), Font(name="Calibri", size=10, bold=True, color="7D6608")),
-        "Düşük": (PatternFill(start_color="E8F8F5", fill_type="solid"), Font(name="Calibri", size=10, color="117864")),
-        "Bilgi": (PatternFill(start_color="EBF5FB", fill_type="solid"), Font(name="Calibri", size=10, color="1B4F72")),
-    }
+    missing = [item for item in result.get("missing_terms", []) if isinstance(item, dict)]
+    found = [item for item in result.get("dictionary_matches", []) if isinstance(item, dict)]
+    possible = [item for item in result.get("possible_matches", []) if isinstance(item, dict)]
 
     thin_border = Border(
-        left=Side(style="thin", color="E0E0E0"),
-        right=Side(style="thin", color="E0E0E0"),
-        top=Side(style="thin", color="E0E0E0"),
-        bottom=Side(style="thin", color="E0E0E0"),
+        left=Side(style="thin", color="D1D5DB"),
+        right=Side(style="thin", color="D1D5DB"),
+        top=Side(style="thin", color="D1D5DB"),
+        bottom=Side(style="thin", color="D1D5DB"),
     )
-    alt_fill = PatternFill(start_color="F9FAFB", fill_type="solid")
+    input_box_border = Border(
+        left=Side(style="medium", color="0284C7"),
+        right=Side(style="medium", color="0284C7"),
+        top=Side(style="medium", color="0284C7"),
+        bottom=Side(style="medium", color="0284C7"),
+    )
+    alt_fill = PatternFill(start_color="F8FAFC", fill_type="solid")
+    input_fill = PatternFill(start_color="FFFDF0", fill_type="solid")
 
-    for row_idx, r_dict in enumerate(rows, start=header_row + 1):
-        ws.row_dimensions[row_idx].height = 20
-        is_even = (row_idx % 2 == 0)
+    priority_styles = {
+        "Yüksek": (PatternFill(start_color="FEE2E2", fill_type="solid"), Font(name="Calibri", size=10, bold=True, color="991B1B")),
+        "Orta": (PatternFill(start_color="FEF3C7", fill_type="solid"), Font(name="Calibri", size=10, bold=True, color="92400E")),
+        "Düşük": (PatternFill(start_color="E0F2FE", fill_type="solid"), Font(name="Calibri", size=10, color="075985")),
+    }
 
-        for col_idx, key in enumerate(fieldnames, 1):
-            val = r_dict.get(key, "")
-            cell = ws.cell(row=row_idx, column=col_idx, value=val)
-            cell.border = thin_border
-            cell.font = Font(name="Calibri", size=10)
-            cell.alignment = Alignment(vertical="center")
+    # ==========================================
+    # SEKME 1: EKSİK TERİMLER (İNCELEME LİSTESİ)
+    # ==========================================
+    ws1 = wb.create_sheet(title="Eksik Terimler (İnceleme)")
+    ws1.views.sheetView[0].showGridLines = True
 
+    # Başlık Bannerı
+    ws1.merge_cells("A1:H1")
+    title1 = ws1["A1"]
+    title1.value = f"🎯 TBD BİLİŞİM SÖZLÜĞÜ — EKSİK TERİM İNCELEME LİSTESİ"
+    title1.font = Font(name="Calibri", size=14, bold=True, color="1E3A5F")
+    title1.alignment = Alignment(vertical="center")
+    ws1.row_dimensions[1].height = 28
+
+    ws1.merge_cells("A2:H2")
+    sub1 = ws1["A2"]
+    sub1.value = f"İncelenen Belge: {doc_name} | Analiz Modeli: {model_name} | İncelenecek Eksik Terim: {len(missing)} Adet"
+    sub1.font = Font(name="Calibri", size=10, italic=True, color="475569")
+    sub1.alignment = Alignment(vertical="center")
+    ws1.row_dimensions[2].height = 20
+
+    header_row_1 = 4
+    ws1.row_dimensions[header_row_1].height = 28
+    headers_1 = [
+        ("No", 6),
+        ("İngilizce Terim", 26),
+        ("Makaledeki Örnek Cümle (Bağlam)", 55),
+        ("Önerilen Türkçe Karşılık (Komite)", 34),
+        ("Öncelik", 14),
+        ("Geçiş", 10),
+        ("Sayfalar", 14),
+        ("Komite Notu / Karar", 30),
+    ]
+
+    header_fill_1 = PatternFill(start_color="1E3A5F", fill_type="solid")
+    header_font_1 = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+
+    for col_idx, (h_text, col_w) in enumerate(headers_1, 1):
+        cell = ws1.cell(row=header_row_1, column=col_idx, value=h_text)
+        cell.fill = header_fill_1
+        cell.font = header_font_1
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        col_letter = get_column_letter(col_idx)
+        ws1.column_dimensions[col_letter].width = col_w
+
+    for idx, item in enumerate(missing, 1):
+        row_idx = header_row_1 + idx
+        ws1.row_dimensions[row_idx].height = 36
+        is_even = (idx % 2 == 0)
+
+        c_no = ws1.cell(row=row_idx, column=1, value=idx)
+        c_no.alignment = Alignment(horizontal="center", vertical="center")
+        c_no.font = Font(name="Calibri", size=10, color="64748B")
+
+        c_term = ws1.cell(row=row_idx, column=2, value=str(item.get("term", "")))
+        c_term.font = Font(name="Calibri", size=11, bold=True, color="1E3A5F")
+        c_term.alignment = Alignment(vertical="center")
+
+        c_ctx = ws1.cell(row=row_idx, column=3, value=str(item.get("context", "")))
+        c_ctx.font = Font(name="Calibri", size=10, italic=True, color="334155")
+        c_ctx.alignment = Alignment(vertical="center", wrap_text=True)
+
+        c_prop = ws1.cell(row=row_idx, column=4, value="")
+        c_prop.fill = input_fill
+        c_prop.font = Font(name="Calibri", size=11, bold=True, color="0F172A")
+        c_prop.alignment = Alignment(vertical="center")
+
+        priority_raw = str(item.get("review_priority", "high"))
+        priority_label = "Yüksek" if priority_raw == "high" else ("Orta" if priority_raw == "medium" else "Düşük")
+        c_prio = ws1.cell(row=row_idx, column=5, value=priority_label)
+        if priority_label in priority_styles:
+            fill_p, font_p = priority_styles[priority_label]
+            c_prio.fill = fill_p
+            c_prio.font = font_p
+        c_prio.alignment = Alignment(horizontal="center", vertical="center")
+
+        c_occ = ws1.cell(row=row_idx, column=6, value=item.get("occurrence_count", 0))
+        c_occ.alignment = Alignment(horizontal="center", vertical="center")
+        c_occ.font = Font(name="Calibri", size=10, bold=True)
+
+        c_pg = ws1.cell(row=row_idx, column=7, value=_pages(item))
+        c_pg.alignment = Alignment(horizontal="center", vertical="center")
+        c_pg.font = Font(name="Calibri", size=10)
+
+        c_note = ws1.cell(row=row_idx, column=8, value="")
+        c_note.alignment = Alignment(vertical="center")
+
+        for col_i in range(1, 9):
+            cell_target = ws1.cell(row=row_idx, column=col_i)
+            cell_target.border = thin_border
+            if is_even and col_i != 4 and col_i != 5:
+                cell_target.fill = alt_fill
+
+    ws1.freeze_panes = "A5"
+    if missing:
+        ws1.auto_filter.ref = f"A4:H{header_row_1 + len(missing)}"
+
+    # ===================================================
+    # SEKME 2: SÖZLÜKTE BULUNANLAR VE KISALTMALAR
+    # ===================================================
+    ws2 = wb.create_sheet(title="Sözlükte Bulunanlar")
+    ws2.views.sheetView[0].showGridLines = True
+
+    found_all = found + possible
+
+    ws2.merge_cells("A1:G1")
+    title2 = ws2["A1"]
+    title2.value = f"📚 TBD BİLİŞİM SÖZLÜĞÜNDE BULUNAN TERİMLER VE KISALTMALAR"
+    title2.font = Font(name="Calibri", size=14, bold=True, color="166534")
+    title2.alignment = Alignment(vertical="center")
+    ws2.row_dimensions[1].height = 28
+
+    ws2.merge_cells("A2:G2")
+    sub2 = ws2["A2"]
+    sub2.value = f"Toplam Eşleşen Terim: {len(found_all)} Adet | TBD Sözlük Sürümü: {dict_version}"
+    sub2.font = Font(name="Calibri", size=10, italic=True, color="475569")
+    sub2.alignment = Alignment(vertical="center")
+    ws2.row_dimensions[2].height = 20
+
+    header_row_2 = 4
+    ws2.row_dimensions[header_row_2].height = 28
+    headers_2 = [
+        ("No", 6),
+        ("İngilizce Terim", 26),
+        ("TBD Sözlük Türkçe Karşılığı", 34),
+        ("Eşleşme Durumu", 26),
+        ("Makaledeki Örnek Cümle (Bağlam)", 50),
+        ("Geçiş", 10),
+        ("Sayfalar", 14),
+    ]
+
+    header_fill_2 = PatternFill(start_color="166534", fill_type="solid")
+    header_font_2 = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+
+    for col_idx, (h_text, col_w) in enumerate(headers_2, 1):
+        cell = ws2.cell(row=header_row_2, column=col_idx, value=h_text)
+        cell.fill = header_fill_2
+        cell.font = header_font_2
+        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        col_letter = get_column_letter(col_idx)
+        ws2.column_dimensions[col_letter].width = col_w
+
+    for idx, item in enumerate(found_all, 1):
+        row_idx = header_row_2 + idx
+        ws2.row_dimensions[row_idx].height = 32
+        is_even = (idx % 2 == 0)
+
+        translations = item.get("translations", [])
+        if not translations:
+            suggestions = item.get("possible_dictionary_terms", [])
+            tr_text = " | ".join(str(v.get("tr", "")) for v in suggestions if isinstance(v, dict))
+        else:
+            tr_text = ", ".join(str(v) for v in translations)
+
+        match_type = str(item.get("match_type", ""))
+        if match_type == "singular_variant":
+            status_desc = "Sözlükte Bulundu (Çoğul Eşleşme)"
+        elif match_type == "exact":
+            status_desc = "Sözlükte Kayıtlı"
+        elif item.get("possible_dictionary_terms"):
+            status_desc = "TBD Kısaltması"
+        else:
+            status_desc = "Sözlükte Bulundu"
+
+        c_no = ws2.cell(row=row_idx, column=1, value=idx)
+        c_no.alignment = Alignment(horizontal="center", vertical="center")
+        c_no.font = Font(name="Calibri", size=10, color="64748B")
+
+        c_term = ws2.cell(row=row_idx, column=2, value=str(item.get("term", "")))
+        c_term.font = Font(name="Calibri", size=11, bold=True, color="0F172A")
+        c_term.alignment = Alignment(vertical="center")
+
+        c_tr = ws2.cell(row=row_idx, column=3, value=tr_text)
+        c_tr.font = Font(name="Calibri", size=11, bold=True, color="166534")
+        c_tr.alignment = Alignment(vertical="center")
+
+        c_st = ws2.cell(row=row_idx, column=4, value=status_desc)
+        c_st.font = Font(name="Calibri", size=10, color="334155")
+        c_st.alignment = Alignment(horizontal="center", vertical="center")
+
+        c_ctx = ws2.cell(row=row_idx, column=5, value=str(item.get("context", "")))
+        c_ctx.font = Font(name="Calibri", size=10, italic=True, color="475569")
+        c_ctx.alignment = Alignment(vertical="center", wrap_text=True)
+
+        c_occ = ws2.cell(row=row_idx, column=6, value=item.get("occurrence_count", 0))
+        c_occ.alignment = Alignment(horizontal="center", vertical="center")
+        c_occ.font = Font(name="Calibri", size=10, bold=True)
+
+        c_pg = ws2.cell(row=row_idx, column=7, value=_pages(item))
+        c_pg.alignment = Alignment(horizontal="center", vertical="center")
+        c_pg.font = Font(name="Calibri", size=10)
+
+        for col_i in range(1, 8):
+            cell_target = ws2.cell(row=row_idx, column=col_i)
+            cell_target.border = thin_border
             if is_even:
-                cell.fill = alt_fill
+                cell_target.fill = alt_fill
 
-            if key == "İnceleme Durumu" and val in status_styles:
-                fill, font = status_styles[val]
-                cell.fill = fill
-                cell.font = font
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif key == "Öncelik" and val in priority_styles:
-                fill, font = priority_styles[val]
-                cell.fill = fill
-                cell.font = font
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-            elif key == "İngilizce Terim":
-                cell.font = Font(name="Calibri", size=10, bold=True, color="1F4E79")
-            elif key == "Türkçe Karşılık":
-                cell.font = Font(name="Calibri", size=10, color="1D6F42")
-            elif key in ("Kanıt Sayfaları", "PDF'deki Geçiş Sayısı"):
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-
-    ws.freeze_panes = f"A{header_row + 1}"
-    last_row = header_row + len(rows)
-    ws.auto_filter.ref = f"A{header_row}:I{max(last_row, header_row + 1)}"
-
-    for col in ws.columns:
-        col_letter = get_column_letter(col[0].column)
-        max_len = 0
-        for cell in col:
-            if cell.row < header_row:
-                continue
-            val_str = str(cell.value or "")
-            if len(val_str) > max_len:
-                max_len = len(val_str)
-        ws.column_dimensions[col_letter].width = min(max(max_len + 4, 12), 52)
+    ws2.freeze_panes = "A5"
+    if found_all:
+        ws2.auto_filter.ref = f"A4:G{header_row_2 + len(found_all)}"
 
     wb.save(xlsx_path)
 
 
 def _model_directory_name(model: object) -> str:
-    """Ollama etiketini Windows ve macOS'ta güvenli bir klasör adına çevirir."""
+    """Model adını dosya sistemine uygun güvenli bir klasör adına çevirir."""
     value = unicodedata.normalize("NFKC", str(model or "bilinmeyen-model")).strip()
     value = re.sub(r"[\\/:*?\"<>|\s]+", "-", value)
     value = re.sub(r"[^A-Za-z0-9._-]+", "-", value).strip(".-_")
@@ -286,6 +397,7 @@ def _model_directory_name(model: object) -> str:
 
 
 def write_reports(result: dict[str, object], output_dir: Path) -> tuple[Path, Path]:
+    """JSON, CSV ve 2 sekmeli gelişmiş XLSX raporlarını yazar."""
     output_dir = Path(output_dir)
     stem = Path(str(result["document"])).stem
     doc_dir = output_dir / _model_directory_name(result.get("model")) / stem
@@ -301,10 +413,13 @@ def write_reports(result: dict[str, object], output_dir: Path) -> tuple[Path, Pa
     rows = report_rows(result)
     fieldnames = [
         "İnceleme Durumu",
+        "Eşleşme Türü",
         "Öncelik",
         "Önerilen İşlem",
         "İngilizce Terim",
         "Türkçe Karşılık",
+        "Makaledeki Bağlam (Örnek Cümle)",
+        "Önerilen Türkçe Karşılık (Komite)",
         "Yakın Sözlük Eşleşmesi",
         "Kanıt Sayfaları",
         "PDF'deki Geçiş Sayısı",
@@ -316,6 +431,6 @@ def write_reports(result: dict[str, object], output_dir: Path) -> tuple[Path, Pa
         writer.writeheader()
         writer.writerows(rows)
 
-    _export_styled_xlsx(result, rows, fieldnames, xlsx_path)
+    _export_styled_xlsx(result, xlsx_path)
 
     return json_path, csv_path
