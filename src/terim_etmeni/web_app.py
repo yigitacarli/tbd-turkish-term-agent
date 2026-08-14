@@ -189,7 +189,7 @@ body {
   color: var(--text-secondary);
 }
 
-.engine-info-row {
+.active-engine-badge {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -198,11 +198,55 @@ body {
   background: #f8fafc;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 16px 22px;
-  margin-bottom: 26px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+}
+
+.engine-status-text {
   font-size: 16px;
-  color: #1e293b;
-  line-height: 1.6;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.engine-status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #16a34a;
+}
+
+.current-config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.config-stat-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+}
+
+.config-stat-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.config-stat-value {
+  display: block;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .upload-zone {
@@ -672,12 +716,16 @@ def index_html(service: AnalysisService, message: str = "", message_type: str = 
     if service.using_api():
         status = service.provider_status()
         if not status["has_key"]:
-            notice += '<div class="notice notice-warn"><b>Bulut API ayarlanmamış.</b> <a href="/settings" style="color:inherit; font-weight:700;">Ayarlar</a> sayfasından sağlayıcı ve anahtar girin ya da yerel Ollama modeli kullanın.</div>'
+            notice += '<div class="notice notice-warn"><b>Bulut API anahtarı girilmemiş.</b> <a href="/settings" style="color:inherit; font-weight:700;">API Ayarları</a> sayfasından anahtarınızı kaydediniz.</div>'
         
+        provider_title = "Google (Gemini)" if status["provider"] == "google" else status["provider"].title()
         engine_info = f"""
-        <div class="engine-info-row">
-          <span><b>Çalışma Modu:</b> Bulut API (Sağlayıcı: <b>{html.escape(status['provider'])}</b>, Model: <code>{html.escape(status['model'])}</code>). PDF içeriği analiz sırasında bu sağlayıcıya gönderilir.</span>
-          <a class="btn btn-secondary btn-sm" href="/settings">Ayarları Değiştir</a>
+        <div class="active-engine-badge">
+          <div class="engine-status-text">
+            <span class="engine-status-dot"></span>
+            <span>Çalışma Modu: <b>Bulut API</b> — {html.escape(provider_title)} (<code>{html.escape(status['model'])}</code>)</span>
+          </div>
+          <a class="btn btn-secondary btn-sm" href="/settings">Modeli Değiştir</a>
         </div>
         """
         model_field = ""
@@ -698,8 +746,11 @@ def index_html(service: AnalysisService, message: str = "", message_type: str = 
             notice += f'<div class="notice notice-danger"><b>Analiz motoruna bağlanılamadı.</b> {html.escape(model_error)}</div>'
 
         engine_info = """
-        <div class="engine-info-row">
-          <span><b>Çalışma Modu:</b> Yerel Ollama Motoru (Bilgisayarınızdaki yerel model kullanılır).</span>
+        <div class="active-engine-badge">
+          <div class="engine-status-text">
+            <span class="engine-status-dot"></span>
+            <span>Çalışma Modu: <b>Yerel Ollama</b> (Cihazınızdaki yerel model)</span>
+          </div>
           <a class="btn btn-secondary btn-sm" href="/settings">Bulut API'ye Geç</a>
         </div>
         """
@@ -1003,15 +1054,29 @@ def settings_html(service: AnalysisService, message: str = "", message_type: str
     key_note = "Kayıtlı bir anahtar var (korunuyor)." if status["has_key"] else "Henüz anahtar girilmedi."
     key_placeholder = "•••••••••••••••• (Kayıtlı anahtar korunuyor; değiştirmek için yeni giriniz)" if status["has_key"] else "API anahtarını buraya giriniz"
 
+    key_status_badge = '<span style="color:#15803d; font-weight:700;">● Kayıtlı ve Hazır</span>' if status["has_key"] else '<span style="color:#b91c1c; font-weight:700;">○ Girilmedi</span>'
+    provider_title = "Google (Gemini)" if status["provider"] == "google" else status["provider"].title()
+
     content = f"""
     {notice}
 
     <section class="card">
-      <h2 class="card-title">Bulut API ayarları</h2>
-      <p class="card-intro">API anahtarı yalnızca bu bilgisayardaki yerel ayar dosyasında saklanır; asla Git'e eklenmez ve dışarı sızdırılmaz.</p>
+      <h2 class="card-title">Bulut API Ayarları</h2>
+      <p class="card-intro">Kullandığınız yapay zekâ sağlayıcısını, model adını ve API anahtarınızı buradan yönetebilirsiniz.</p>
 
-      <div class="notice notice-warn">
-        <b>Mevcut Durum:</b> Sağlayıcı: <b>{html.escape(status['provider'])}</b> · Model: <code>{html.escape(status['model'])}</code> · {key_note}
+      <div class="current-config-grid">
+        <div class="config-stat-card">
+          <span class="config-stat-label">Aktif Sağlayıcı</span>
+          <span class="config-stat-value">{html.escape(provider_title)}</span>
+        </div>
+        <div class="config-stat-card">
+          <span class="config-stat-label">Seçili Model</span>
+          <span class="config-stat-value"><code>{html.escape(status['model'])}</code></span>
+        </div>
+        <div class="config-stat-card">
+          <span class="config-stat-label">API Anahtarı Durumu</span>
+          <span class="config-stat-value">{key_status_badge}</span>
+        </div>
       </div>
 
       <form action="/settings/save" method="post">
