@@ -36,6 +36,10 @@ veri politikasıyla vermek için kullanılır.
 - Tercih edilen kimlik doğrulama: kurum SSO, ters vekil hesabı veya başka yöntem:
 - Yönetici ile normal kullanıcı ayrımı gerekli mi:
 
+#### Çok Kullanıcılı Canlı Yayın (Public Web) API Mimarisi:
+1. **Kurumsal Anahtar Modeli (Önerilen):** TBD sunucuya kendi kurumsal API anahtarını veya yerel Ollama modelini tanımlar. Dış kullanıcılara `/settings` (API Ayarları) gizlenir. Siteye giren akademisyenler hiçbir anahtar girmeden doğrudan PDF yükleyip tarama yapar.
+2. **Kişisel Anahtar Modeli (BYOK - Bring Your Own Key):** Eğer kullanıcıların kendi anahtarlarıyla tarama yapması istenirse, anahtarlar sunucunun ortak `provider.json` dosyasına yazılmaz; tarayıcı oturumunda (session/cookie) tutularak kullanıcılar arası çakışma ve güvenlik riski engellenir.
+
 ### 3. Belge ve rapor politikası
 
 - Kaynak PDF cihazdan veya kurum ağından çıkabilir mi:
