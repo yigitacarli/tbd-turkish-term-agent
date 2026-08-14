@@ -8,6 +8,5 @@ tmp/
 output/*
 !output/.gitkeep
 data/runtime/
-pdfs/*
-!pdfs/.gitkeep
+pdfs/
 test_clean.csv
