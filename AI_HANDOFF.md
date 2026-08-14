@@ -219,6 +219,17 @@
   Belge gizli olmadığı için kurum sağlayıcısı ve sunucu kararı verildiğinde aynı
   kod birden çok OpenAI-uyumlu API'yi (OpenAI, DeepSeek vb.) destekler. Henüz
   gerçek bir API anahtarıyla uçtan uca denenmedi; adil kazanç ölçümü bekler.
+- DeepSeek (`deepseek-chat`) gerçek API anahtarıyla beş belgede çalıştırıldı.
+  Aday üretimi 2b/4b'den çok daha zengin ve hızlıydı (5 belge ~126 sn; 2b ~218,
+  4b ~725). Üç modelin tümü 2b∪4b∪DeepSeek birleşiminden oluşan 1193 etiketlik
+  `evaluation/five_article_triple_internal_review.json` üzerinde adil ölçüldü
+  (yeni 303 terim yapay zekâ tarafından `internal_review` statüsünde etiketlendi;
+  uzman onayı değildir). Sonuç: 2b açık-terim P/R `%84,6 / %24,3`, 4b
+  `%84,6 / %27,3`, DeepSeek `%92,3 / %66,1`; teknik-terim P/R sırasıyla
+  `%90,9 / %51,6`, `%91,1 / %52,7`, `%93,6 / %79,4`. DeepSeek hem hassasiyet
+  hem yakalamada açık ara üstün; etiket doğruluğu `%77,3` (2b `%54,4`, 4b
+  `%55,2`). Profesör için en eksiksiz eksik-terim listesi güçlü API modelinden
+  gelir; yerel küçük modeller ciddi ölçüde yetersiz kalır.
 
 ## V1 referans bilgisi
 
