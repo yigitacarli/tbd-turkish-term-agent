@@ -1,10 +1,13 @@
 """PDF belgelerinden sayfa numarası korunarak metin çıkarımı."""
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 import re
 
 import pdfplumber
+
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 from .models import PageText
 
@@ -45,7 +48,7 @@ def clean_extracted_text(text: str) -> str:
         stripped = line.strip()
         if _is_low_quality_line(stripped):
             continue
-        if re.match(r"^\s*(?:references?|bibliography|works cited)\s*[-:]?$", stripped, re.IGNORECASE):
+        if re.match(r"^\s*(?:(?:\d+|[IVXLCDM]+)\.?\s*)?(?:references?|bibliography|works cited)(?:\s+(?:and|&)\s+notes)?\s*[-:]?$", stripped, re.IGNORECASE):
             break
         if re.search(r"(?:ISSN|International Journal for Research|©\s*\d{4})", stripped, re.IGNORECASE):
             continue

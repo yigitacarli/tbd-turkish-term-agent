@@ -35,7 +35,11 @@ class ExtractionTests(unittest.TestCase):
 
         self.assertIn("at most 8 terms", SYSTEM_PROMPT)
         self.assertIn("dictionary headword", SYSTEM_PROMPT)
+        self.assertIn("Hypothetical scenario participants", SYSTEM_PROMPT)
+        self.assertIn("Ordinary single English words", SYSTEM_PROMPT)
+        self.assertIn("Narrative descriptions", SYSTEM_PROMPT)
         self.assertIn("no more than 8 terms", USER_TASK)
+        self.assertIn("Hypothetical scenario actors", USER_TASK)
 
     def test_deduplicates_and_drops_invalid_candidates(self):
         class FakeExtractor:

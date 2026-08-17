@@ -9,11 +9,38 @@ from pathlib import Path
 from typing import Iterable
 
 
-_DASHES = "‐‑‒–—−"
+_DASHES = "\u2010\u2011\u2012\u2013\u2014\u2015\u2212"
+
+_IRREGULAR_PLURALS: dict[str, str] = {
+    "matrices": "matrix",
+    "indices": "index",
+    "vertices": "vertex",
+    "vortices": "vortex",
+    "appendices": "appendix",
+    "criteria": "criterion",
+    "phenomena": "phenomenon",
+    "automata": "automaton",
+    "corpora": "corpus",
+    "schemata": "schema",
+    "media": "medium",
+    "spectra": "spectrum",
+    "data": "datum",
+    "leaves": "leaf",
+    "lives": "life",
+    "halves": "half",
+    "caches": "cache",
+    "buses": "bus",
+    "aliases": "alias",
+    "statuses": "status",
+    "axes": "axis",
+}
 
 
 def normalized_key(value: str) -> str:
-    value = unicodedata.normalize("NFKC", value).casefold().strip()
+    value = unicodedata.normalize("NFKC", value)
+    value = value.replace("İ", "i")
+    value = value.casefold().strip()
+    value = unicodedata.normalize("NFKC", value)
     return " ".join(value.split())
 
 
@@ -24,16 +51,27 @@ def relaxed_key(value: str) -> str:
 
 
 def singular_key(value: str) -> str:
-    """Yalnızca son İngilizce sözcükte temkinli bir çoğul normalizasyonu yapar."""
+    """Yalnızca son İngilizce sözcükte temkinli ve morfolojik bir çoğul normalizasyonu yapar."""
     words = relaxed_key(value).split()
     if not words:
         return ""
     word = words[-1]
+
+    if word in _IRREGULAR_PLURALS:
+        words[-1] = _IRREGULAR_PLURALS[word]
+        return " ".join(words)
+
+    if len(word) > 5 and word.endswith("ses") and word[-4] in "aeioyu":
+        words[-1] = word[:-3] + "sis"
+        return " ".join(words)
+
     if len(word) > 4 and word.endswith("ies"):
         word = word[:-3] + "y"
+    elif word == "caches":
+        word = "cache"
     elif len(word) > 4 and word.endswith(("ches", "shes", "sses", "xes", "zes")):
         word = word[:-2]
-    elif len(word) > 3 and word.endswith("s") and not word.endswith(("ss", "us", "is")):
+    elif len(word) > 3 and word.endswith("s") and not word.endswith(("ss", "us", "is", "os")):
         word = word[:-1]
     words[-1] = word
     return " ".join(words)

@@ -448,3 +448,79 @@ Bu kayıt append-only mantığıyla kullanılmalıdır. Eski karar silinmez; de�
   eksik terim gürültüsünün yaklaşık %30'unu oluşturuyordu. Bu deterministik adımla sözlük
   eşleşmesi morfolojik olarak güçlendirildi ve API yanıtlarındaki JSON kırılganlığı giderildi.
 
+## ADR-033 — Gürültü terimlerini ve kurgusal senaryo aktörlerini eleyen istem optimizasyonu
+
+- Tarih: 2026-08-14
+- Durum: Kabul edildi
+- Karar: `SYSTEM_PROMPT` ve `USER_TASK` istemleri 3 ana gürültü kategorisini kesin olarak dışlayacak
+  biçimde yapılandırıldı:
+  1. **Kurgusal/Senaryo Rolleri:** Oyun teorisi, protokol analizi veya düşünce deneylerine özgü kurgusal
+     roller (`honest nodes`, `attacker chain`, `honest blocks`, `attacker node`, `malicious peer`, `victim`)
+     evrensel bilişim sözlük başlığı olmadıkları için kesin olarak dışlandı.
+  2. **Sıradan Tekil Kelimeler:** Bilişim literatürüne özgü bir standart/ilkel (`mutex`, `semaphore`, `nonce`,
+     `hypervisor`) olmadıkça genel dilden, ekonomiden veya yönetimden gelen tekil sözcüklerin (`incentive`,
+     `acting`, `dependencies`, `causality`, `tools`, `seeds`, `mint`, `cost`, `rules`) çıkarımı yasaklandı.
+  3. **Tanımlayıcı Cümle Parçaları:** Yazarın konuyu açıklarken kurduğu n-gram veya tanım parçaları
+     (`chain of digital signatures`, `public history of transactions`, `block broadcasts`) yerine yalnızca
+     standart teknik terimin (`digital signature`, `transaction`) çıkarılması kurala bağlandı.
+  4. **Bölüm Başlıkları ve Metrikler:** Bölüm/paragraf başlıkları (`6. Incentive`, `8. Calculations`) ve
+     deneysel metrikler (`99.9th percentile`, `BLEU`) kesin dışlamalar arasına alındı.
+- Gerekçe: Bitcoin ve benzeri akademik makalelerde eksik terimler listesinde beliren sahte kavramların
+  büyük kısmı makaleye özgü kurgusal rollerden ve genel dilden gelen sıradan kelimelerden kaynaklanıyordu.
+  İstemin bu kurallarla netleştirilmesi, modelin yalnızca bağımsız bir bilişim sözlüğü başlığı olabilecek
+  kavramlara odaklanmasını sağlar.
+
+## ADR-034 — Web rotası esnekliği, Excel XML karakter sanitizasyonu ve eşzamanlılık güvencesi
+
+- Tarih: 2026-08-15
+- Durum: Kabul edildi
+- Karar:
+  1. **Web Rota Desteği:** `web_app.py` Handler'ı hem web arayüz formlarını hem de standart API rotalarını
+     (`/api/analyze`, `/settings`, `/api/dictionary/update`) karşılayacak rota takma adlarını destekleyecek
+     biçimde genişletildi.
+  2. **Excel XML Karakter Sanitizasyonu:** PDF metin çıkarımından veya LLM çıktılarından gelebilecek
+     geçersiz XML kontrol karakterleri (`\x00`–`\x1f`, form-feed `\x0c` vb.) `_clean_str` ve
+     `ILLEGAL_CHARACTERS_RE` filtresi ile temizlenerek `openpyxl`'in çökmesi engellendi.
+  3. **Eşzamanlılık ve Geçici Dosya Güvencesi:** `MAX_CONCURRENT_ANALYSES = 1` kilidi `analyze_path`
+     fonksiyonunu da kapsayacak şekilde eşitlendi; analiz sırasında model hatası veya istisna oluşsa bile
+     geçici dosyaların (`tempfile`) `finally` bloğu ile silinmesi ve kilitlerin serbest bırakılması
+     testlerle teminat altına alındı.
+  4. **Gelişmiş Kaynakça Temizliği:** `clean_extracted_text` kaynakça filtreleme regex'i numaralı
+     bölüm başlıklarını (`12. References`, `VIII. References`, `References and Notes` vb.) kapsayacak
+     şekilde genişletildi.
+- Gerekçe: Güvenlik, veri bütünlüğü ve sistem kararlılığını uçtan uca sağlamak.
+
+## ADR-035 — Düzensiz bilişim çoğulları, Latin/Grek morfolojisi ve Unicode İ normalizasyonu
+
+- Tarih: 2026-08-15
+- Durum: Kabul edildi
+- Karar:
+  1. `dictionary.py` içindeki `singular_key` fonksiyonuna düzensiz bilişim çoğulları haritası
+     (`matrices` -> `matrix`, `indices` -> `index`, `vertices` -> `vertex`, `criteria` -> `criterion`,
+     `caches` -> `cache`, `buses` -> `bus`, `statuses` -> `status`, `data` -> `datum`, `phenomena` -> `phenomenon`,
+     `automata` -> `automaton`, `media` -> `medium`, `spectra` -> `spectrum` vb.) eklendi.
+  2. Grek/Latin kökenli `-ses` -> `-sis` kuralı (`analyses` -> `analysis`, `hypotheses` -> `hypothesis`,
+     `diagnoses` -> `diagnosis`, `theses` -> `thesis`, `parentheses` -> `parenthesis`) ile TBD sözlüğündeki
+     198 terim çoğul sahte eksik terim olmaktan kurtarıldı.
+  3. `normalized_key` içinde Türkçe noktalı `İ` karakterinin ASCII `i`ye dönüşümü güvenceye alındı;
+     Unicode `_DASHES` sabiti `\u2015` (Horizontal Bar) ile senkronize edildi.
+
+## ADR-036 — Genişletilmiş 6 yeni ileri bilişim makalesi canlı kıyaslama (benchmark) ve stres testi
+
+- Tarih: 2026-08-15
+- Durum: Kabul edildi
+- Karar: 6 yeni ileri bilişim makalesi (`ai_deepseek_r1_reasoning`, `ai_diffusion_stable_diffusion`,
+  `database_spanner_distributed`, `distributed_p2p_kademlia`, `security_hardware_rowhammer`,
+  `quantum_surface_codes`) `data/live_benchmarks/` dizinine indirilmiş ve DeepSeek-Chat canlı API'si ile
+  tam hat stres testinden geçirilmiştir:
+  1. Toplam 224 sayfalık akademik literatür taranmış, 232 metin parçası (chunk) analiz edilmiştir.
+  2. Toplam 91 TBD sözlük eşleşmesi (78 tam eşleşme, 13 çoğul varyant eşleşmesi), 4 TBD kısaltması ve
+     389 eksik terim adayı tespit edilmiştir.
+  3. Tüm makaleler için 2 sekmeli Excel (.xlsx), UTF-8-SIG noktalı virgüllü CSV (.csv) ve JSON (.json)
+     raporları `output/deepseek-chat/<makale>/` altında üretilmiş, `openpyxl` ile sekmeler, filtreler ve
+     veri bütünlüğü eksiksiz doğrulanmıştır.
+  4. Analiz ve kıyaslama özet verileri `data/live_benchmarks/deepseek_expanded_results.json` dosyasına işlenmiştir.
+- Gerekçe: Sistemin akıl yürütme LLM'leri (R1), üretken yapay zekâ (Stable Diffusion), dağıtık veritabanları
+  ve TrueTime (Spanner), P2P DHT ağları (Kademlia), donanım güvenliği ve DRAM hata enjeksiyonu (Rowhammer)
+  ve kuantum hesaplama/hata düzeltme (Surface Codes) gibi çok çeşitli ve modern alanlarda üstün terim
+  çıkarma, deterministik sözlük eşleştirme ve raporlama kararlılığını kanıtlamak.

@@ -128,9 +128,21 @@ class ApiClient:
                 last_error = error
         if parsed is None:
             raise last_error or ApiClientError("Model geçerli JSON döndürmedi.")
-        raw_terms = parsed.get("terms")
-        if not isinstance(raw_terms, list):
-            raise ApiClientError("Model yanıtında 'terms' listesi bulunamadı.")
+        raw_terms = None
+        if isinstance(parsed, dict):
+            for key in ("terms", "extracted_terms", "technical_terms", "candidates", "keywords"):
+                if isinstance(parsed.get(key), list):
+                    raw_terms = parsed[key]
+                    break
+            if raw_terms is None:
+                if not parsed or all(v is None or v == [] or v == {} for v in parsed.values()):
+                    raw_terms = []
+                else:
+                    raise ApiClientError("Model yanıtında 'terms' listesi bulunamadı.")
+        elif isinstance(parsed, list):
+            raw_terms = parsed
+        else:
+            raise ApiClientError("Model yanıtı geçerli JSON nesnesi veya listesi değil.")
 
         output: list[ExtractedTerm] = []
         for item in raw_terms:
@@ -305,11 +317,17 @@ class ApiClient:
                 return result
             except urllib.error.HTTPError as error:
                 detail = error.read().decode("utf-8", errors="replace")
-                if error.code == 429 and attempt < max_retries:
-                    delay = _parse_retry_delay(detail, default=15.0 * (attempt + 1))
-                    import time
-                    time.sleep(delay + 1.0)
-                    continue
+                if error.code == 429:
+                    if "exceeded your current quota" in detail.casefold() or "quota exceeded" in detail.casefold():
+                        raise ApiClientError(
+                            "Google API günlük/aylık kullanım kotanız doldu. "
+                            "Lütfen kotanın sıfırlanmasını bekleyin veya Ayarlar sayfasından DeepSeek/OpenAI sağlayıcısına geçin."
+                        ) from error
+                    if attempt < max_retries:
+                        delay = _parse_retry_delay(detail, default=10.0 * (attempt + 1))
+                        import time
+                        time.sleep(delay + 1.0)
+                        continue
                 raise ApiClientError(
                     "API HTTP hatası {}: {}".format(error.code, detail)
                 ) from error

@@ -179,9 +179,21 @@ class OllamaClient:
                 last_error = error
         if parsed is None:
             raise last_error or OllamaError("Model geçerli JSON döndürmedi.")
-        raw_terms = parsed.get("terms")
-        if not isinstance(raw_terms, list):
-            raise OllamaError("Model yanıtında 'terms' listesi bulunamadı.")
+        raw_terms = None
+        if isinstance(parsed, dict):
+            for key in ("terms", "extracted_terms", "technical_terms", "candidates", "keywords"):
+                if isinstance(parsed.get(key), list):
+                    raw_terms = parsed[key]
+                    break
+            if raw_terms is None:
+                if not parsed or all(v is None or v == [] or v == {} for v in parsed.values()):
+                    raw_terms = []
+                else:
+                    raise OllamaError("Model yanıtında 'terms' listesi bulunamadı.")
+        elif isinstance(parsed, list):
+            raw_terms = parsed
+        else:
+            raise OllamaError("Model yanıtı geçerli JSON nesnesi veya listesi değil.")
 
         output: list[ExtractedTerm] = []
         for item in raw_terms:

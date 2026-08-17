@@ -1189,13 +1189,13 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = urllib.parse.urlparse(self.path).path
-        if path == "/healthz":
+        if path in {"/healthz", "/health", "/api/healthz"}:
             self._health(); return
-        if path == "/":
+        if path in {"/", "/api"}:
             self._html(index_html(self.server.service)); return
-        if path == "/dictionary":
+        if path in {"/dictionary", "/api/dictionary"}:
             self._html(dictionary_html(self.server.service)); return
-        if path == "/settings":
+        if path in {"/settings", "/api/settings"}:
             self._html(settings_html(self.server.service)); return
         if path.startswith("/reports/"):
             self._report(path[len("/reports/"):]); return
@@ -1204,7 +1204,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         path = urllib.parse.urlparse(self.path).path
         try:
-            if path == "/analyze":
+            if path in {"/analyze", "/api/analyze"}:
                 fields, files = _multipart(self)
                 if "pdf" not in files:
                     raise ValueError("Makale PDF'sini seçin.")
@@ -1219,7 +1219,7 @@ class Handler(BaseHTTPRequestHandler):
                     "xlsx": str(xlsx_path.relative_to(base)) if xlsx_path.name and xlsx_path.is_file() else "",
                 }
                 self._html(result_html(result, links)); return
-            if path == "/settings/save":
+            if path in {"/settings/save", "/settings", "/api/settings"}:
                 fields = _urlencoded(self)
                 from .provider_store import ProviderConfig
                 existing = self.server.service.provider_store.load()
@@ -1233,7 +1233,7 @@ class Handler(BaseHTTPRequestHandler):
                 )
                 self.server.service.save_provider_config(config)
                 self._html(settings_html(self.server.service, "API ayarları kaydedildi.", "ok")); return
-            if path == "/dictionary/check":
+            if path in {"/dictionary/check", "/dictionary/update", "/api/dictionary/update", "/dictionary/check-update"}:
                 settings = self.server.service.settings
                 result = check_and_update(
                     self.server.service.dictionaries,
@@ -1242,7 +1242,7 @@ class Handler(BaseHTTPRequestHandler):
                     timeout=settings.update_timeout_seconds,
                 )
                 self._html(dictionary_html(self.server.service, result.message, result.status)); return
-            if path == "/dictionary/import":
+            if path in {"/dictionary/import", "/api/dictionary/import"}:
                 _, files = _multipart(self)
                 if "dictionary" not in files:
                     raise ValueError("Sözlük PDF'sini seçin.")

@@ -33,8 +33,8 @@ class Settings:
         "https://bilisimde.ozenliturkce.org.tr/onerilen-tum-terimler-ingilizce-turkce/",
     )
     dictionary_pdf_url: str = os.environ.get("TBD_DICTIONARY_PDF_URL", "")
-    chunk_size: int = 6_000
-    chunk_overlap: int = 100
+    chunk_size: int = 12_000
+    chunk_overlap: int = 200
     timeout_seconds: int = 240
     update_timeout_seconds: int = 25
     max_concurrent_analyses: int = _positive_int_env("MAX_CONCURRENT_ANALYSES", 1)

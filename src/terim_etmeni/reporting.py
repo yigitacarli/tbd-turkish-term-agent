@@ -16,6 +16,16 @@ try:
 except ImportError:
     _HAS_OPENPYXL = False
 
+ILLEGAL_CHARACTERS_RE = re.compile(r"[\000-\010]|[\013-\014]|[\016-\037]")
+
+
+def _clean_str(val: object) -> str:
+    """Excel XML standartlarına aykırı kontrol karakterlerini temizler."""
+    if val is None:
+        return ""
+    return ILLEGAL_CHARACTERS_RE.sub("", str(val))
+
+
 
 STATUS_LABELS = {
     "missing_terms": "İnceleme gerekli",
@@ -192,14 +202,14 @@ def _export_styled_xlsx(
     # Başlık Bannerı
     ws1.merge_cells("A1:H1")
     title1 = ws1["A1"]
-    title1.value = f"🎯 TBD BİLİŞİM SÖZLÜĞÜ — EKSİK TERİM İNCELEME LİSTESİ"
+    title1.value = _clean_str(f"🎯 TBD BİLİŞİM SÖZLÜĞÜ — EKSİK TERİM İNCELEME LİSTESİ")
     title1.font = Font(name="Calibri", size=14, bold=True, color="1E3A5F")
     title1.alignment = Alignment(vertical="center")
     ws1.row_dimensions[1].height = 28
 
     ws1.merge_cells("A2:H2")
     sub1 = ws1["A2"]
-    sub1.value = f"İncelenen Belge: {doc_name} | Analiz Modeli: {model_name} | İncelenecek Eksik Terim: {len(missing)} Adet"
+    sub1.value = _clean_str(f"İncelenen Belge: {doc_name} | Analiz Modeli: {model_name} | İncelenecek Eksik Terim: {len(missing)} Adet")
     sub1.font = Font(name="Calibri", size=10, italic=True, color="475569")
     sub1.alignment = Alignment(vertical="center")
     ws1.row_dimensions[2].height = 20
@@ -237,11 +247,11 @@ def _export_styled_xlsx(
         c_no.alignment = Alignment(horizontal="center", vertical="center")
         c_no.font = Font(name="Calibri", size=10, color="64748B")
 
-        c_term = ws1.cell(row=row_idx, column=2, value=str(item.get("term", "")))
+        c_term = ws1.cell(row=row_idx, column=2, value=_clean_str(item.get("term", "")))
         c_term.font = Font(name="Calibri", size=11, bold=True, color="1E3A5F")
         c_term.alignment = Alignment(vertical="center")
 
-        c_ctx = ws1.cell(row=row_idx, column=3, value=str(item.get("context", "")))
+        c_ctx = ws1.cell(row=row_idx, column=3, value=_clean_str(item.get("context", "")))
         c_ctx.font = Font(name="Calibri", size=10, italic=True, color="334155")
         c_ctx.alignment = Alignment(vertical="center", wrap_text=True)
 
@@ -263,7 +273,7 @@ def _export_styled_xlsx(
         c_occ.alignment = Alignment(horizontal="center", vertical="center")
         c_occ.font = Font(name="Calibri", size=10, bold=True)
 
-        c_pg = ws1.cell(row=row_idx, column=7, value=_pages(item))
+        c_pg = ws1.cell(row=row_idx, column=7, value=_clean_str(_pages(item)))
         c_pg.alignment = Alignment(horizontal="center", vertical="center")
         c_pg.font = Font(name="Calibri", size=10)
 
@@ -290,14 +300,14 @@ def _export_styled_xlsx(
 
     ws2.merge_cells("A1:G1")
     title2 = ws2["A1"]
-    title2.value = f"📚 TBD BİLİŞİM SÖZLÜĞÜNDE BULUNAN TERİMLER VE KISALTMALAR"
+    title2.value = _clean_str(f"📚 TBD BİLİŞİM SÖZLÜĞÜNDE BULUNAN TERİMLER VE KISALTMALAR")
     title2.font = Font(name="Calibri", size=14, bold=True, color="166534")
     title2.alignment = Alignment(vertical="center")
     ws2.row_dimensions[1].height = 28
 
     ws2.merge_cells("A2:G2")
     sub2 = ws2["A2"]
-    sub2.value = f"Toplam Eşleşen Terim: {len(found_all)} Adet | TBD Sözlük Sürümü: {dict_version}"
+    sub2.value = _clean_str(f"Toplam Eşleşen Terim: {len(found_all)} Adet | TBD Sözlük Sürümü: {dict_version}")
     sub2.font = Font(name="Calibri", size=10, italic=True, color="475569")
     sub2.alignment = Alignment(vertical="center")
     ws2.row_dimensions[2].height = 20
@@ -351,19 +361,19 @@ def _export_styled_xlsx(
         c_no.alignment = Alignment(horizontal="center", vertical="center")
         c_no.font = Font(name="Calibri", size=10, color="64748B")
 
-        c_term = ws2.cell(row=row_idx, column=2, value=str(item.get("term", "")))
+        c_term = ws2.cell(row=row_idx, column=2, value=_clean_str(item.get("term", "")))
         c_term.font = Font(name="Calibri", size=11, bold=True, color="0F172A")
         c_term.alignment = Alignment(vertical="center")
 
-        c_tr = ws2.cell(row=row_idx, column=3, value=tr_text)
+        c_tr = ws2.cell(row=row_idx, column=3, value=_clean_str(tr_text))
         c_tr.font = Font(name="Calibri", size=11, bold=True, color="166534")
         c_tr.alignment = Alignment(vertical="center")
 
-        c_st = ws2.cell(row=row_idx, column=4, value=status_desc)
+        c_st = ws2.cell(row=row_idx, column=4, value=_clean_str(status_desc))
         c_st.font = Font(name="Calibri", size=10, color="334155")
         c_st.alignment = Alignment(horizontal="center", vertical="center")
 
-        c_ctx = ws2.cell(row=row_idx, column=5, value=str(item.get("context", "")))
+        c_ctx = ws2.cell(row=row_idx, column=5, value=_clean_str(item.get("context", "")))
         c_ctx.font = Font(name="Calibri", size=10, italic=True, color="475569")
         c_ctx.alignment = Alignment(vertical="center", wrap_text=True)
 
@@ -371,7 +381,7 @@ def _export_styled_xlsx(
         c_occ.alignment = Alignment(horizontal="center", vertical="center")
         c_occ.font = Font(name="Calibri", size=10, bold=True)
 
-        c_pg = ws2.cell(row=row_idx, column=7, value=_pages(item))
+        c_pg = ws2.cell(row=row_idx, column=7, value=_clean_str(_pages(item)))
         c_pg.alignment = Alignment(horizontal="center", vertical="center")
         c_pg.font = Font(name="Calibri", size=10)
 

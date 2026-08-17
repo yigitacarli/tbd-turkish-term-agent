@@ -6,8 +6,6 @@ __pycache__/
 .venv/
 tmp/
 output/*
-!output/.gitkeep
 data/runtime/
-pdfs/
-ornek_makaleler/
-test_clean.csv
+data/live_benchmarks/
+*.zip

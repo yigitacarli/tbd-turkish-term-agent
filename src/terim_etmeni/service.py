@@ -203,4 +203,12 @@ class AnalysisService:
         path = Path(pdf_path)
         if not path.is_file():
             raise ValueError("PDF bulunamadı: {}".format(path))
-        return self._analyze(path, model, path.name)
+        if not self._analysis_slots.acquire(blocking=False):
+            raise AnalysisBusyError(
+                "Analiz kapasitesi dolu. Devam eden çalışma bitince yeniden deneyin."
+            )
+        try:
+            return self._analyze(path, model, path.name)
+        finally:
+            self._analysis_slots.release()
+

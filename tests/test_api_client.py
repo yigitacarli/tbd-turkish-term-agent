@@ -1,5 +1,6 @@
 import json
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 from terim_etmeni.api_client import (
@@ -207,6 +208,33 @@ class ApiClientTests(unittest.TestCase):
         self.assertEqual([t.term for t in terms], ["smart contract"])
         self.assertEqual(attempts, 2)
         mock_sleep.assert_called()
+
+    def test_empty_dict_and_alternative_keys_are_recovered(self):
+        client = ApiClient("openai", "secret", "model-x", timeout=5)
+
+        with patch("urllib.request.urlopen", return_value=_response(
+            {"choices": [{"message": {"content": "{}"}}]}
+        )):
+            self.assertEqual(client.extract_terms("text"), [])
+
+        with patch("urllib.request.urlopen", return_value=_response(
+            {"choices": [{"message": {"content": '{"technical_terms": [{"term": "hash function"}]}'}}]}
+        )):
+            terms = client.extract_terms("text")
+            self.assertEqual([t.term for t in terms], ["hash function"])
+
+    def test_quota_exceeded_fails_fast_with_clear_message(self):
+        client = ApiClient("google", "secret", "gemini-2.5-flash", timeout=5)
+
+        def fake_open(request, timeout):
+            import io
+            fp = io.BytesIO(b'{"error": {"code": 429, "message": "You exceeded your current quota, please check your plan"}}')
+            raise urllib.error.HTTPError(request.full_url, 429, "Too Many Requests", {}, fp)
+
+        with patch("urllib.request.urlopen", side_effect=fake_open), self.assertRaisesRegex(
+            ApiClientError, "kullanım kotanız doldu"
+        ):
+            client.extract_terms("text")
 
 
 if __name__ == "__main__":

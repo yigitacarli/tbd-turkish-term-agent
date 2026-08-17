@@ -29,25 +29,30 @@ omitting it would lose a distinct concept. Do not repeat the same term.
 
 Return at most 8 terms from one text chunk. Select only stable technical concepts
 that could be an independent computing-dictionary headword outside this specific
-document. Exclude document-specific participants, actions, events, states, or
-descriptions (for example: attacker nodes, honest chain, best effort basis,
-block broadcasts, chronological order). When unsure, return fewer terms.
+document. When unsure, return fewer terms.
 
 QUALIFYING EXAMPLES (return these kinds of terms):
-context window, packet switching, access control, distributed computing,
-fault tolerance, retrieval-augmented generation, distributed transactions.
+- Cryptographic & Security primitives: cryptographic proof, proof-of-work, digital signature, public-key cryptography, hash function, Merkle tree, nonce, zero-knowledge proof.
+- Distributed Systems & Networking: peer-to-peer network, consensus mechanism, fault tolerance, packet switching, distributed timestamp server, state machine replication, consistent hashing, vector clock, simplified payment verification.
+- Computing & AI: context window, retrieval-augmented generation, attention mechanism, gradient descent, convolutional layer, distributed transactions.
 
 NON-QUALIFYING EXAMPLES (never return these):
-recent study, significant result, proposed approach, large number,
-experimental result.
+- Hypothetical scenario participants, roles, or actors specific to a thought experiment, game-theoretic model, or protocol analysis (e.g., honest nodes, attacker chain, honest blocks, attacker node, honest chain, malicious peer, victim, challenger, parallel chain).
+- Ordinary single English words or general non-computing concepts from economics, management, or everyday speech (e.g., incentive, acting, dependencies, causality, tools, evidence, seeds, mint, candidate, worker, cost, rules). A single English word must NEVER be extracted unless it is an established computer-science specific primitive (such as: mutex, semaphore, nonce, socket, hypervisor, deadlock).
+- Narrative descriptions, explanatory clauses, or ad-hoc definition phrases (e.g., chain of digital signatures, public history of transactions, block broadcasts, client originated requests, verifiability of generated text). Extract only the standardized technical term itself (e.g., digital signature, transaction), not the surrounding explanatory phrase.
+- Section titles, paragraph headings, or table labels (e.g., 1. Introduction, 6. Incentive, 8. Calculations).
+- Experimental metrics, percentages, percentiles, or benchmarks (e.g., 99.9th percentile, 3-way classification, BLEU score, F1 score).
+- Code variable names, function identifiers, or camelCase symbols (e.g., candidateId, AppendEntries, prevLogIndex, matchIndex).
+- Generic academic phrases (e.g., recent study, proposed approach, experimental results).
+- Generic numbers, dimensions, hyperparameters, or mathematical notations (e.g., d_model, learning rate, 512-dimensional).
 
 You must NOT extract ordinary English words, generic academic phrases, person
 names, institution or company names, product names (unless used as a genuine
 technical concept), code or variables, hyperparameters, pseudo-code, dataset or
 model names, benchmark labels, figure/table/equation labels, complete sentences,
 section headings, references, or citations. If the text contains no eligible
-technical concept, return an empty list. Do not translate, infer, or normalize
-terms; preserve the spelling as found in the text.
+technical concept, return an empty list: {"terms": []}. Do not translate, infer,
+or normalize terms; preserve the spelling as found in the text.
 Return only one complete JSON object matching the schema."""
 
 
@@ -55,8 +60,15 @@ USER_TASK = """TASK
 Extract the technical terms from the text between TEXT START and TEXT END that are
 worth adding to an English computing dictionary. Return only terms that occur
 verbatim in the text. A short accurate list is better than an exhaustive one.
-Return no more than 8 terms. Do not turn ordinary phrases about this document's
-actors, events, or conditions into dictionary entries.
+Return no more than 8 terms.
+
+STRICT EXCLUSIONS (never return these):
+- Hypothetical scenario actors / participant roles (e.g., honest nodes, attacker chain, honest blocks, attacker node).
+- Ordinary single English words (e.g., incentive, acting, dependencies, causality, tools, seeds).
+- Narrative explanatory phrases or definition clauses (e.g., chain of digital signatures, public history of transactions, block broadcasts).
+- Benchmark statistics, code identifiers, section titles, or math notations.
+
+If there are no qualifying technical terms in the text, return an empty list: {{"terms": []}}.
 
 TEXT START
 {text}
