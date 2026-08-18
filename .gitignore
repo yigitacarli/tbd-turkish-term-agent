@@ -7,5 +7,9 @@ __pycache__/
 tmp/
 output/*
 data/runtime/
+data/chunks_for_gemini/
 data/live_benchmarks/
 *.zip
+
+# Derleme çıktısı
+*.egg-info/

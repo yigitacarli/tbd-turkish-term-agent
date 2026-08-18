@@ -118,6 +118,7 @@ class ApiClientTests(unittest.TestCase):
         self.assertEqual(provider_default_model("deepseek"), "deepseek-v4-flash")
         self.assertEqual(provider_default_model("google"), "gemini-2.0-flash")
         self.assertEqual(provider_base_url("anthropic"), "https://api.anthropic.com")
+        self.assertEqual(provider_default_model("anthropic"), "claude-sonnet-5")
 
     def test_missing_api_key_message_mentions_key(self):
         client = ApiClient("openai", "", "model-x")

@@ -25,7 +25,7 @@ from .term_extraction import USER_TASK as EXTRACT_USER_TASK
 PROVIDER_DEFAULTS = {
     "openai": ("https://api.openai.com/v1", "gpt-4o-mini"),
     "deepseek": ("https://api.deepseek.com", "deepseek-v4-flash"),
-    "anthropic": ("https://api.anthropic.com", "claude-sonnet-4-20250514"),
+    "anthropic": ("https://api.anthropic.com", "claude-sonnet-5"),
     "google": ("https://generativelanguage.googleapis.com", "gemini-2.0-flash"),
 }
 

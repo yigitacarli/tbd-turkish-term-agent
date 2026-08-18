@@ -32,10 +32,10 @@ python3 run.py
 - **Akıllı Çoğul Eşleme:** Metindeki çoğul terimler (`transactions`, `routing tables`), sözlükteki tekil karşılıklarıyla (`işlem`, `yol atama çizelgesi`) otomatik eşlenir; sahte eksik terimler engellenir.
 - **TBD Kısaltmalar Ayrımı:** Resmî TBD Kısaltmalar tablosu ayrı taranır; `RAM`, `CPU`, `RBAC`, `DNS` gibi kavramlar TBD açılımlarıyla gösterilir.
 - **Çoklu Sağlayıcı Desteği:** 
-  - **Google Gemini** (`gemini-2.5-flash` — Ücretsiz ve Hızlı)
-  - **DeepSeek** (`deepseek-chat`, `deepseek-reasoner`)
+  - **Google Gemini** (`gemini-2.0-flash` — varsayılan)
+  - **DeepSeek** (`deepseek-v4-flash` — varsayılan, `deepseek-v4-pro`, `deepseek-chat`, `deepseek-reasoner`)
   - **OpenAI** (`gpt-4o-mini`, `gpt-4o`, `o1`, `o3-mini`)
-  - **Anthropic Claude** (`claude-3-5-sonnet`, `claude-3-7-sonnet`)
+  - **Anthropic Claude** (`claude-sonnet-5`, `claude-opus-5`)
   - **Yerel Ollama** (İnternetsiz, %100 çevrimdışı yerel modeller)
 - **2 Sekmeli Profesyonel Excel Raporu (.xlsx):**
   - **1. Sekme (Eksik Terimler):** Yalnızca incelenmesi gereken yeni kavramlar, makaledeki bağlam cümleleri ve uzmanın önerisini yazacağı özel çalışma sütunu.
@@ -49,7 +49,7 @@ python3 run.py
 ├── src/terim_etmeni/      # Uygulama çekirdek paketi ve web sunucusu
 ├── data/                  # TBD Sözlüğü ve Kısaltmalar veri tabanı
 ├── docs/                  # Mimari kararlar (ADR) ve devir belgeleri
-├── tests/                 # Otomatik doğrulama testleri (65 birim testi)
+├── tests/                 # Otomatik doğrulama testleri (86 birim testi)
 ├── output/                # Üretilen Excel, CSV ve JSON raporları (Git dışı)
 ├── run.py                 # Ana çalıştırma dosyası
 ├── BASLAT_APPLE.command   # macOS tek tık başlatıcısı

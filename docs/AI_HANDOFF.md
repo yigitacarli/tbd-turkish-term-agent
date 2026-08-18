@@ -1,54 +1,168 @@
 # Yapay Zekâ / Geliştirici Devir Notu (AI Hand-off)
 
-## Güncel Durum ve Mimari Özeti (2026-08-15)
+## Teslim Durumu (2026-08-18)
 
-Proje tek, temiz, modern, güvenli ve kurşungeçirmez bir mimaridedir (ADR-030 - ADR-035):
+Proje teslim edilebilir durumdadır. Bu bölüm, teslim anındaki **doğrulanmış**
+durumu ve **bilinen sınırlamaları** ayrı ayrı kaydeder. Doğrulanmamış hiçbir
+iddia bu belgede doğrulanmış gibi sunulmamalıdır.
 
-- **Tek Paket:** `src/terim_etmeni/` ve giriş noktası `run.py`.
-- **Birim ve Entegrasyon Testleri:** `tests/` altında **86 testin tamamı** ~0.14 saniyede eksiksiz geçmektedir (`tests/test_provider_transition_and_excel.py` dahil).
-- **Çift Model Sağlayıcı Geçişi ve Çıktı Yalıtımı:**
-  - DeepSeek (`deepseek-chat`) $\leftrightarrow$ Google Gemini (`gemini-2.5-flash`) geçişleri (`/settings` ve `provider.json`) test edilip doğrulandı.
-  - Raporların `output/<model>/<stem>/` hiyerarşisinde (`output/deepseek-chat/` ve `output/gemini-2.5-flash/`) birbirini ezmeden yalıtılmış olarak saklandığı ve `/reports/<file>` uç noktasıyla güvenli indirilebildiği doğrulandı.
-- **Gemini Excel (.xlsx) ve CSV openpyxl Denetimi:**
-  - 2 sekmeli Excel yapısı (`Eksik Terimler (İnceleme)` ve `Sözlükte Bulunanlar`), freeze-pane (`A5`), showGridLines doğrulandı.
-  - İnsan incelemesi için tasarlanan boş komite sütunları (Sütun 4: `Önerilen Türkçe Karşılık (Komite)` vurgulu `FFFDF0` kutusu ve Sütun 8: `Komite Notu / Karar`) kontrol edildi.
-  - Türkçe özel karakterler (`ç, Ç, ğ, Ğ, ı, İ, ö, Ö, ş, Ş, ü, Ü, â, î, û`) ve noktalı virgüllü UTF-8-SIG CSV senkronizasyonu openpyxl ile uçtan uca test edildi.
-- **Genişletilmiş Canlı DeepSeek Benchmark Başarısı (ADR-036):**
-  - 6 yeni ileri bilişim makalesi (DeepSeek-R1, Latent Diffusion, Google Spanner, Kademlia DHT, DRAM Rowhammer, Quantum Surface Codes) 224 sayfa ve 232 metin parçası boyunca DeepSeek API ile uçtan uca taranmış ve **%100 başarıyla (0 çökme, 0 parça kaybı)** tamamlanmıştır (`data/live_benchmarks/deepseek_expanded_results.json`).
-  - Çıktılar `output/deepseek-chat/<makale>/` altında 2 sekmeli Excel (.xlsx), CSV (.csv) ve JSON (.json) formatlarında kaydedilmiş ve openpyxl ile doğrulanmıştır.
-- **Morfoloji ve Çoğul İyileştirmesi (ADR-035):**
+### Bu teslimde yapılan düzeltmeler
 
-  - Düzensiz bilişim çoğulları (`matrices` -> `matrix`, `indices` -> `index`, `criteria` -> `criterion`, `caches` -> `cache`, `buses` -> `bus`) ve Grek/Latin kökenli `-ses` -> `-sis` kuralı (`analyses` -> `analysis`, `hypotheses` -> `hypothesis`) ile TBD sözlüğündeki **320'den fazla terim** sahte eksik terim olmaktan kurtarılmıştır.
-  - Türkçe noktalı `İ` normalizasyonu ve Unicode tire standardizasyonu (`\u2015`) tamamlanmıştır.
-- **Web ve Güvenlik Katmanı:**
-  - Tüm HTTP uç noktaları (`GET /`, `GET /settings`, `POST /settings`, `GET /dictionary`, `POST /api/analyze`, `POST /api/dictionary/update`, `GET /healthz`, `GET /reports/<file>`) test edildi ve doğrulandı.
-  - Hatalı istek korumaları: Boş dosya, PDF olmayan yükleme, 60MB üzeri aşırı büyük istek, geçersiz urlencoded/multipart gövde, eksik form alanları durumunda Türkçe açıklayıcı 400 Bad Request yanıtları verilir.
-  - Güvenlik başlıkları (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Content-Security-Policy`, `Cache-Control: no-store`) tüm sayfalarda ve dosya indirmelerinde zorunludur.
-  - Yalnızca güvenli loopback (`127.0.0.1`, `localhost`, `::1`) bağlantılarına izin verilir; harici/LAN IP'ler reddedilir.
-  - Rapor indirmelerinde Path Traversal (`../`) ve izinsiz uzantılar engellenir.
-- **Servis Katmanı ve Eşzamanlılık:**
-  - `MAX_CONCURRENT_ANALYSES = 1` kısıtı `analyze_upload` ve `analyze_path` üzerinde işletilir; kapasite aşımında 503 meşgul yanıtı döner.
-  - Analiz sırasında veya model çağrısında hata oluşsa dahi geçici dosyaların (`tempfile`) silinmesi ve kilitlerin serbest bırakılması `finally` bloklarıyla teminat altındadır.
-- **Raporlama ve Excel / CSV Güvenliği:**
-  - 2 sekmeli Excel (.xlsx) ve UTF-8-SIG noktalı virgüllü CSV (.csv) raporları üretilir.
-  - `openpyxl`'in çökmesini engellemek için metinlerdeki geçersiz XML kontrol karakterleri (`\x00`–`\x1f`, form-feed `\x0c`) `_clean_str` ile otomatik ayıklanır.
-  - Türkçe özel karakterler (`ç, Ç, ğ, Ğ, ı, İ, ö, Ö, ş, Ş, ü, Ü, â, î, û`), uzun metinler ve formül sembolleri başarıyla doğrulanmıştır.
-- **PDF Okuyucu:**
-  - Numaralı bölüm başlıklarını (`12. References`, `VIII. References`, `References and Notes`) kapsayan kaynakça temizliği ve formül/kod filtresi entegre edilmiştir.
+1. **Sürüm denetimi kuruldu.** Depo artık git altındadır; ilk tam commit
+   alınmıştır. `data/runtime/` ve `output/` `.gitignore` ile depo dışındadır;
+   derleme çıktısı (`*.egg-info/`) izlemeden çıkarılmıştır.
+2. **Anthropic sağlayıcı varsayılanı düzeltildi** (`api_client.py`):
+   `claude-sonnet-4-20250514` → `claude-sonnet-5`. Önceki model 15 Haziran
+   2026'da emekliye ayrıldı. OpenAI (`gpt-4o-mini`) ve Google
+   (`gemini-2.0-flash`) varsayılanları geçerli olduğu için değiştirilmedi.
+
+   > **Not:** Bu denetim sırasında `deepseek-v4-flash` de önce hatalı
+   > sanılıp `deepseek-chat`'e çevrilmişti. Bu bir hataydı: DeepSeek-V4-Flash
+   > 31 Temmuz 2026'da genel betaya, DeepSeek-V4-Pro 13 Ağustos 2026'da genel
+   > kullanıma açıldı ([DeepSeek API Docs](https://api-docs.deepseek.com/updates/)) —
+   > modelin kendisi eğitim kesim tarihimin (Mayıs 2026) ötesinde kalıyordu.
+   > Web araması ile doğrulanıp `deepseek-v4-flash` varsayılanına geri
+   > alındı. Ders: yeni bir modeli "geçersiz" işaretlemeden önce, özellikle
+   > kesim tarihine yakın veya sonraki tarihli sürümlerde, doğrulama yapılmalı.
+3. **API anahtarı depodan ve çalışma ağacından temizlendi.**
+   `data/runtime/provider.json` içindeki anahtar alanı boşaltıldı; sağlayıcı ve
+   model bilgisi korundu. **Kullanıcının yapması gereken:** eski anahtarı
+   sağlayıcı panelinden iptal edip yenisini üretmek.
+4. **README gerçekle hizalandı:** test sayısı (65 → 86) ve sağlayıcı model
+   listesi koddaki değerlere çekildi.
+
+### Doğrulanmış durum
+
+- **Testler:** `tests/` altındaki **86 testin tamamı** geçmektedir (~0,15 sn).
+- **Mimari:** Tek paket `src/terim_etmeni/`, tek giriş `run.py` (ADR-030).
+  İşlem hattı sadedir: `PDF → parçalama → LLM aday çıkarımı → normalizasyon →
+  deterministik sözlük araması → eksik terimler`.
+- **Ürün kuralı korunuyor:** Sözlük üyeliği kararını model değil Python verir.
+  Başarısız analizde `analysis_status = "failed"` üretilir ve **hiç rapor dosyası
+  yazılmaz** — yani "0 eksik terim" yanılsaması kod düzeyinde engellenmiştir.
+- **Sözlük:** 30.247 kayıt, 28.492 benzersiz İngilizce terim (sürüm 2026-07-20).
+  Etkinleştirme `os.replace` ile atomiktir ve doğrulama sonrasıdır (ADR-004).
+- **DeepSeek canlı kıyaslaması (ADR-036) doğrulanabilirdir.**
+  `data/live_benchmarks/deepseek_expanded_results.json` verisi 6 makale,
+  224 sayfa, 232 parça ve toplam 321,2 saniye bildirmektedir — parça başına
+  ~1,4 saniye. Bu hız gerçek bir bulut API çağrısıyla tutarlıdır ve kayıttaki
+  sayılar kendi içinde tutarlıdır.
+
+### Bilinen sınırlamalar (teslim kapsamı dışında bırakıldı)
+
+Bunlar bilinçli olarak bu teslimde kapatılmamıştır. Aceleyle yapılacak bir
+düzeltme, teslim edilen çalışan sürümü bozma riski taşıdığı için tercih
+edilmemiştir.
+
+1. **Yerel sunucuda çapraz-köken koruması yoktur.** `web_app.py` içindeki POST
+   uç noktaları `Origin`, `Host` veya oturum belirteci doğrulaması yapmaz.
+   Uygulama yalnızca `127.0.0.1` dinlediği için dışarıdan erişilemez; ancak
+   uygulama açıkken ziyaret edilen kötü niyetli bir web sayfası
+   `/settings/save` adresine form gönderip sağlayıcı adresini değiştirebilir.
+   **Öneri:** ağ erişimi açılmadan önce mutlaka kapatılmalıdır.
+2. **Uzun analiz tek senkron HTTP isteği içinde yürür.** İlerleme bildirimi,
+   iptal veya kaldığı yerden devam yoktur. Ölçülen hız sayfa başına ~1,3–1,4
+   saniyedir; 224 sayfalık bir küme tek bağlantıda beş dakikanın üzerindedir.
+   `MAX_CONCURRENT_ANALYSES = 1` olduğu için bu süre boyunca ikinci belge
+   503 alır.
+3. **Kaynakça temizliği yalnızca başlığın bulunduğu sayfada çalışır.**
+   `clean_extracted_text` sayfa başına çağrıldığı için sonraki kaynakça
+   sayfaları modele gider. Köşeli ayraçlı (`[3]`) biçimler tesadüfen elenir,
+   numaralı ve düz biçimler elenmez.
+4. **Kısaltma eşlemesi büyük/küçük harfe duyarsızdır.** Kısaltma listesindeki
+   1.199 kaydın 759'u üç karakter veya daha kısadır; `set`, `art`, `pin`, `as`
+   gibi 17 sıradan sözcük bir TBD kısaltmasıyla çakışmaktadır. Bu durumda
+   incelenmesi gereken bir terim "eksik terimler" listesinden çıkıp
+   "TBD Kısaltması" grubuna düşebilir.
+5. **`singular_key` kısaltmalarda gövde kırpar** (`HTTPS` → `http`,
+   `CORS` → `cor`). Bugün zarar görünmemektedir; denetim sırasında bu
+   biçimlerin hiçbiri mevcut sözlükte karşılık bulmamıştır. Sözlük büyüdükçe
+   sahte "sözlükte bulundu" üretme riski taşır.
+6. **Aynı adlı belge önceki raporun üzerine yazar.** Çıktı yolu
+   `output/<model>/<belge-adı>/` olduğu için aynı model ve aynı dosya adıyla
+   yapılan ikinci analiz ilk raporu uyarısız siler.
+7. **`output/gemini-3.7-flash/` verisi bu depodaki otomatik işlem hattından
+   üretilmemiştir.** Proje sahibinden gelen bilgiye göre bu koşular
+   Google Antigravity IDE'sinde Gemini 3.7 Flash modeliyle **canlı, elle
+   yürütülen bir oturumdan** geliyor — `api_client.py`/`service.py` üzerinden
+   programatik olarak çağrılmamış. Antigravity ve Gemini 3.7 Flash'ın gerçek
+   ürünler olduğu doğrulandı ([Google Antigravity duyurusu](https://antigravity.google/blog/gemini-3-7-flash-in-google-antigravity)).
+   Buna göre: bu klasördeki `duration_seconds` gibi süre alanları, DeepSeek'in
+   bu depodaki betikle üretilmiş otomatik kıyaslamasıyla (ADR-036) doğrudan
+   karşılaştırılabilir **değildir** — farklı bir süreçten geliyorlar ve bu
+   depodaki `scan`/`serve` komutlarıyla yeniden üretilemezler.
+   `output/comparison_deepseek_vs_gemini37.json` da aynı nedenle yalnızca
+   bilgi amaçlıdır, ölçülebilir bir kıyaslama değildir. ADR-036'nın dayandığı
+   DeepSeek verisi bu deponun kendi betiğiyle üretildiği için ayrıdır ve
+   yukarıda belirtildiği gibi doğrulanabilirdir.
+8. **Python 3.9 desteği sınanmamıştır.** `pyproject.toml` `>=3.9` demektedir;
+   geliştirme 3.14 üzerinde yürümüştür ve sürekli tümleştirme yoktur.
+9. **Başlatıcılarda bağımlılık denetimi yoktur.** `pdfplumber` kurulu olmayan
+   temiz bir bilgisayarda program Türkçe açıklama yerine ham `ImportError`
+   ile kapanır. `BASLAT_WINDOWS.bat` içindeki `%errorlevel%` bir parantez
+   bloğunun içinde erken genişlemektedir; `py` dalı güvenilir değildir.
+
+### Bir sonraki geliştirici için sıra
+
+Öncelik sırası: (1) çapraz-köken koruması, (2) analizi arka plan işine taşımak
+ve ilerleme göstermek, (3) kaynakça/kısaltma/tekilleştirme düzeltmeleri,
+(4) ölçüm altyapısı (altın küme + kayıt-yeniden oynatma testleri).
+
+Kalıcı ürün veya mimari kararı `docs/DECISIONS.md` içine yeni bir ADR olarak
+eklenmelidir. Yukarıdaki 3, 4 ve 5 numaralı maddelerin düzeltilmesi davranış
+değişikliği olduğu için birer ADR gerektirir.
 
 ---
 
 ## Zorunlu Doğrulama Komutları
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
 Uygulamayı başlatmak için:
+
 ```bash
 python3 run.py
 ```
-*(Tarayıcıda otomatik olarak `http://127.0.0.1:8876` açılır).*
 
+*(Tarayıcıda otomatik olarak `http://127.0.0.1:8876` açılır.)*
 
+---
 
+## Önceki Mimari Özeti (2026-08-15)
+
+Aşağıdaki başlıklar ADR-030 – ADR-036 arasındaki çalışmanın özetidir ve
+tarihsel kayıt olarak korunmuştur.
+
+- **Çift Model Sağlayıcı Geçişi ve Çıktı Yalıtımı:** DeepSeek ↔ Google Gemini
+  geçişleri (`/settings` ve `provider.json`) test edilmiştir. Raporlar
+  `output/<model>/<belge>/` hiyerarşisinde birbirini ezmeden saklanır ve
+  `/reports/<file>` uç noktasıyla indirilebilir.
+- **2 Sekmeli Excel (.xlsx) ve CSV:** `Eksik Terimler (İnceleme)` ve
+  `Sözlükte Bulunanlar` sekmeleri, freeze-pane (`A5`), otomatik filtre ve
+  insan incelemesi için boş komite sütunları (Sütun 4 ve Sütun 8) openpyxl ile
+  doğrulanmıştır. Türkçe özel karakterler ve UTF-8-SIG noktalı virgüllü CSV
+  uçtan uca sınanmıştır.
+- **Morfoloji ve Çoğul İyileştirmesi (ADR-035):** Düzensiz bilişim çoğulları
+  (`matrices` → `matrix`, `indices` → `index`, `criteria` → `criterion` vb.) ve
+  Grek/Latin kökenli `-ses` → `-sis` kuralı eklenmiştir. Türkçe noktalı `İ`
+  normalizasyonu ve Unicode tire standardizasyonu tamamlanmıştır.
+- **Web ve Güvenlik Katmanı:** Tüm HTTP uç noktaları test edilmiştir. Hatalı
+  istek korumaları (boş dosya, PDF olmayan yükleme, 60 MB üzeri istek, geçersiz
+  gövde) Türkçe 400 yanıtı verir. Güvenlik başlıkları (`X-Frame-Options`,
+  `X-Content-Type-Options`, `Referrer-Policy`, `Content-Security-Policy`,
+  `Cache-Control`) tüm sayfalarda zorunludur. Yalnızca loopback (`127.0.0.1`,
+  `localhost`, `::1`) bağlantılarına izin verilir. Rapor indirmelerinde
+  Path Traversal ve izinsiz uzantılar engellenir.
+- **Servis Katmanı ve Eşzamanlılık:** `MAX_CONCURRENT_ANALYSES = 1` kısıtı
+  `analyze_upload` ve `analyze_path` üzerinde işletilir; kapasite aşımında 503
+  döner. Hata durumunda dahi geçici dosyaların silinmesi ve kilitlerin serbest
+  bırakılması `finally` blokları ve testlerle teminat altındadır.
+- **Excel Güvenliği:** Geçersiz XML kontrol karakterleri (`\x00`–`\x1f`,
+  form-feed `\x0c`) `_clean_str` ile ayıklanarak `openpyxl`'in çökmesi
+  engellenir.
+- **PDF Okuyucu:** Numaralı bölüm başlıklarını (`12. References`,
+  `VIII. References`, `References and Notes`) kapsayan kaynakça temizliği ve
+  formül/kod filtresi entegre edilmiştir. (Sınırlaması için yukarıdaki
+  "Bilinen sınırlamalar" 3. maddeye bakınız.)

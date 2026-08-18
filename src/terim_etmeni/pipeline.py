@@ -16,7 +16,6 @@ from .term_extraction import (
     TermExtractor,
     extract_terms_from_chunks,
     find_context,
-    normalize_term,
     term_occurrences,
 )
 
