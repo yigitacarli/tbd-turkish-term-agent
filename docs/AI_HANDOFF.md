@@ -101,12 +101,57 @@ edilmemiştir.
    temiz bir bilgisayarda program Türkçe açıklama yerine ham `ImportError`
    ile kapanır. `BASLAT_WINDOWS.bat` içindeki `%errorlevel%` bir parantez
    bloğunun içinde erken genişlemektedir; `py` dalı güvenilir değildir.
+10. **Eksik terim hacmi büyük ölçüde beklenen davranıştır; iki dar kapsamlı
+    gerçek sorun ölçüldü.** 8 gerçek DeepSeek raporundaki (`output/deepseek-chat/`)
+    381 "eksik terim" kaydı bu depodaki güncel eşleme koduyla yeniden
+    kontrol edildi (2026-08-18):
+    - **Sözlük eşleme katmanında sıfır hata bulundu.** 381 kaydın tamamı
+      gerçekten TBD sözlüğünde yok; yanlışlıkla "eksik" damgalanmış tek bir
+      kayıt yok.
+    - **TBD sözlüğü (30.247 kayıt) temel derin öğrenme kavramlarını zaten
+      içeriyor** (`attention mechanism`, `convolutional neural network`,
+      `backpropagation`, `gradient descent`, `fine-tuning`, `pretrained`,
+      `deep learning` vb. sözlükte kayıtlı). Buna karşın `softmax`, `dropout`,
+      `BLEU` sözlükte **sıfır** eşleşme veriyor — modern literatürün çok
+      spesifik jargonu henüz kapsanmamış. Bu, sözlüğün zayıflığı değil,
+      alanın hızla büyümesinin doğal sonucu.
+    - **camelCase/protokol kimlik sızması (gerçek, dar kapsamlı sorun):**
+      369 terimin 9'unda (~%2), `term_extraction.py`'deki istemin **açıkça
+      yasakladığı** kod/RPC değişken adları (`candidateId`, `AppendEntries`,
+      `prevLogTerm`, `RequestVoteRPC`) sızmış — hepsi tek belgede
+      (`3_raft_consensus_algorithm.pdf`). İstem zaten bu türden örnekleri
+      yasaklıyor (`SYSTEM_PROMPT` içinde "candidateId, AppendEntries,
+      prevLogIndex, matchIndex" örnekleri var) ama pratikte tam
+      uygulanmıyor. **Düzeltme önerisi:** `USER_TASK` içindeki
+      "STRICT EXCLUSIONS" listesine camelCase/RPC alan adı yasağını
+      açıkça ekleyip gerçek bir API anahtarıyla ölçmek. Bu denetim
+      sırasında geçerli bir anahtar olmadığı için (kullanıcının kendi
+      anahtarı iptal edilip henüz yenisi üretilmedi) **uygulanmadı** —
+      `AGENTS.md`'nin "ölçmeden değiştirme" kuralı gereği.
+    - **Sunum/algı sorunu (kod değil, politika kararı):** Eksik terimlerin
+      %61'inde (218/360, camelCase ve yanlış etiketli `8_ebpf_...` belgesi
+      hariç) terimi oluşturan **her kelime** sözlükte başka bağlamda zaten
+      geçiyor (`embedding`, `Transformer`, `attention heads`, `batch size`
+      gibi) — tam ifade kayıtlı olmasa da okuyana "zaten biliniyor" hissi
+      veriyor. Bunu koddan filtrelemek `ADR-028`'in reddettiği türden bir
+      sezgisel filtre olur ve yanlış pozitif riski taşır (`hidden
+      representations` gibi gerçekten yeni bir kavramı, bileşen kelimeleri
+      başka yerde geçiyor diye gizleyebilir). Bu, TBD komitesinin "eksik"
+      tanımını nasıl belirlediğine dair bir **politika sorusu** —
+      kod değişikliği değil.
+    - **`output/deepseek-chat/8_ebpf_xdp_packet_processing/` yanlış PDF
+      içeriyor** — dosya adı eBPF/XDP diyor ama gerçek içerik güneş paneli/
+      fotovoltaik hakkında (önceki kaotik oturumlardan kalma kirli test
+      verisi, kaynak PDF artık diskte yok). Kod hatası değil; bu klasördeki
+      12 "eksik terim" göz ardı edilmeli.
 
 ### Bir sonraki geliştirici için sıra
 
 Öncelik sırası: (1) çapraz-köken koruması, (2) analizi arka plan işine taşımak
 ve ilerleme göstermek, (3) kaynakça/kısaltma/tekilleştirme düzeltmeleri,
-(4) ölçüm altyapısı (altın küme + kayıt-yeniden oynatma testleri).
+(4) camelCase/RPC sızmasını istem düzeyinde kapatıp gerçek bir API anahtarıyla
+ölçmek (madde 10), (5) ölçüm altyapısı (altın küme + kayıt-yeniden oynatma
+testleri).
 
 Kalıcı ürün veya mimari kararı `docs/DECISIONS.md` içine yeni bir ADR olarak
 eklenmelidir. Yukarıdaki 3, 4 ve 5 numaralı maddelerin düzeltilmesi davranış
