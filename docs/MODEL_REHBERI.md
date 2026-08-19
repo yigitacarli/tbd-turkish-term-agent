@@ -1,10 +1,8 @@
 # Yerel Model Seçim Rehberi
 
-Bu uygulama bir yapay zekâ ajanından çok, yerel bir dil modelini iki sınırlı işte
-kullanan deterministik bir belge işlem hattıdır:
-
-1. PDF parçasından İngilizce teknik terim adaylarını çıkarma
-2. Sözlükte bulunmayan adayları teknik terim niteliği bakımından doğrulama
+Bu uygulama bir yapay zekâ ajanından çok, dil modelini **tek bir sınırlı işte**
+kullanan deterministik bir belge işlem hattıdır: PDF parçasından İngilizce teknik
+terim adaylarını çıkarmak. Modelin ikinci bir doğrulama geçişi yoktur (ADR-028).
 
 Sözlük eşleşmesi, kanıt sayımı ve raporlama Python kodunda yapılır. Bu nedenle
 Claude Code, OpenCode veya benzeri genel amaçlı bir ajan eklemek doğruluğu doğrudan
@@ -41,30 +39,54 @@ ollama rm MODEL_ETIKETI
 Örneğin `ollama rm qwen:latest`. Silme geri alınamaz; tekrar kullanmak için modelin
 yeniden indirilmesi gerekir.
 
-## Göreve özel geçici sıralama
+## Ölçülmüş durum (2026-08-19)
 
-Bu sıralama genel model tanıtımlarına, yapılandırılmış çıktı desteğine, bellek
-boyutuna ve projenin İngilizce terim çıkarma gereksinimine göre hazırlanmış bir
-**kısa listedir**; kabul kümesi ölçümü yapılmadan nihai kalite sıralaması değildir.
+**Uyarı:** Bu bölümün önceki sürümü `qwen3.5:9b` profilini "en yüksek önerilen"
+olarak gösteriyordu. O öneri ölçüme değil model tanıtımlarına dayanıyordu ve
+19.08.2026'da yapılan 14 makalelik koşuyla **çürütüldü**. Aşağıdaki sayılar aynı
+gün, aynı kod ve aynı 14 belge üzerinde ölçülmüştür.
 
-1. `qwen3.5:9b` — güçlü bilgisayarlar için en yüksek önerilen Qwen 3.5 profili
-2. `qwen3.5:4b` — orta seviye bilgisayarlar için dengeli profil
-3. `qwen3.5:2b` — önceki hafif donanım test profili
+| Model | Belge | Sayfa başına süre | Bulunan terim | Not |
+|---|---|---|---|---|
+| `deepseek-v4-flash` (bulut) | 14/14 | ~1,6 sn | 2.544 aday | Referans koşu |
+| `qwen3.8:latest` (yerel) | 9/14 | ~25 sn | 308 aday | Koşu yarıda kaldı, bir parça HTTP 500 |
+| `qwen3.5:9b-q4_K_M` (yerel) | 14/14 | ~1,2 sn | 192 aday | **5 belgede hiç aday döndürmedi** |
 
-Gemma ve Granite için tamamlanmış, uzman etiketli bir karşılaştırma henüz yoktur;
-bu nedenle kalite sıralaması yapılmamıştır. `gpt-oss` ve diğer model aileleri de
-aynı kabul kümesinde ölçülmeden genel öneri yapılmamalıdır.
+- Yerel modeller bulut sağlayıcının bulduğu terimlerin belge başına yalnızca
+  **%3–51'ini** yakaladı.
+- `qwen3.5:9b-q4_K_M` 14 belgenin 5'inde sıfır aday döndürdü. Bu sessiz boş sonuç
+  davranışı ADR-039 ile artık raporda ve arayüzde uyarı olarak görünür.
+- `qwen3.8:latest` bulut sağlayıcıdan yaklaşık **19 kat yavaştı** ve uzun
+  belgelerde Ollama bağlantısı koptu.
+- Ayrıntılı koşu kayıtları `output/_arsiv/` altındadır.
 
-Önceki `qwen2.5:1.5b` modeli çalışmaya devam eder ve karşılaştırma tabanı olarak
-tutulabilir.
+**Tablodaki aday sayıları doğrudan karşılaştırılamaz:** yerel model koşuları parça
+başına 8 aday tavanıyla (ADR-031), DeepSeek referans koşusu 16 tavanıyla (ADR-040)
+yapılmıştır. Tavandan bağımsız olan iki bulgu şunlardır: yerel modellerin sayfa
+başına süresi ve `qwen3.5:9b-q4_K_M`'nin 5 belgede hiç aday döndürmemesi. Üstteki
+"%3–51 yakalama" oranı ise her iki tarafın da 8 tavanıyla çalıştığı koşulardan
+hesaplanmıştır, o karşılaştırma adildir.
+
+**Pratik öneri:** Belgeler gizli değilse bulut API kullanın — hız ve terim bulma
+farkı büyüktür. Yerel model yalnızca belgenin cihazdan çıkmaması zorunluysa
+tercih edilmelidir; bu durumda 9B altı profillerden kaçının ve sıfır aday
+uyarısını dikkate alın.
+
+Gemma, Granite ve `gpt-oss` aileleri bu kümede hiç ölçülmedi; onlar hakkında
+öneri yapılmamıştır.
 
 ## Nihai sıralama için kabul deneyi
 
-Üç farklı belge seçilmelidir:
+Yukarıdaki tablo **hacim ve hız** farkını gösterir; hangi modelin daha *doğru*
+terim bulduğunu göstermez. Bunun için uzman etiketli bir altın küme gerekir.
 
-- `nist-5g-security.pdf`: güvenlik, ağ ve kısaltmalar
-- `efficient-transformers-survey.pdf`: yoğun akademik yapay zekâ terminolojisi
-- `diffusion-models-vision-survey.pdf`: model/ürün adı ile gerçek terim ayrımı
+Üç belge seçilmelidir. Bugünkü 14 makalelik kümeden seçilmesi önerilir
+(`8_ebpf_xdp_packet_processing.pdf` hariç — o dosya yanlış içerik taşıyor):
+
+- Güvenlik/ağ ve kısaltma yoğun bir belge (ör. `11_zero_knowledge_proof_frameworks`)
+- Yoğun akademik yapay zekâ terminolojisi (ör. `5_flash_attention_io_aware`)
+- Model/ürün adı ile gerçek terim ayrımının zor olduğu bir belge
+  (ör. `10_homomorphic_encryption_survey`)
 
 Bir uzman bu belgelerde sözlükte eksik olan doğru terimleri bir kez etiketlemelidir.
 Her model aynı uygulama sürümü, istem, parça boyutu ve tek geçiş ayarıyla en az üç
