@@ -1,6 +1,6 @@
 # Türkçe Terim Etmeni — Teslim Özeti
 
-**Tarih:** 18 Ağustos 2026 · **Sürüm:** 1.0.0 · **Kurum:** Türkiye Bilişim Derneği,
+**Tarih:** 19 Ağustos 2026 · **Sürüm:** 1.0.1 · **Kurum:** Türkiye Bilişim Derneği,
 Bilişimde Özenli Türkçe Çalışma Grubu
 
 ---
@@ -32,16 +32,23 @@ Bu, ürünün en önemli özelliğidir ve kod düzeyinde garanti altındadır:
 
 | Ölçüt | Değer |
 |---|---|
-| Otomatik test | 86 test, tamamı geçiyor |
+| Otomatik test | 99 test, tamamı geçiyor |
 | Sözlük | 30.247 kayıt · 28.492 benzersiz terim (sürüm 2026-07-20) |
 | Kısaltma kaynağı | 1.199 resmî TBD kısaltması, ana sözlükten ayrı |
-| Canlı kıyaslama | 6 ileri makale · 224 sayfa · 232 metin parçası · 321 saniye |
+| Canlı kıyaslama | 14 ileri makale · 318 sayfa · 1.351 terim adayı · 446 saniye |
 | Çıktı biçimleri | Excel (.xlsx), CSV, JSON |
 | Desteklenen sağlayıcılar | Google Gemini, DeepSeek, OpenAI, Anthropic, yerel Ollama |
 
-Kıyaslamada 6 makale (DeepSeek-R1, Stable Diffusion, Google Spanner, Kademlia,
-Rowhammer, Kuantum Yüzey Kodları) uçtan uca taranmış, hiçbir parça kaybı
-yaşanmamıştır. Ortalama hız sayfa başına yaklaşık **1,4 saniye**.
+Kıyaslamada 14 makale (Transformer, LoRA, Raft, BERT, FlashAttention, RAG, DPO,
+GAN, homomorfik şifreleme, sıfır bilgi kanıtı, WebAssembly, PBFT ve iki güvenlik
+makalesi) DeepSeek-V4-Flash ile uçtan uca taranmıştır. Hiçbir parça kaybı
+yaşanmamış, ortalama hız sayfa başına yaklaşık **1,4 saniye** ölçülmüştür.
+Sonuç: 240 sözlük eşleşmesi, 5 TBD kısaltma eşleşmesi ve uzman incelemesi
+bekleyen 997 eksik terim (`output/deepseek-v4-flash/`, 19.08.2026).
+
+Kümedeki `8_ebpf_xdp_packet_processing.pdf` dosyası adına rağmen fotovoltaik
+içerikli yanlış bir belgedir; bu belgenin sonuçları komiteye gönderilmemeli,
+kaynak PDF doğrusuyla değiştirilmelidir.
 
 ## Nasıl çalıştırılır
 
@@ -81,6 +88,11 @@ Bunlar bilinerek bu sürümün dışında bırakılmıştır:
 4. **Kurum sunucusu kararları verilmemiştir.** `docs/DEPLOYMENT_READINESS.md`
    içindeki form, kurumun donanım, erişim ve belge saklama politikası
    netleştiğinde doldurulmalıdır.
+5. **Sözlük eşleşmelerinde anlam denetimi yoktur.** `attention` gibi genel bir
+   sözcük sözlükteki başka anlamıyla ("uyarı") eşleşebilir. Terim gerçekten
+   sözlükte kayıtlıdır; karar gereken nokta, tek sözcüklük genel terimlerin
+   raporda nasıl sunulacağıdır. Bu bir yazılım hatası değil, çalışma grubunun
+   vereceği bir sunum kararıdır.
 
 Teknik ayrıntılar ve bilinen sınırlamaların tam listesi
 `docs/AI_HANDOFF.md` içindedir.

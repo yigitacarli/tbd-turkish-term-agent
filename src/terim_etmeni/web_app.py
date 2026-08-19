@@ -834,6 +834,15 @@ def result_html(result: dict[str, object], links: dict[str, str]) -> str:
         warning = '<div class="notice notice-warn"><b>Analiz {}.</b> Bu sonuç “0 eksik terim” olarak yorumlanmamalıdır.{}</div>'.format(
             "kısmi tamamlandı" if status == "partial" else "tamamlanamadı", detail_msg
         )
+    elif result.get("candidate_count") == 0:
+        # Belge hatasız işlendi ama model hiç aday üretmedi: boş rapor "eksik terim
+        # yok" diye okunmamalı (özellikle küçük yerel modellerde görülür).
+        warning = (
+            '<div class="notice notice-warn"><b>Model bu belgeden hiç terim adayı '
+            "döndürmedi.</b> Belge hatasız işlendi, ancak boş sonuç “belgede eksik "
+            "terim yok” anlamına gelmez. Daha güçlü bir model ile yeniden deneyin."
+            "</div>"
+        )
 
 
     # Render Entries

@@ -4,6 +4,22 @@ from unittest.mock import patch
 from terim_etmeni.ollama_client import OllamaClient, OllamaError, _json_from_text
 
 
+class OllamaBudgetTests(unittest.TestCase):
+    def test_output_budget_matches_cloud_client(self):
+        """Yerel model bulut sağlayıcıdan daha dar bir çıktı bütçesine sıkışmamalı."""
+        import inspect
+
+        from terim_etmeni.api_client import ApiClient
+
+        local = inspect.signature(
+            OllamaClient._extract_prompt
+        ).parameters["num_predict"].default
+        cloud = inspect.signature(
+            ApiClient._extract_prompt
+        ).parameters["max_tokens"].default
+        self.assertGreaterEqual(local, cloud)
+
+
 class OllamaClientTests(unittest.TestCase):
     def test_json_parser_accepts_fenced_json(self):
         self.assertEqual(_json_from_text('```json\n{"terms": []}\n```'), {"terms": []})

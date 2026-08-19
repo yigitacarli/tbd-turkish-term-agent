@@ -464,6 +464,22 @@ class WebAppTests(unittest.TestCase):
         self.assertIn("0 eksik terim", rendered)
         self.assertIn("Analiz kısmi tamamlandı", rendered)
 
+    def test_result_warns_when_model_returned_no_candidates(self):
+        rendered = result_html(
+            {
+                "analysis_status": "complete",
+                "dictionary_version": "v1",
+                "model": "test",
+                "candidate_count": 0,
+                "missing_terms": [],
+                "possible_matches": [],
+                "dictionary_matches": [],
+            },
+            {"json": "a.json", "csv": "a.csv", "xlsx": "a.xlsx"},
+        )
+        self.assertIn("hiç terim adayı döndürmedi", rendered)
+        self.assertIn("eksik terim yok", rendered)
+
     def test_result_failed_shows_clear_guidance(self):
         rendered = result_html(
             {

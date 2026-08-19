@@ -13,3 +13,6 @@ data/live_benchmarks/
 
 # Derleme çıktısı
 *.egg-info/
+
+# Yerel araç ayarları
+.claude/

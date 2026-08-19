@@ -16,7 +16,7 @@ from .term_extraction import (
     TermExtractor,
     extract_terms_from_chunks,
     find_context,
-    term_occurrences,
+    locate_term,
 )
 
 
@@ -91,22 +91,30 @@ def analyze_pdf(
     found: list[dict[str, object]] = []
     possible: list[dict[str, object]] = []
     missing: list[dict[str, object]] = []
+    rejected: list[dict[str, object]] = []
     seen_missing: dict[str, dict[str, object]] = {}
+    seen_found: dict[str, dict[str, object]] = {}
 
     for candidate in candidates:
         term = candidate.term
         in_dictionary, entries, match_type = dictionary.lookup(term)
-        occurrences, page_set = term_occurrences(term, pages)
+        occurrences, page_set, found_form = locate_term(term, pages)
         if occurrences == 0:
-            # Model, metinde geçmeyen bir ifade döndürdüyse raporlama.
+            # Model, metinde hiçbir yüzey biçimiyle geçmeyen bir ifade döndürdü
+            # (uydurma veya açılım). Rapordan çıkarılır ama izlenebilir kalsın diye kaydedilir.
+            rejected.append({"term": term, "reason": "not_found_in_text"})
             continue
         base: dict[str, object] = {
             "term": term,
             "found_in_dictionary": in_dictionary,
-            "context": find_context(term, pages),
+            "context": find_context(found_form, pages),
             "pages": sorted(page_set),
             "occurrence_count": occurrences,
         }
+        if found_form != term:
+            # Metinde terimin kendisi değil bir çekim/tireli biçimi geçiyor; hangi
+            # biçim üzerinden sayıldığı denetlenebilir olsun.
+            base["matched_form"] = found_form
         if in_dictionary:
             base["translations"] = list(
                 dict.fromkeys(
@@ -116,6 +124,22 @@ def analyze_pdf(
                 )
             )
             base["match_type"] = match_type
+            # Tekil/çoğul aynı sözlük girdisine düşüyorsa tek satırda birleştir
+            # (örn. 'vulnerability' ve 'vulnerabilities' ayrı ayrı raporlanmasın).
+            found_key = singular_key(term) or normalized_key(term)
+            existing_found = seen_found.get(found_key)
+            if existing_found is not None:
+                existing_found["pages"] = sorted(set(existing_found.get("pages", [])) | page_set)
+                existing_found["occurrence_count"] = (
+                    int(existing_found.get("occurrence_count", 0)) + occurrences
+                )
+                if match_type == "exact" and existing_found.get("match_type") != "exact":
+                    existing_found["term"] = term
+                    existing_found["match_type"] = match_type
+                    if base["context"]:
+                        existing_found["context"] = base["context"]
+                continue
+            seen_found[found_key] = base
             found.append(base)
             continue
         if abbreviations is not None:
@@ -173,6 +197,18 @@ def analyze_pdf(
     else:
         analysis_status = "complete"
 
+    # Parçalar hatasız işlendiği hâlde model hiç aday döndürmediyse sonuç teknik
+    # olarak başarılıdır ama boş rapor "belgede eksik terim yok" diye okunmamalıdır.
+    # Durum kodu değişmez (analiz gerçekten tamamlandı); uyarı kayda geçer.
+    report_warnings = list(extraction_warnings)
+    if chunks and processed_chunk_count and not candidates:
+        report_warnings.append(
+            "Model {} parçanın tamamını işledi ancak hiç terim adayı döndürmedi; "
+            "bu sonuç “belgede eksik terim yok” anlamına gelmez.".format(
+                processed_chunk_count
+            )
+        )
+
     return {
         "document": Path(pdf_path).name,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -184,16 +220,16 @@ def analyze_pdf(
         "processed_chunk_count": processed_chunk_count,
         "failed_chunk_count": len(extraction_warnings),
         "analysis_status": analysis_status,
-        "processing_warnings": extraction_warnings,
+        "processing_warnings": report_warnings,
         "counts": {
             "dictionary_matches": len(found),
             "possible_matches": len(possible),
             "missing_terms": len(missing),
-            "rejected_candidates": 0,
+            "rejected_candidates": len(rejected),
         },
         "dictionary_matches": found,
         "possible_matches": possible,
         "missing_terms": missing,
-        "rejected_candidates": [],
+        "rejected_candidates": rejected,
     }
 

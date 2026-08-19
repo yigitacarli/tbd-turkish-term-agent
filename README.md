@@ -30,6 +30,7 @@ python3 run.py
 
 - **Deterministik Sözlük Eşlemesi:** Yapay zekâ sözlük kararı vermez; 30.247 terimlik TBD Bilişim Sözlüğü ile doğrudan kod seviyesinde matematiksel eşleme yapılır.
 - **Akıllı Çoğul Eşleme:** Metindeki çoğul terimler (`transactions`, `routing tables`), sözlükteki tekil karşılıklarıyla (`işlem`, `yol atama çizelgesi`) otomatik eşlenir; sahte eksik terimler engellenir.
+- **Kanıtlı Terim Doğrulaması:** Modelin döndürdüğü her aday, PDF metninde gerçekten geçtiği doğrulanmadan rapora girmez. Satır sonunda tirelenerek bölünmüş sözcükler (`compu-` + `tation`) ve tekil/çoğul farkları (`block cipher` ↔ `block ciphers`) bu doğrulamada göz ardı edilir; metinde hiç geçmeyen aday elenir.
 - **TBD Kısaltmalar Ayrımı:** Resmî TBD Kısaltmalar tablosu ayrı taranır; `RAM`, `CPU`, `RBAC`, `DNS` gibi kavramlar TBD açılımlarıyla gösterilir.
 - **Çoklu Sağlayıcı Desteği:** 
   - **Google Gemini** (`gemini-2.0-flash` — varsayılan)
@@ -49,7 +50,7 @@ python3 run.py
 ├── src/terim_etmeni/      # Uygulama çekirdek paketi ve web sunucusu
 ├── data/                  # TBD Sözlüğü ve Kısaltmalar veri tabanı
 ├── docs/                  # Mimari kararlar (ADR) ve devir belgeleri
-├── tests/                 # Otomatik doğrulama testleri (86 birim testi)
+├── tests/                 # Otomatik doğrulama testleri (99 birim testi)
 ├── output/                # Üretilen Excel, CSV ve JSON raporları (Git dışı)
 ├── run.py                 # Ana çalıştırma dosyası
 ├── BASLAT_APPLE.command   # macOS tek tık başlatıcısı

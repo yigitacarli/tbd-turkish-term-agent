@@ -5,7 +5,9 @@ from terim_etmeni.models import ExtractedTerm, PageText, TextChunk
 from terim_etmeni.term_extraction import (
     extract_terms_from_chunks,
     find_context,
+    locate_term,
     normalize_term,
+    surface_variants,
     term_occurrences,
 )
 
@@ -81,6 +83,43 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(page_set, {1, 2})
         context = find_context("distributed ledger", pages)
         self.assertIn("distributed ledger", context)
+
+
+class SurfaceFormTests(unittest.TestCase):
+    def test_term_is_located_through_its_plural_surface_form(self):
+        pages = [PageText(1, "Modern block ciphers resist known attacks.")]
+        self.assertEqual(term_occurrences("block cipher", pages)[0], 0)
+        occurrences, page_set, found_form = locate_term("block cipher", pages)
+        self.assertEqual(occurrences, 1)
+        self.assertEqual(page_set, {1})
+        self.assertEqual(found_form, "block ciphers")
+
+    def test_term_is_located_when_split_by_line_break_hyphen(self):
+        pages = [PageText(1, "The paper studies homomorphic compu-\ntation in depth.")]
+        self.assertEqual(term_occurrences("homomorphic computation", pages)[0], 0)
+        occurrences, _, found_form = locate_term("homomorphic computation", pages)
+        self.assertEqual(occurrences, 1)
+        self.assertEqual(found_form, "homomorphic computation")
+
+    def test_context_is_returned_for_line_break_hyphenated_match(self):
+        pages = [PageText(1, "The paper studies homomorphic compu-\ntation in depth.")]
+        self.assertIn("homomorphic computation", find_context("homomorphic computation", pages))
+
+    def test_genuine_hyphenated_term_still_matches_across_a_line_break(self):
+        pages = [PageText(1, "We evaluate privacy-\npreserving computation here.")]
+        occurrences, _, found_form = locate_term("privacy-preserving computation", pages)
+        self.assertEqual(occurrences, 1)
+        self.assertEqual(found_form, "privacy-preserving computation")
+
+    def test_absent_term_stays_absent(self):
+        pages = [PageText(1, "A distributed ledger records transactions.")]
+        self.assertEqual(locate_term("quantum annealing", pages), (0, set(), "quantum annealing"))
+
+    def test_surface_variants_only_inflect_the_last_word(self):
+        self.assertIn("block ciphers", surface_variants("block cipher"))
+        self.assertIn("dictionaries", surface_variants("dictionary"))
+        # Yeni kavram uretilmemeli: ilk sozcuk hic degismez
+        self.assertTrue(all(v.startswith("block ") for v in surface_variants("block cipher")))
 
 
 if __name__ == "__main__":

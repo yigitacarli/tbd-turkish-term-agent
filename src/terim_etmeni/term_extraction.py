@@ -145,17 +145,83 @@ def term_occurrences(term: str, pages: list[PageText]) -> tuple[int, set[int]]:
     return total, page_set
 
 
+# Satır sonunda tirelenerek bölünmüş sözcük (``compu-\ntation``). Yalnızca arama
+# kopyasında birleştirilir; sayfa metni ve modele giden parçalar değişmez.
+_HYPHEN_LINE_BREAK = re.compile(r"(\w)[{}]\s*\n\s*(\w)".format(_DASHES))
+
+
+def _dehyphenated_pages(pages: list[PageText]) -> list[PageText]:
+    return [
+        PageText(page=page.page, text=_HYPHEN_LINE_BREAK.sub(r"\1\2", page.text))
+        for page in pages
+    ]
+
+
+def surface_variants(term: str) -> list[str]:
+    """Terimin metinde geçebilecek temkinli tekil/çoğul yüzey biçimleri.
+
+    Model terimi sözlük başlığı biçiminde (``block cipher``) döndürürken metinde
+    yalnızca çoğulu (``block ciphers``) geçebilir; bu durumda aday haksız yere
+    "metinde yok" diye elenir. Yeni kavram üretmez, yalnızca son sözcüğün
+    çekimini dener.
+    """
+    from terim_etmeni.dictionary import singular_key
+
+    variants: list[str] = []
+    singular = singular_key(term)
+    if singular and singular != term.casefold():
+        variants.append(singular)
+    words = term.split()
+    if words:
+        last = words[-1]
+        prefix = words[:-1]
+        if last.endswith("y") and len(last) > 2:
+            variants.append(" ".join(prefix + [last[:-1] + "ies"]))
+        for suffix in ("s", "es"):
+            variants.append(" ".join(prefix + [last + suffix]))
+    return list(dict.fromkeys(variant for variant in variants if variant))
+
+
+def locate_term(term: str, pages: list[PageText]) -> tuple[int, set[int], str]:
+    """Terimi metinde arar; bulunamazsa tireli bölünme ve çekim farkını dener.
+
+    Returns:
+        (geçiş_sayısı, sayfalar, metinde bulunan biçim). Üçüncü değer terimin
+        kendisinden farklıysa eşleşme bir yüzey biçimi üzerinden kurulmuştur.
+    """
+    occurrences, page_set = term_occurrences(term, pages)
+    if occurrences:
+        return occurrences, page_set, term
+
+    joined = _dehyphenated_pages(pages)
+    occurrences, page_set = term_occurrences(term, joined)
+    if occurrences:
+        return occurrences, page_set, term
+
+    for variant in surface_variants(term):
+        for candidate_pages in (pages, joined):
+            occurrences, page_set = term_occurrences(variant, candidate_pages)
+            if occurrences:
+                return occurrences, page_set, variant
+    return 0, set(), term
+
+
 def find_context(term: str, pages: list[PageText], limit: int = 240) -> str:
     """Terimin geçtiği ilk satırı bağlam olarak döndürür."""
     pattern = _search_pattern(term)
-    for page in pages:
-        for line in page.text.splitlines():
-            line = " ".join(line.split())
-            if pattern.search(unicodedata.normalize("NFKC", line)):
-                if len(line) <= limit:
-                    return line
-                return line[:limit].rsplit(" ", 1)[0] + " …"
-    return ""
+
+    def first_match(source: list[PageText]) -> str:
+        for page in source:
+            for line in page.text.splitlines():
+                line = " ".join(line.split())
+                if pattern.search(unicodedata.normalize("NFKC", line)):
+                    if len(line) <= limit:
+                        return line
+                    return line[:limit].rsplit(" ", 1)[0] + " …"
+        return ""
+
+    # Tireli bölünme yalnızca doğrudan arama başarısız olduğunda birleştirilir.
+    return first_match(pages) or first_match(_dehyphenated_pages(pages))
 
 
 def extract_terms_from_chunks(

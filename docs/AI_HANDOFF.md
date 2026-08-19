@@ -1,5 +1,85 @@
 # Yapay Zekâ / Geliştirici Devir Notu (AI Hand-off)
 
+## Teslim Durumu (2026-08-19)
+
+Bu bölüm 19 Ağustos 2026 tarihli son teslim rötuşunu kaydeder. Bir önceki
+teslim durumu (2026-08-18) aşağıda olduğu gibi korunmuştur.
+
+### Bu rötuşta yapılan düzeltmeler
+
+1. **PDF metin çıkarımı düzeltildi (ADR-037).** İki sütunlu sayfalar artık
+   sütun sütun okunuyor, pdfplumber `x_tolerance=1.5` ile çağrılıyor ve satırın
+   yalnızca bir bölümü bitişikse okunabilir kalan korunuyor. Ölçüm: `BSGRJS18`
+   belgesinde ham metin 47.692 → 100.492 karakter (2,19x).
+2. **Yerel model çıktı bütçesi bulutla eşitlendi (ADR-037).** `num_predict`
+   256 → 4096, `num_ctx=8192` açıkça veriliyor.
+3. **Aday doğrulaması satır sonu tirelemesine ve çekim farkına tolerans
+   kazandı (ADR-038).** Ölçüm: 14 makalelik kümede haksız elenen aday sayısı
+   **142 → 68** (−%52); `block cipher`, `digital signature`, `smart contract`
+   gibi gerçek terimler artık rapora giriyor. Eşleşme bir yüzey biçimi
+   üzerinden kurulduysa rapora `matched_form` alanı yazılıyor.
+4. **Sıfır aday dönen analiz artık sessiz kalmıyor (ADR-039).** Model hiç aday
+   döndürmediğinde rapora uyarı yazılıyor ve arayüzde bildirim gösteriliyor.
+
+### Doğrulanmış durum (2026-08-19 ölçümü)
+
+- **Testler:** `tests/` altındaki **99 testin tamamı** geçmektedir (~0,15 sn).
+  `python -m compileall -q src tests` temiz.
+- **14 makalelik tam koşu, DeepSeek-V4-Flash ile bu deponun kendi `scan`
+  komutuyla üretilmiştir** (`output/deepseek-v4-flash/`, 19.08.2026 13:47–13:54):
+
+  | Ölçüt | Değer |
+  |---|---|
+  | Belge / sayfa | 14 / 318 |
+  | Toplam süre | 446 sn (~1,4 sn/sayfa) |
+  | Terim adayı | 1.351 |
+  | Sözlük eşleşmesi | 240 |
+  | TBD kısaltması / yakın eşleşme | 5 |
+  | Eksik terim (insan incelemesi) | 997 |
+  | Metinde bulunamadığı için elenen aday | 68 (%5,0) |
+  | Başarısız parça | 0 |
+
+- Aynı kümenin düzeltme öncesi koşusuyla farkı: elenen aday 142 → 68, sözlük
+  eşleşmesi 231 → 240, eksik terim 956 → 997, süre 428 → 446 sn (+%4). Yani
+  düzeltmeler ölçülebilir bir yavaşlama getirmemiştir.
+
+### Bu rötuşta ölçülen, kapatılmayan sorunlar
+
+1. **`8_ebpf_xdp_packet_processing.pdf` yanlış içerik taşıyor.** Dosya adı
+   eBPF/XDP diyor, gerçek metin güneş paneli/fotovoltaik hakkında
+   (`concentrator photovoltaic`, `downconverting layer`, `luminescence`).
+   Bu, 2026-08-18 devir notunda `output/deepseek-chat/` için bildirilen sorunun
+   aynısıdır; kaynak PDF hâlâ yanlış. **Bu belgenin 18 "eksik terimi" bilişim
+   terimi değildir ve komiteye gönderilmemelidir.** Kod hatası değildir; küme
+   kirliliğidir, doğru PDF ile değiştirilmelidir.
+2. **Sözlük eşleşmelerinde anlam denetimi yoktur.** Eşleşme birebir dizgi
+   üzerinden kurulduğu için genel sözcükler yanlış anlamla eşleşebiliyor:
+   `attention` → "uyarı" (belgede 213 geçiş), `leader` → "öncü",
+   `rank` → "sıra", `call` → "çağrı", `page` → "sayfa". Terim gerçekten
+   sözlükte kayıtlıdır; yanlış olan, bağlama uymayan karşılığın "Sözlükte
+   Bulunanlar" sekmesinde doğruymuş gibi görünmesidir. Bu bir kod hatası değil,
+   TBD komitesinin karar vermesi gereken bir **politika sorusudur**: tek
+   sözcüklük genel terimler ayrı bir başlık altında mı gösterilmeli?
+3. **Elenen 68 adayın bir bölümü hâlâ araştırılmamıştır.** Bunlar metinde
+   hiçbir yüzey biçimiyle bulunamayan adaylardır; bir kısmı modelin uydurması,
+   bir kısmı ise `_is_low_quality_line` tarafından silinen satırlardan geliyor
+   olabilir. Ölçülmeden yeni bir filtre gevşetmesi yapılmamıştır.
+
+### Belge dışı kalan eski kayıtlar
+
+- `data/live_benchmarks/` klasörü ve `deepseek_expanded_results.json` **çalışma
+  ağacında artık yoktur** (`.gitignore` kapsamındadır). ADR-036'daki 6 makalelik
+  kıyaslama tarihsel kayıt olarak durur; bugün doğrulanabilir olan ölçüm,
+  yukarıdaki 14 makalelik koşudur.
+- `output/deepseek-chat/` ve `output/gemini-3.7-flash/` klasörleri de artık
+  diskte yoktur. Aşağıdaki 2026-08-18 bölümünün 7. ve 10. maddeleri bu
+  klasörlere atıf yapar; tarihsel kayıt olarak korunmuşlardır.
+- Yerel Ollama koşuları (`qwen3.8-latest`, `qwen3.5:9b-q4_K_M`)
+  `output/_arsiv/` altına alınmıştır; gerekçesi `output/_arsiv/OKUBENI.md`
+  içindedir. Teslim edilen sonuç kümesi yalnızca `output/deepseek-v4-flash/`.
+
+---
+
 ## Teslim Durumu (2026-08-18)
 
 Proje teslim edilebilir durumdadır. Bu bölüm, teslim anındaki **doğrulanmış**
@@ -33,7 +113,7 @@ iddia bu belgede doğrulanmış gibi sunulmamalıdır.
 
 ### Doğrulanmış durum
 
-- **Testler:** `tests/` altındaki **86 testin tamamı** geçmektedir (~0,15 sn).
+- **Testler:** `tests/` altındaki **99 testin tamamı** geçmektedir (~0,15 sn).
 - **Mimari:** Tek paket `src/terim_etmeni/`, tek giriş `run.py` (ADR-030).
   İşlem hattı sadedir: `PDF → parçalama → LLM aday çıkarımı → normalizasyon →
   deterministik sözlük araması → eksik terimler`.

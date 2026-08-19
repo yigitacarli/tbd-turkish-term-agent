@@ -116,6 +116,61 @@ class PipelineTests(unittest.TestCase):
             )
         self.assertEqual(result["missing_terms"], [])
         self.assertEqual(result["candidate_count"], 1)
+        # Elenen aday sessizce kaybolmamalı, izlenebilir olmalı
+        self.assertEqual(result["counts"]["rejected_candidates"], 1)
+        self.assertEqual(
+            result["rejected_candidates"],
+            [{"term": "invented technology", "reason": "not_found_in_text"}],
+        )
+
+    def test_candidate_is_kept_when_only_its_plural_occurs_in_text(self):
+        dictionary = TermDictionary([], metadata={"version": "test"})
+        pages = [PageText(1, "Modern block ciphers resist known attacks.")]
+        extractor = FakeExtractor(["block cipher"])
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=pages):
+            result = analyze_pdf(
+                Path("sample.pdf"), dictionary, extractor, "test-model"
+            )
+        self.assertEqual(result["counts"]["rejected_candidates"], 0)
+        missing = result["missing_terms"]
+        self.assertEqual([item["term"] for item in missing], ["block cipher"])
+        # Hangi yüzey biçimi üzerinden sayıldığı denetlenebilir olmalı
+        self.assertEqual(missing[0]["matched_form"], "block ciphers")
+        self.assertEqual(missing[0]["occurrence_count"], 1)
+        self.assertIn("block ciphers", missing[0]["context"])
+
+    def test_empty_model_output_is_flagged_instead_of_reading_as_zero_missing(self):
+        dictionary = TermDictionary([], metadata={"version": "test"})
+        extractor = FakeExtractor([])
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=self.pages()):
+            result = analyze_pdf(
+                Path("sample.pdf"), dictionary, extractor, "test-model"
+            )
+        # Analiz gerçekten tamamlandı; durum kodu bozulmamalı
+        self.assertEqual(result["analysis_status"], "complete")
+        self.assertEqual(result["candidate_count"], 0)
+        self.assertEqual(len(result["processing_warnings"]), 1)
+        self.assertIn("hiç terim adayı döndürmedi", result["processing_warnings"][0])
+
+    def test_singular_and_plural_dictionary_matches_are_merged(self):
+        dictionary = TermDictionary(
+            [{"en": "context window", "tr": "bağlam penceresi"}],
+            metadata={"version": "test"},
+        )
+        pages = [
+            PageText(1, "A context window limits tokens."),
+            PageText(2, "Larger context windows cost more."),
+        ]
+        extractor = FakeExtractor(["context window", "context windows"])
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=pages):
+            result = analyze_pdf(
+                Path("sample.pdf"), dictionary, extractor, "test-model"
+            )
+        self.assertEqual(result["counts"]["dictionary_matches"], 1)
+        match = result["dictionary_matches"][0]
+        self.assertEqual(match["term"], "context window")
+        self.assertEqual(match["pages"], [1, 2])
+        self.assertEqual(match["occurrence_count"], 2)
 
     def test_failed_extraction_is_not_presented_as_zero_missing(self):
         class FailingExtractor:

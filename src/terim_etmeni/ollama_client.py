@@ -14,6 +14,10 @@ import urllib.request
 from terim_etmeni.models import ExtractedTerm
 from terim_etmeni.term_extraction import OUTPUT_SCHEMA, SYSTEM_PROMPT, USER_TASK
 
+# Varsayılan parça boyutu 12.000 karakter (~3.000 token) artı sistem istemi ve
+# 4.096 tokenlik yanıt bütçesini birlikte alabilecek bağlam penceresi.
+_NUM_CTX = 8192
+
 
 class OllamaError(RuntimeError):
     pass
@@ -137,7 +141,7 @@ class OllamaClient:
         self,
         user_prompt: str,
         system: str = SYSTEM_PROMPT,
-        num_predict: int = 256,
+        num_predict: int = 4096,
     ) -> list[ExtractedTerm]:
         payload = {
             "model": self.model,
@@ -149,7 +153,15 @@ class OllamaClient:
             # yazıp ``response`` alanını boş bırakır; terim çıkarımı akıl yürütme
             # izi gerektirmez.
             "think": False,
-            "options": {"temperature": 0, "num_predict": num_predict},
+            # num_predict, bulut sağlayıcıdaki max_tokens=4096 ile eşitlendi: 256'da
+            # terim listesi JSON'u ortasında kesiliyor ve parça başına yalnızca birkaç
+            # terim raporlanabiliyordu. num_ctx açıkça verilmezse Ollama modelin küçük
+            # varsayılanını (çoğunlukla 4096) kullanıp parçanın sonunu sessizce atıyor.
+            "options": {
+                "temperature": 0,
+                "num_predict": num_predict,
+                "num_ctx": _NUM_CTX,
+            },
         }
         last_error: Exception | None = None
         parsed: dict[str, object] | None = None

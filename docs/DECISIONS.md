@@ -524,3 +524,66 @@ Bu kayıt append-only mantığıyla kullanılmalıdır. Eski karar silinmez; de�
   ve TrueTime (Spanner), P2P DHT ağları (Kademlia), donanım güvenliği ve DRAM hata enjeksiyonu (Rowhammer)
   ve kuantum hesaplama/hata düzeltme (Surface Codes) gibi çok çeşitli ve modern alanlarda üstün terim
   çıkarma, deterministik sözlük eşleştirme ve raporlama kararlılığını kanıtlamak.
+
+## ADR-037 — İki sütunlu düzen, kelime boşluğu toleransı ve yerel model çıktı bütçesi
+
+- Tarih: 2026-08-19
+- Durum: Kabul edildi
+- Karar:
+  1. `pdf_reader.py` içinde pdfplumber çağrıları `x_tolerance=1.5` ile yapılır.
+     Varsayılan `3` değeri akademik yayınların sıkı kernli fontlarında kelime
+     boşluğunu kaçırıp kelimeleri birbirine yapıştırıyordu.
+  2. İki sütunlu sayfalarda sütunlar ayrı ayrı okunur. Sütun ayracı, sayfanın
+     orta bandında hiçbir kelimenin üzerinden geçmediği ve iki yanında da kayda
+     değer kelime bulunan x konumu olarak bulunur (`_find_column_gutter`).
+  3. Satırın yalnızca bir bölümü bitişikse (28+ harflik kesintisiz dizi) o bölüm
+     ayıklanır, satırın okunabilir geri kalanı korunur.
+  4. `ollama_client.py` içindeki `num_predict` 256'dan 4096'ya çıkarılıp bulut
+     sağlayıcının `max_tokens` değeriyle eşitlendi; `num_ctx=8192` açıkça verilir.
+- Gerekçe: Ölçüm — `BSGRJS18` belgesinde ham metin 47.692 karakterden 100.492
+  karaktere çıktı (2,19x); örnek makalelerin %2-39'u bitişik kelime olarak
+  okunuyordu ve `_is_low_quality_line` bu satırları tümden siliyordu. Yerel model
+  ise 256 token bütçesiyle terim listesi JSON'unun ortasında kesiliyor, bu yüzden
+  bulut sağlayıcıdan yapısal olarak daha az terim buluyordu.
+- Sonuç: Bu düzeltmelerden önce `output/` altına üretilmiş tüm raporlar belgenin
+  yalnızca bir bölümünü görmüştür ve model kıyaslaması için kullanılamaz.
+
+## ADR-038 — Aday doğrulamasında satır sonu tirelemesi ve çekim farkına tolerans
+
+- Tarih: 2026-08-19
+- Durum: Kabul edildi
+- Karar: Bir aday terim metinde birebir bulunamazsa sırasıyla iki deneme daha
+  yapılır (`term_extraction.locate_term`):
+  1. Satır sonunda tirelenerek bölünmüş sözcükler yalnızca **arama kopyasında**
+     birleştirilir (`compu-\ntation` → `computation`). Sayfa metni ve modele giden
+     parçalar değişmez.
+  2. Terimin son sözcüğünün tekil/çoğul yüzey biçimleri denenir
+     (`block cipher` → `block ciphers`). İlk sözcükler hiç değiştirilmez.
+  Eşleşme bu yollardan biriyle kurulduysa rapora `matched_form` alanı yazılır;
+  geçiş sayısı ve sayfa listesi metinde gerçekten bulunan biçim üzerinden sayılır.
+  Hiçbir biçimle bulunamayan aday, önceden olduğu gibi `rejected_candidates`
+  listesine düşer ve rapora girmez.
+- Gerekçe: Ölçüm — 14 makalelik kümede elenen 130 adayın 70'i (%54) metinde
+  gerçekten geçiyordu: 24'ü satır sonu tirelemesi, 46'sı çekim farkı yüzünden
+  kaybediliyordu (`block cipher`, `digital signature`, `smart contract` gibi
+  gerçek terimler dahil). Kayıp modelden değil eşleştirme katmanından geliyordu.
+- Sınır: Bu bir sezgisel filtre değildir; yeni kavram üretmez ve sözlük üyeliği
+  kararına dokunmaz (ADR-002 ve ADR-028 korunur). Model tarafından uydurulan
+  terimler hâlâ elenir.
+
+## ADR-039 — Sıfır aday dönen analizin sessiz kalmaması
+
+- Tarih: 2026-08-19
+- Durum: Kabul edildi
+- Karar: Tüm parçalar hatasız işlendiği hâlde model hiç aday döndürmediyse
+  `analysis_status` `complete` kalır (analiz gerçekten tamamlanmıştır) ancak
+  `processing_warnings` listesine açık bir uyarı yazılır ve web arayüzünde
+  "model hiç terim adayı döndürmedi, bu sonuç 'eksik terim yok' anlamına gelmez"
+  bildirimi gösterilir.
+- Gerekçe: Ölçüm — yerel `qwen3.5:9b-q4_K_M` çalıştırmasında 14 belgenin 5'i
+  `candidate_count: 0`, `failed_chunk_count: 0` ve `analysis_status: "complete"`
+  ile sonuçlandı; kullanıcıya yalnızca başlık satırından ibaret bir CSV üretildi.
+  Bağlantı hatası için var olan koruma (ADR: başarısız analizde rapor yazılmaz)
+  bu durumu kapsamıyordu.
+- Sınır: Durum kodu bilinçli olarak `failed` yapılmadı; aksi hâlde gerçekten
+  terim içermeyen bir belge hata gibi görünür ve raporu hiç üretilmezdi.

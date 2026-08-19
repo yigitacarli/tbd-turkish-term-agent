@@ -2,7 +2,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from terim_etmeni.pdf_reader import PDFReadError, clean_extracted_text, read_pdf
+from terim_etmeni.pdf_reader import (
+    _EXTRACT_OPTIONS,
+    PDFReadError,
+    clean_extracted_text,
+    read_pdf,
+)
 
 
 class PDFTextCleaningTests(unittest.TestCase):
@@ -65,6 +70,19 @@ Natural language processing in a cited title.
         self.assertNotIn("selector_width", cleaned)
         self.assertNotIn("pair_balance", cleaned)
         self.assertNotIn("import numpy", cleaned)
+
+    def test_partially_glued_line_keeps_the_readable_remainder(self):
+        text = (
+            "casualnetworkisbuilduponagoalmodelandathreatmodeltoana- "
+            "Alhazmietal.(2007) define a metric called vulnerability density."
+        )
+        cleaned = clean_extracted_text(text)
+        self.assertNotIn("casualnetworkisbuildup", cleaned)
+        self.assertIn("define a metric called vulnerability density.", cleaned)
+
+    def test_extraction_uses_tight_word_spacing_tolerance(self):
+        # pdfplumber varsayilan x_tolerance=3 akademik fontlarda kelimeleri yapistiriyordu.
+        self.assertLessEqual(_EXTRACT_OPTIONS["x_tolerance"], 2)
 
     def test_read_pdf_validates_file_existence_and_extension(self):
         with self.assertRaisesRegex(PDFReadError, "PDF bulunamadı"):
