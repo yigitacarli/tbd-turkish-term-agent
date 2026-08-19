@@ -1,0 +1,7 @@
+# macOS baslaticisi ve kabuk betikleri her zaman LF olmali; CRLF ile
+# "bad interpreter: /bin/zsh^M" hatasi verirler.
+*.command text eol=lf
+*.sh      text eol=lf
+
+# Windows baslaticisi CRLF olmali.
+*.bat     text eol=crlf
