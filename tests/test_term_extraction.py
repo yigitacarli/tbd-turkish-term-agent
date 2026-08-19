@@ -33,14 +33,19 @@ class NormalizationTests(unittest.TestCase):
 
 class ExtractionTests(unittest.TestCase):
     def test_prompt_limits_each_chunk_to_conservative_dictionary_candidates(self):
-        from terim_etmeni.term_extraction import SYSTEM_PROMPT, USER_TASK
+        from terim_etmeni.term_extraction import (
+            MAX_TERMS_PER_CHUNK,
+            SYSTEM_PROMPT,
+            USER_TASK,
+        )
 
-        self.assertIn("at most 8 terms", SYSTEM_PROMPT)
+        # Tavanın kendisi ADR-040 ile belirlenir; burada istemin tavanı taşıdığı sınanır.
+        self.assertIn("at most {} terms".format(MAX_TERMS_PER_CHUNK), SYSTEM_PROMPT)
         self.assertIn("dictionary headword", SYSTEM_PROMPT)
         self.assertIn("Hypothetical scenario participants", SYSTEM_PROMPT)
         self.assertIn("Ordinary single English words", SYSTEM_PROMPT)
         self.assertIn("Narrative descriptions", SYSTEM_PROMPT)
-        self.assertIn("no more than 8 terms", USER_TASK)
+        self.assertIn("no more than {} terms".format(MAX_TERMS_PER_CHUNK), USER_TASK)
         self.assertIn("Hypothetical scenario actors", USER_TASK)
 
     def test_deduplicates_and_drops_invalid_candidates(self):
@@ -83,6 +88,23 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(page_set, {1, 2})
         context = find_context("distributed ledger", pages)
         self.assertIn("distributed ledger", context)
+
+
+class ChunkCapTests(unittest.TestCase):
+    def test_prompts_carry_the_configured_candidate_cap(self):
+        from terim_etmeni.term_extraction import (
+            MAX_TERMS_PER_CHUNK,
+            SYSTEM_PROMPT,
+            USER_TASK,
+        )
+
+        self.assertEqual(MAX_TERMS_PER_CHUNK, 16)
+        self.assertIn("at most 16 terms", SYSTEM_PROMPT)
+        self.assertIn("no more than 16 terms", USER_TASK)
+        # Yer tutucu istemde kalmamalı, aksi hâlde .format() KeyError verir
+        self.assertNotIn("{max_terms}", SYSTEM_PROMPT)
+        self.assertNotIn("{max_terms}", USER_TASK)
+        self.assertIn("deneme metni", USER_TASK.format(text="deneme metni"))
 
 
 class SurfaceFormTests(unittest.TestCase):

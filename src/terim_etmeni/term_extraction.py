@@ -8,6 +8,7 @@ Burada LLM'e sözlük verilmez ve "bu terim sözlükte var mı?" diye sorulmaz.
 """
 from __future__ import annotations
 
+import os
 import re
 import unicodedata
 from typing import Protocol
@@ -16,6 +17,22 @@ from terim_etmeni.models import ExtractedTerm, PageText, TextChunk
 
 # Kısa çizgi ve çeşitli Unicode tireler; canonical normalizasyonda boşluğa çevrilir.
 _DASHES = "\u2010\u2011\u2012\u2013\u2014\u2015\u2212-"
+
+
+def _max_terms_per_chunk() -> int:
+    """Par\u00e7a ba\u015f\u0131na istenen en fazla aday say\u0131s\u0131 (ADR-040).
+
+    \u0130stem metnine g\u00f6m\u00fcl\u00fcr. \u00d6l\u00e7\u00fcm yapmak veya yo\u011fun bir belge k\u00fcmesinde tavan\u0131
+    denemek i\u00e7in `MAX_TERMS_PER_CHUNK` ortam de\u011fi\u015fkeniyle de\u011fi\u015ftirilebilir.
+    """
+    try:
+        value = int(os.environ.get("MAX_TERMS_PER_CHUNK", "16"))
+    except ValueError:
+        return 16
+    return value if value > 0 else 16
+
+
+MAX_TERMS_PER_CHUNK = _max_terms_per_chunk()
 
 
 SYSTEM_PROMPT = """You are a precise English technical-terminology extractor for academic PDFs.
@@ -27,7 +44,7 @@ Return ONLY terms that occur verbatim in the text. Prefer precise multi-word
 phrases; include a single technical word or an established abbreviation only when
 omitting it would lose a distinct concept. Do not repeat the same term.
 
-Return at most 8 terms from one text chunk. Select only stable technical concepts
+Return at most {max_terms} terms from one text chunk. Select only stable technical concepts
 that could be an independent computing-dictionary headword outside this specific
 document. When unsure, return fewer terms.
 
@@ -55,12 +72,14 @@ technical concept, return an empty list: {"terms": []}. Do not translate, infer,
 or normalize terms; preserve the spelling as found in the text.
 Return only one complete JSON object matching the schema."""
 
+SYSTEM_PROMPT = SYSTEM_PROMPT.replace("{max_terms}", str(MAX_TERMS_PER_CHUNK))
+
 
 USER_TASK = """TASK
 Extract the technical terms from the text between TEXT START and TEXT END that are
 worth adding to an English computing dictionary. Return only terms that occur
 verbatim in the text. A short accurate list is better than an exhaustive one.
-Return no more than 8 terms.
+Return no more than {max_terms} terms.
 
 STRICT EXCLUSIONS (never return these):
 - Hypothetical scenario actors / participant roles (e.g., honest nodes, attacker chain, honest blocks, attacker node).
@@ -73,6 +92,9 @@ If there are no qualifying technical terms in the text, return an empty list: {{
 TEXT START
 {text}
 TEXT END"""
+
+# `{text}` yer tutucusu çağrı anında doldurulur; aday tavanı içe aktarma anında sabitlenir.
+USER_TASK = USER_TASK.replace("{max_terms}", str(MAX_TERMS_PER_CHUNK))
 
 
 OUTPUT_SCHEMA = {

@@ -3,6 +3,43 @@
 Bu kayıt append-only mantığıyla kullanılmalıdır. Eski karar silinmez; değişirse
 `Yerine geçen karar` alanıyla yeni bir kayıt eklenir.
 
+## Yürürlük dizini (2026-08-19)
+
+Kayıtların yarısı bugün çalışmayan bir mimariye aittir. Aşağıdaki ayrım
+okuyanın hangi kuralın bağlayıcı olduğunu görmesi içindir; **hiçbir kayıt
+silinmemiştir**.
+
+**Yürürlükte olmayan kararlar (tarihsel kayıt).** Bunlar kaldırılmış "V2 / replay"
+işlem hattına aittir: `run_v2.py`, `src/terim_etmeni_v2`, `evaluation/`,
+`data/v2_runtime/` ve aday anlık görüntüsü katmanı bugün depoda yoktur.
+
+- **ADR-001** — V1/V2 ayrı paket düzeni → ADR-030 ile tek pakete birleştirildi.
+- **ADR-006, ADR-007, ADR-008, ADR-009, ADR-010, ADR-011** — V2 kalite kapısı,
+  kabul kümesi ve iç değerlendirme süreci → ADR-029 iç değerlendirmeyi,
+  `evaluate` ve `prepare-acceptance` komutlarını kaldırdı.
+- **ADR-012, ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019,
+  ADR-025** — replay anlık görüntüsü ve aday koruma filtreleri → ADR-028 ile
+  açıkça yürürlükten kaldırıldı.
+- **ADR-031'in "en fazla sekiz aday" hükmü** → ADR-040 ile 16'ya çıkarıldı.
+  ADR-031'in zorunlu JSON ve kapalı düşünme modu hükümleri yürürlüktedir.
+- **ADR-036** — 6 makalelik kıyaslama; dayandığı `data/live_benchmarks/` verisi
+  artık depoda yoktur. Bugün doğrulanabilir ölçüm 14 makalelik koşudur
+  (`docs/AI_HANDOFF.md`, 2026-08-19).
+
+**Ürünün taşıyıcı kararları.** Bunlar değiştirilmeden önce mutlaka tartışılmalıdır;
+teslim belgesindeki kurumsal güvenceler bunlara dayanır.
+
+- **ADR-002 + ADR-028** — Model yalnızca aday üretir; sözlük üyeliği kararını
+  deterministik Python kodu verir ve aday filtre yığını kurulmaz.
+- **ADR-004** — Doğrulanmamış sözlük etkinleştirilmez.
+- **ADR-005 + ADR-020** — Kısaltmalar ana sözlüğe birleştirilmez.
+- **ADR-021** — Aynı anda tek analiz (`MAX_CONCURRENT_ANALYSES`).
+- **ADR-022** — Yalnızca loopback erişimi.
+- **ADR-030** — Tek paket, tek giriş noktası.
+
+Kalan kayıtlar (ADR-003, 023, 024, 026, 027, 029, 032, 033, 034, 035, 037, 038,
+039, 040, 041) yürürlüktedir.
+
 ## ADR-001 — V1'i koruyarak yan yana V2 geliştirme
 
 - Tarih: 2026-08-13
@@ -587,3 +624,57 @@ Bu kayıt append-only mantığıyla kullanılmalıdır. Eski karar silinmez; de�
   bu durumu kapsamıyordu.
 - Sınır: Durum kodu bilinçli olarak `failed` yapılmadı; aksi hâlde gerçekten
   terim içermeyen bir belge hata gibi görünür ve raporu hiç üretilmezdi.
+
+## ADR-040 — Parça başına aday tavanını 8'den 16'ya çıkarma
+
+- Tarih: 2026-08-19
+- Durum: Kabul edildi
+- Yerine geçtiği karar: ADR-031'in yalnızca "en fazla sekiz aday" hükmü.
+  ADR-031'in zorunlu JSON ve kapalı düşünme modu hükümleri yürürlüktedir.
+- Karar: Terim çıkarım isteminin parça başına istediği en fazla aday sayısı 16
+  olarak değiştirildi. Değer `term_extraction.MAX_TERMS_PER_CHUNK` sabitindedir
+  ve `MAX_TERMS_PER_CHUNK` ortam değişkeniyle ölçüm için geçici olarak
+  değiştirilebilir. Bu bir filtre değişikliği değildir; modelin aday üretim
+  sözleşmesinin tavanıdır.
+- Gerekçe: ADR-031'in sekizlik tavanı 2026-08-14'te, modelin boş yanıt verdiği
+  ve bağlama özgü ifadeler taşıdığı koşullarda konmuştu. O koşulların dördü de
+  ortadan kalktı: JSON modu zorunlu (ADR-031), istem gürültü kategorilerini açıkça
+  dışlıyor (ADR-033), çıktı bütçesi 4096 token (ADR-037), PDF metni iki kat
+  düzgün okunuyor (ADR-037). Ölçüm (3 belge, aynı gün, aynı kod):
+
+  | Belge | Tavan | Aday | Sözlük eşleşmesi | Eksik terim | Elenen (uydurma) oranı |
+  |---|---|---|---|---|---|
+  | 1_attention | 8 | 73 | 19 | 48 | %2,7 |
+  | 1_attention | 16 | 128 | 25 | 93 | %3,1 |
+  | 1_attention | 24 | 167 | 29 | 122 | %4,8 |
+  | 3_raft | 8 | 77 | 13 | 60 | %2,6 |
+  | 3_raft | 16 | 157 | 26 | 117 | %4,5 |
+  | 3_raft | 24 | 209 | 32 | 150 | %7,2 |
+  | 10_homomorphic | 8 | 129 | 26 | 93 | %3,1 |
+  | 10_homomorphic | 16 | 266 | 40 | 193 | %5,6 |
+
+  8 → 16 geçişi aday hacmini yaklaşık ikiye katlarken uydurma oranını yalnızca
+  1-2 puan artırıyor. 16 → 24 geçişinde kazanç yarıya inerken uydurma oranı
+  tabanın 2,7 katına çıkıyor. Dizin noktası 16'dır.
+- Sınır: Tavanın yükselmesi tek sözcüklü genel aday oranını da bir miktar
+  artırır (`3_raft`'ta %29,7 → %34,7). Bu adaylar elenmez; rapordaki öncelik
+  sütunu ve ADR-041'deki işaret uzmanın ayıklamasını kolaylaştırır.
+
+## ADR-041 — Tek sözcüklü sözlük eşleşmelerini bağlam denetimi için işaretleme
+
+- Tarih: 2026-08-19
+- Durum: Kabul edildi
+- Karar: Sözlükte tam eşleşen tek sözcüklü terimler rapora
+  `context_check_needed` alanıyla yazılır. CSV/Excel'de eşleşme türü
+  "Sözlükte Kayıtlı (Tek Sözcük)" olarak gösterilir ve önerilen işlem
+  "Karşılığın bağlama uygunluğunu doğrula" olur. **Hiçbir terim gizlenmez veya
+  elenmez**; yalnızca sunum değişir.
+- Gerekçe: Ölçüm — sözlük eşleşmesi birebir dizgi üzerinden kurulduğu için genel
+  sözcükler makaledeki teknik anlamdan farklı bir karşılıkla eşleşebiliyor:
+  `attention` → "uyarı" (bir belgede 213 geçiş), `leader` → "öncü",
+  `rank` → "sıra", `call` → "çağrı", `page` → "sayfa". Terim gerçekten sözlükte
+  kayıtlıdır; yanıltıcı olan, karşılığın bu bağlamda doğruymuş gibi görünmesidir.
+- Sınır: Ölçüt tamamen deterministiktir (terim tek sözcük mü?) ve ADR-028'in
+  yasakladığı türden bir aday eleme sezgiseli değildir. `nonce`, `blockchain`
+  gibi doğru eşleşen tek sözcüklü terimler de işaretlenir; bu bilinçlidir —
+  işaret "yanlış" demez, "denetlenmeli" der.

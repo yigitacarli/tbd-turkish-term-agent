@@ -139,6 +139,30 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(missing[0]["occurrence_count"], 1)
         self.assertIn("block ciphers", missing[0]["context"])
 
+    def test_single_word_dictionary_match_is_flagged_for_context_check(self):
+        dictionary = TermDictionary(
+            [
+                {"en": "attention", "tr": "uyarı"},
+                {"en": "attention mechanism", "tr": "dikkat düzeneği"},
+            ],
+            metadata={"version": "test"},
+        )
+        pages = [PageText(1, "The attention mechanism scores every attention head.")]
+        extractor = FakeExtractor(["attention", "attention mechanism"])
+        with patch("terim_etmeni.pipeline.read_pdf", return_value=pages):
+            result = analyze_pdf(
+                Path("sample.pdf"), dictionary, extractor, "test-model"
+            )
+        flags = {
+            item["term"]: item.get("context_check_needed")
+            for item in result["dictionary_matches"]
+        }
+        # Tek sözcüklü eşleşme işaretlenir, çok sözcüklü olan işaretlenmez
+        self.assertTrue(flags["attention"])
+        self.assertIsNone(flags["attention mechanism"])
+        # Hiçbir terim gizlenmez
+        self.assertEqual(result["counts"]["dictionary_matches"], 2)
+
     def test_empty_model_output_is_flagged_instead_of_reading_as_zero_missing(self):
         dictionary = TermDictionary([], metadata={"version": "test"})
         extractor = FakeExtractor([])

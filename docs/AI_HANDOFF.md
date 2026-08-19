@@ -20,6 +20,19 @@ teslim durumu (2026-08-18) aşağıda olduğu gibi korunmuştur.
    üzerinden kurulduysa rapora `matched_form` alanı yazılıyor.
 4. **Sıfır aday dönen analiz artık sessiz kalmıyor (ADR-039).** Model hiç aday
    döndürmediğinde rapora uyarı yazılıyor ve arayüzde bildirim gösteriliyor.
+5. **Parça başına aday tavanı 8'den 16'ya çıkarıldı (ADR-040).** Tavanın konduğu
+   2026-08-14 koşulları (boş yanıtlar, yapılandırılmamış çıktı, dar token bütçesi,
+   bozuk PDF metni) ortadan kalkmıştı. Ölçüm: 8 → 16 geçişi aday hacmini ikiye
+   katlarken uydurma oranını 1-2 puan artırıyor; 16 → 24 kazancı yarıya indirip
+   uydurmayı tabanın 2,7 katına çıkarıyor. Değer `MAX_TERMS_PER_CHUNK` ortam
+   değişkeniyle ölçüm için değiştirilebilir.
+6. **Tek sözcüklü sözlük eşleşmeleri işaretleniyor (ADR-041).** `attention` →
+   "uyarı" gibi bağlama uymayan karşılıklar raporda "Sözlükte Kayıtlı (Tek
+   Sözcük)" ve "Karşılığın bağlama uygunluğunu doğrula" olarak görünüyor.
+   Hiçbir terim gizlenmiyor.
+7. **`docs/DECISIONS.md` başına yürürlük dizini eklendi.** 18 ADR'nin kaldırılmış
+   V2/replay hattına ait olduğu ve hangi kararların ürünün taşıyıcısı olduğu
+   ayrıldı; hiçbir kayıt silinmedi.
 
 ### Doğrulanmış durum (2026-08-19 ölçümü)
 
@@ -31,17 +44,27 @@ teslim durumu (2026-08-18) aşağıda olduğu gibi korunmuştur.
   | Ölçüt | Değer |
   |---|---|
   | Belge / sayfa | 14 / 318 |
-  | Toplam süre | 446 sn (~1,4 sn/sayfa) |
-  | Terim adayı | 1.351 |
-  | Sözlük eşleşmesi | 240 |
-  | TBD kısaltması / yakın eşleşme | 5 |
-  | Eksik terim (insan incelemesi) | 997 |
-  | Metinde bulunamadığı için elenen aday | 68 (%5,0) |
+  | Toplam süre | 509 sn (~1,6 sn/sayfa) |
+  | Terim adayı | 2.544 |
+  | Sözlük eşleşmesi | 399 |
+  | TBD kısaltması / yakın eşleşme | 9 |
+  | Eksik terim (insan incelemesi) | 1.849 |
+  | Metinde bulunamadığı için elenen aday | 182 (%7,2) |
   | Başarısız parça | 0 |
+  | Yüzey biçimiyle kurtarılan terim (ADR-038) | 86 |
+  | Bağlam denetimi işaretli eşleşme (ADR-041) | 182 |
 
-- Aynı kümenin düzeltme öncesi koşusuyla farkı: elenen aday 142 → 68, sözlük
-  eşleşmesi 231 → 240, eksik terim 956 → 997, süre 428 → 446 sn (+%4). Yani
-  düzeltmeler ölçülebilir bir yavaşlama getirmemiştir.
+- **Aynı küme üzerinde üç aşamanın karşılaştırması:**
+
+  | Aşama | Aday | Sözlük eşleşmesi | Eksik terim | Elenen | Süre |
+  |---|---|---|---|---|---|
+  | Düzeltme öncesi (tavan 8) | 1.371 | 231 | 956 | 142 (%10,4) | 428 sn |
+  | ADR-037/038 sonrası (tavan 8) | 1.351 | 240 | 997 | 68 (%5,0) | 446 sn |
+  | ADR-040 sonrası (tavan 16) | 2.544 | 399 | 1.849 | 182 (%7,2) | 509 sn |
+
+  Eşleştirme düzeltmesi uydurma oranını yarıya indirdi; tavan yükseltmesi uzman
+  incelemesine giden terim sayısını 997'den 1.849'a çıkarırken uydurma oranını
+  başlangıçtaki %10,4'ün altında tuttu. Toplam süre artışı %19.
 
 ### Bu rötuşta ölçülen, kapatılmayan sorunlar
 
@@ -49,10 +72,12 @@ teslim durumu (2026-08-18) aşağıda olduğu gibi korunmuştur.
    eBPF/XDP diyor, gerçek metin güneş paneli/fotovoltaik hakkında
    (`concentrator photovoltaic`, `downconverting layer`, `luminescence`).
    Bu, 2026-08-18 devir notunda `output/deepseek-chat/` için bildirilen sorunun
-   aynısıdır; kaynak PDF hâlâ yanlış. **Bu belgenin 18 "eksik terimi" bilişim
+   aynısıdır; kaynak PDF hâlâ yanlış. **Bu belgenin 27 "eksik terimi" bilişim
    terimi değildir ve komiteye gönderilmemelidir.** Kod hatası değildir; küme
    kirliliğidir, doğru PDF ile değiştirilmelidir.
-2. **Sözlük eşleşmelerinde anlam denetimi yoktur.** Eşleşme birebir dizgi
+2. **Sözlük eşleşmelerinde anlam denetimi yoktur (ADR-041 ile kısmen ele
+   alındı: tek sözcüklü eşleşmeler raporda işaretlenir, karşılığın bağlama
+   uygunluğunu hâlâ insan denetler).** Eşleşme birebir dizgi
    üzerinden kurulduğu için genel sözcükler yanlış anlamla eşleşebiliyor:
    `attention` → "uyarı" (belgede 213 geçiş), `leader` → "öncü",
    `rank` → "sıra", `call` → "çağrı", `page` → "sayfa". Terim gerçekten
@@ -60,7 +85,7 @@ teslim durumu (2026-08-18) aşağıda olduğu gibi korunmuştur.
    Bulunanlar" sekmesinde doğruymuş gibi görünmesidir. Bu bir kod hatası değil,
    TBD komitesinin karar vermesi gereken bir **politika sorusudur**: tek
    sözcüklük genel terimler ayrı bir başlık altında mı gösterilmeli?
-3. **Elenen 68 adayın bir bölümü hâlâ araştırılmamıştır.** Bunlar metinde
+3. **Elenen 182 adayın bir bölümü hâlâ araştırılmamıştır.** Bunlar metinde
    hiçbir yüzey biçimiyle bulunamayan adaylardır; bir kısmı modelin uydurması,
    bir kısmı ise `_is_low_quality_line` tarafından silinen satırlardan geliyor
    olabilir. Ölçülmeden yeni bir filtre gevşetmesi yapılmamıştır.

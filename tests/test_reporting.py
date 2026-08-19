@@ -152,6 +152,43 @@ class ReportingTests(unittest.TestCase):
             self.assertIn("yapay zekâ", ws2["B5"].value)
             self.assertIn("Özel Türkçe karakterler", ws2["C5"].value)
 
+    def test_single_word_match_is_marked_for_context_check(self):
+        rows = report_rows(
+            {
+                "missing_terms": [],
+                "possible_matches": [],
+                "rejected_candidates": [],
+                "dictionary_matches": [
+                    {
+                        "term": "attention",
+                        "translations": ["uyarı"],
+                        "match_type": "exact",
+                        "context_check_needed": True,
+                        "context": "An attention function maps a query.",
+                        "pages": [1],
+                        "occurrence_count": 78,
+                    },
+                    {
+                        "term": "attention mechanism",
+                        "translations": ["dikkat düzeneği"],
+                        "match_type": "exact",
+                        "context": "The attention mechanism draws dependencies.",
+                        "pages": [2],
+                        "occurrence_count": 4,
+                    },
+                ],
+            }
+        )
+        by_term = {row["İngilizce Terim"]: row for row in rows}
+        flagged = by_term["attention"]
+        self.assertEqual(flagged["Eşleşme Türü"], "Sözlükte Kayıtlı (Tek Sözcük)")
+        self.assertIn("bağlama uygunluğunu doğrula", flagged["Önerilen İşlem"])
+        self.assertIn("uyarı", flagged["Açıklama"])
+        # Çok sözcüklü eşleşme eskisi gibi kalır
+        plain = by_term["attention mechanism"]
+        self.assertEqual(plain["Eşleşme Türü"], "Sözlükte Kayıtlı")
+        self.assertEqual(plain["Önerilen İşlem"], "İşlem gerekmez")
+
     def test_clean_str_strips_control_characters(self):
         self.assertEqual(_clean_str(None), "")
         self.assertEqual(_clean_str("Hello\x00World\x0b\x0cTest\x1fEnd"), "HelloWorldTestEnd")

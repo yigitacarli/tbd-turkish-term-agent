@@ -50,7 +50,7 @@ python3 run.py
 ├── src/terim_etmeni/      # Uygulama çekirdek paketi ve web sunucusu
 ├── data/                  # TBD Sözlüğü ve Kısaltmalar veri tabanı
 ├── docs/                  # Mimari kararlar (ADR) ve devir belgeleri
-├── tests/                 # Otomatik doğrulama testleri (99 birim testi)
+├── tests/                 # Otomatik doğrulama testleri (102 birim testi)
 ├── output/                # Üretilen Excel, CSV ve JSON raporları (Git dışı)
 ├── run.py                 # Ana çalıştırma dosyası
 ├── BASLAT_APPLE.command   # macOS tek tık başlatıcısı

@@ -124,6 +124,11 @@ def analyze_pdf(
                 )
             )
             base["match_type"] = match_type
+            # Tek sözcüklü eşleşmelerde sözlükteki karşılık makaledeki anlamla
+            # örtüşmeyebilir ('attention' → 'uyarı'). Terim gizlenmez, yalnızca
+            # raporda bağlam denetimi gerektiği işaretlenir (ADR-041).
+            if len(term.split()) == 1:
+                base["context_check_needed"] = True
             # Tekil/çoğul aynı sözlük girdisine düşüyorsa tek satırda birleştir
             # (örn. 'vulnerability' ve 'vulnerabilities' ayrı ayrı raporlanmasın).
             found_key = singular_key(term) or normalized_key(term)

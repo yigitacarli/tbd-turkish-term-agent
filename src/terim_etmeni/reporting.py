@@ -59,8 +59,11 @@ def report_rows(result: dict[str, object]) -> list[dict[str, object]]:
             ) if isinstance(suggestions, list) else ""
 
             match_type = str(item.get("match_type", ""))
+            context_check = bool(item.get("context_check_needed"))
             if match_type == "singular_variant":
                 type_label = "Sözlükte Bulundu (Çoğul Eşleşme)"
+            elif match_type == "exact" and context_check:
+                type_label = "Sözlükte Kayıtlı (Tek Sözcük)"
             elif match_type == "exact":
                 type_label = "Sözlükte Kayıtlı"
             elif group == "possible_matches":
@@ -81,9 +84,19 @@ def report_rows(result: dict[str, object]) -> list[dict[str, object]]:
                 action = "Kısaltma açılımını doğrula"
                 explanation = "TBD Kısaltmalar tablosunda açılımı ve Türkçe karşılığı bulundu."
             elif group == "dictionary_matches":
-                priority = "Bilgi"
-                action = "İşlem gerekmez"
-                explanation = "Sözlükte doğrudan Türkçe karşılık bulundu."
+                if context_check:
+                    priority = "Bilgi"
+                    action = "Karşılığın bağlama uygunluğunu doğrula"
+                    explanation = (
+                        "Sözlükte doğrudan Türkçe karşılık bulundu. Tek sözcüklü genel "
+                        "terimlerde sözlükteki karşılık makaledeki teknik anlamla "
+                        "örtüşmeyebilir (örn. 'attention' → 'uyarı'); eşleşme doğru, "
+                        "karşılığın bu bağlama uyup uymadığı uzmanca denetlenmelidir."
+                    )
+                else:
+                    priority = "Bilgi"
+                    action = "İşlem gerekmez"
+                    explanation = "Sözlükte doğrudan Türkçe karşılık bulundu."
             else:
                 priority = "Düşük"
                 action = "Yok say"
@@ -350,6 +363,9 @@ def _export_styled_xlsx(
         match_type = str(item.get("match_type", ""))
         if match_type == "singular_variant":
             status_desc = "Sözlükte Bulundu (Çoğul Eşleşme)"
+        elif match_type == "exact" and item.get("context_check_needed"):
+            # Tek sözcüklü eşleşme: karşılık doğru olsa da bağlama uymayabilir.
+            status_desc = "Sözlükte Kayıtlı (Tek Sözcük — bağlam denetimi)"
         elif match_type == "exact":
             status_desc = "Sözlükte Kayıtlı"
         elif item.get("possible_dictionary_terms"):
