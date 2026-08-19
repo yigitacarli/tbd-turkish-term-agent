@@ -90,6 +90,34 @@ teslim durumu (2026-08-18) aşağıda olduğu gibi korunmuştur.
    bir kısmı ise `_is_low_quality_line` tarafından silinen satırlardan geliyor
    olabilir. Ölçülmeden yeni bir filtre gevşetmesi yapılmamıştır.
 
+### Denenip ölçümle reddedilen fikir: çapraz-belge sıklığı
+
+**Fikir:** Bir aday birden çok bağımsız makalede geçiyorsa gerçek bir alan terimi
+olma olasılığı yüksektir; tek makalede geçiyorsa o makaleye özgüdür. Rapor buna
+göre **sıralanabilir** (elenmez). Referans derlemin bedava bir taklidi.
+
+**Ölçüm (2026-08-19, API çağrısı yapılmadan, 13 belge — `8_ebpf` hariç):**
+
+- 1.740 benzersiz eksik terimin **%96,4'ü yalnızca tek belgede** çıkarılmış.
+  İki veya daha fazla belgede geçen yalnızca 63 terim var.
+- `BSGRJS18`'in 124 eksik teriminin **119'u diğer 12 belgenin metninde hiç
+  geçmiyor**. Yani sıralama yapılsa 124 terimin 119'u sıfırda berabere kalırdı.
+- Geçen 5 terim: `right` (8 belge), `control flow` (2), `left-hand side` (1),
+  `right-hand side` (1), `systematic literature review` (1). Bunların dördü elle
+  yapılan incelemede zaten **gürültü veya alan dışı** sayılmıştı. Yani sinyal
+  sıralamayı iyileştirmek bir yana, gürültüyü en üste taşırdı.
+
+**Neden çalışmadı:** 14 makale birbirinden çok uzak alt alanlardan geliyor
+(transformer mimarisi, dağıtık uzlaşı, homomorfik şifreleme, WebAssembly, UML
+güvenliği). Aralarında paylaşılan sözcük dağarcığı neredeyse yok.
+
+**Mekanizma yanlış değil, derlem yanlış.** Yapay zekâ kümesindeki makaleler kendi
+aralarında sinyal veriyor: `transformer`, `dropout`, `gradient`, `beam search`,
+`attention head`, `positional embedding` 2-5 belgede birden çıkarılmış ve bunlar
+gerçekten sağlam terimler. Yani fikir, **aynı alt alandan yeterince belge
+biriktiğinde** (ör. 50 yapay zekâ makalesi) yeniden değerlendirilmelidir. Bugünkü
+14 belgelik karışık kümede uygulanmamalıdır.
+
 ### Belge dışı kalan eski kayıtlar
 
 - `data/live_benchmarks/` klasörü ve `deepseek_expanded_results.json` **çalışma
