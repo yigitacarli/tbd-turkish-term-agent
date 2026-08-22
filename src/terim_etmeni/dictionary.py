@@ -50,6 +50,17 @@ def relaxed_key(value: str) -> str:
     return " ".join(value.split())
 
 
+def condensed_key(value: str) -> str:
+    """Ayraç farklarını yok sayan sıkıştırılmış kavram anahtarı.
+
+    ``over-fitting`` ile ``overfitting`` aynı anahtarı üretir; yalnızca
+    tire/boşluk yazımı farklıysa kavramlar farklı değildir. Farklı sözcük
+    dizilerini birleştirmez (ADR-042).
+    """
+    value = relaxed_key(value)
+    return "".join(value.split())
+
+
 def singular_key(value: str) -> str:
     """Yalnızca son İngilizce sözcükte temkinli ve morfolojik bir çoğul normalizasyonu yapar."""
     words = relaxed_key(value).split()

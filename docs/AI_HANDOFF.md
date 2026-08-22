@@ -1,5 +1,52 @@
 # Yapay Zekâ / Geliştirici Devir Notu (AI Hand-off)
 
+## Teslim Durumu (2026-08-22)
+
+Bu bölüm 22 Ağustos 2026 çalışmasını kaydeder. Önceki teslim durumları
+aşağıda korunmuştur.
+
+### Yapılan işler
+
+1. **Eksik terim gürültü taksonomisi ölçüldü (internal_draft).** 14 belgedeki
+   1.853 eksik terimin tamamı sınıflandırıldı (yapay zekâ iç etiketi,
+   ADR-008/009 ruhunda; uzman onayı değildir). Sonuç: **%26,8 gerçek aday**
+   (489), **%72,5 gürültü** (1.324). Gürültünün dağılımı: tanımlayıcı öbek
+   %46,1, kavram tekrarı %8,9, sistem özel adı %7,1, kod tanımlayıcısı %3,9,
+   kaynakça/başlık/metrik/genel sözcük kalanı. **Sonuç: gürültünün büyük
+   bölümü hat yapısından geliyor; model değiştirmek bu tabloyu düzeltmez.**
+   Ölçüm notu ve etiket verisi depo dışındadır (geçici çalışma dizini).
+2. **ADR-042 uygulandı:** eksik terimlerde kavram bazında birleştirme
+   (`condensed_key` + belge kanıtlı kısaltma eşleri + `variants` alanı).
+   Mevcut koşu üzerinde simüle edilen etki dürüstçe küçük: -8 satır (%0,4).
+   Değer, güvenli deterministik birleştirmenin üst sınırını belgeler.
+3. **Kaynak PDF'lerin yeri belirlendi:** `Desktop\PROJELER\Makaleler`
+   (depo dışı) altında eski 14 makale + ~13 yeni makale (Dynamo, Spanner,
+   GFS, MapReduce, Bitcoin, IDS survey, TensorFlow, Zero Trust vb.) mevcut.
+   Recall tarafı analizi artık mümkün.
+
+### Doğrulanmış durum (2026-08-22)
+
+- **Testler:** `tests/` altındaki **115 testin tamamı geçmektedir**
+  (Windows, Python 3.14, ~0,16 sn); `compileall` temiz.
+- **Dal:** çalışma `feat/variant-merging` dalında; main'e birleştirme ve
+  push henüz yapılmadı.
+
+### Bekleyen işler (öncelik sırasıyla)
+
+1. **İstem genişletmesi (ADR-033 uzantısı):** STRICT EXCLUSIONS'a
+   sistem/aracı özel adları, metrik adları ve başlık/tablo kalıntılarının
+   eklenmesi. Taksonomi ölçümüne göre beklenen kazanç en büyük kalem
+   (~%13+ gürültü). **Engel: canlı ölçüm için API anahtarı** (kullanıcının
+   DeepSeek kredisi ~0,50 USD; küçük bir belge alt kümesinde önce/sonra
+   koşusu planlanmalı).
+2. Kaynakça temizliğinin belge sonuna yayınması (bilinen sınır #3);
+   PDF'ler bulunduğu için etkisi artık ölçülebilir.
+3. Kalan öbek gürültüsü (%46) için eleme değil sıralama/gruplama sunumu.
+4. Uzman etiketli altın küme hâlâ açık; internal_draft etiketleri yalnızca
+   geliştirme sinyali olarak kullanılmalıdır.
+
+---
+
 ## Teslim Durumu (2026-08-19)
 
 Bu bölüm 19 Ağustos 2026 tarihli son teslim rötuşunu kaydeder. Bir önceki

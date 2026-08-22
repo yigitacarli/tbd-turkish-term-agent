@@ -18,6 +18,75 @@ from terim_etmeni.models import ExtractedTerm, PageText, TextChunk
 # Kısa çizgi ve çeşitli Unicode tireler; canonical normalizasyonda boşluğa çevrilir.
 _DASHES = "\u2010\u2011\u2012\u2013\u2014\u2015\u2212-"
 
+# Belge içi kısaltma tanımı kalıbı: ``uzun biçim (KISALTMA)``. Uzun biçim en
+# fazla on sözcükten oluşabilir; kısaltma harfle başlayan 2-10 karakterdir.
+_ACRONYM_DEF_RE = re.compile(
+    r"([A-Za-z][A-Za-z\-']*(?:\s+[A-Za-z][A-Za-z\-']*){0,9})"
+    r"\s*\(\s*([A-Z][A-Za-z0-9]{1,9})\s*\)"
+)
+
+# Başlangıç harfleri hesaplanırken atlanan bağlaç/edatlar; 'reinforcement
+# learning from human feedback (RLHF)' çiftinin yakalanması için gerekli.
+_ACRO_STOPWORDS = frozenset(
+    {"of", "for", "and", "the", "in", "on", "to", "with", "a", "an",
+     "by", "via", "from", "or", "using"}
+)
+
+
+def _initials_match(phrase: str, acronym: str) -> bool:
+    """Uzun biçimin baş harfleri kısaltmanın harfleriyle birebir örtüşüyor mu?
+
+    İki okuma kabul edilir: bağlaç/edatlar atlanarak ve atlanmadan. Böylece
+    hem 'masked language model (MLM)' hem 'proof of work (PoW)' yakalanır;
+    harf dizisi birebir örtüşmediği için yanlış çift üretilmez.
+    """
+    letters = [c.casefold() for c in acronym if c.isalpha()]
+    if not letters:
+        return False
+    skipped: list[str] = []
+    full: list[str] = []
+    for word in re.split(r"[\s\-]+", phrase.strip()):
+        first = next((c for c in word if c.isalpha()), "")
+        if not first:
+            continue
+        if word.casefold() not in _ACRO_STOPWORDS:
+            skipped.append(first.casefold())
+        full.append(first.casefold())
+    return skipped == letters or full == letters
+
+
+def document_acronyms(pages: list[PageText]) -> dict[str, str]:
+    """Belgenin kendisinde açıkça tanımlanan kısaltma ↔ açılım çiftleri.
+
+    Yalnızca metinde ``uzun biçim (KISALTMA)`` kalıbında geçen ve baş
+    harfleri birebir örtüşen çiftler kabul edilir. Bu saf metin kanıtıdır;
+    modelden veya sözlükten bilgi gelmez (ADR-002) ve kavram eşitliği
+    kararı belgeye dayanır (ADR-042).
+    """
+    from terim_etmeni.dictionary import normalized_key
+
+    pairs: dict[str, str] = {}
+    for page in pages:
+        for match in _ACRONYM_DEF_RE.finditer(page.text):
+            phrase, acronym = match.group(1), match.group(2)
+            if not _initials_match(phrase, acronym):
+                continue
+            # Baştaki ve sondaki bağlaç/edatlar açılımın parçası değildir
+            # ('The masked language model (MLM)' → 'masked language model').
+            words = phrase.split()
+            while words and words[0].casefold() in _ACRO_STOPWORDS:
+                words.pop(0)
+            while words and words[-1].casefold() in _ACRO_STOPWORDS:
+                words.pop()
+            phrase = " ".join(words)
+            if not phrase:
+                continue
+            acro_key = normalized_key(acronym)
+            long_key = normalized_key(phrase)
+            if acro_key and long_key and acro_key not in pairs:
+                pairs[acro_key] = long_key
+    return pairs
+
 
 def _max_terms_per_chunk() -> int:
     """Par\u00e7a ba\u015f\u0131na istenen en fazla aday say\u0131s\u0131 (ADR-040).

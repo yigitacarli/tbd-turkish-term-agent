@@ -14,13 +14,60 @@ from terim_etmeni.pdf_reader import read_pdf
 
 from .term_extraction import (
     TermExtractor,
+    document_acronyms,
     extract_terms_from_chunks,
     find_context,
     locate_term,
 )
 
 
-from terim_etmeni.dictionary import normalized_key, relaxed_key, singular_key
+from terim_etmeni.dictionary import (
+    condensed_key,
+    normalized_key,
+    relaxed_key,
+    singular_key,
+)
+
+
+def _is_bare_acronym(name: object) -> bool:
+    """Yalın kısaltma biçimi mi? ('MLM' evet, 'masked LM' hayır.)"""
+    text = str(name).strip()
+    return (
+        bool(text)
+        and len(text) <= 10
+        and text.isupper()
+        and any(c.isalpha() for c in text)
+    )
+
+
+def _missing_concept_keys(
+    term: str, pairs: dict[str, str], reverse_pairs: dict[str, str]
+) -> list[str]:
+    """Eksik adayın kavram anahtarları (ADR-032 + ADR-042).
+
+    Sırayla: tekil/çoğul anahtarı, ayraç duyarsız sıkıştırılmış anahtarı ve
+    belge içinde tanımlıysa kısaltma ↔ açılım karşılığının anahtarları.
+    Farklı sözcük dizileri asla aynı anahtara düşmez.
+    """
+    sing = singular_key(term) or normalized_key(term)
+    keys = [sing] if sing else []
+    cond = condensed_key(term)
+    if cond and cond not in keys:
+        keys.append(cond)
+    norm_term = normalized_key(term)
+    long_form = pairs.get(norm_term)
+    if long_form:
+        long_sing = singular_key(long_form) or long_form
+        for extra in (long_sing, condensed_key(long_form)):
+            if extra and extra not in keys:
+                keys.append(extra)
+    else:
+        acronym = reverse_pairs.get(norm_term)
+        if acronym:
+            acro_key = normalized_key(acronym)
+            if acro_key and acro_key not in keys:
+                keys.append(acro_key)
+    return keys
 
 
 class TermDictionary:
@@ -85,6 +132,10 @@ def analyze_pdf(
 ) -> dict[str, object]:
     pages = read_pdf(pdf_path)
     chunks = chunk_pages(pages, size=chunk_size, overlap=chunk_overlap)
+    # Belge içinde açıkça tanımlanan kısaltma ↔ açılım çiftleri; eksik
+    # terimlerin kavram bazında birleştirilmesinde kullanılır (ADR-042).
+    acronym_pairs = document_acronyms(pages)
+    reverse_pairs = {long_form: short for short, long_form in acronym_pairs.items()}
     extraction_warnings: list[str] = []
     candidates = extract_terms_from_chunks(chunks, extractor, extraction_warnings)
 
@@ -168,18 +219,42 @@ def analyze_pdf(
                 possible.append(base)
                 continue
 
-        # Eksik terimlerde tekil/çoğul tekilleştirmesi (örn. 'downstream task' ve 'downstream tasks')
-        sing_key = singular_key(term) or normalized_key(term)
-        if sing_key in seen_missing:
-            existing = seen_missing[sing_key]
+        # Eksik terim tekilleştirmesi (ADR-032 + ADR-042): tekil/çoğul,
+        # tire/boşluk yazımı ve belge içinde tanımlı kısaltma ↔ açılım
+        # çiftleri tek kavramda birleşir. Hiçbir yüzey biçimi gizlenmez;
+        # birleşen adlar 'variants' alanında rapora yazılır.
+        concept_keys = _missing_concept_keys(term, acronym_pairs, reverse_pairs)
+        existing = None
+        for key in concept_keys:
+            if key in seen_missing:
+                existing = seen_missing[key]
+                break
+        if existing is not None:
             merged_pages = set(existing.get("pages", [])) | page_set
             existing["pages"] = sorted(merged_pages)
             existing["occurrence_count"] = int(existing.get("occurrence_count", 0)) + occurrences
             # Daha kısa veya tekil olan terim adını koru
-            if len(term) < len(str(existing.get("term", ""))):
-                existing["term"] = term
+            canonical = str(existing.get("term", ""))
+            variant_name = term
+            if len(variant_name) < len(canonical):
+                canonical, variant_name = variant_name, canonical
+            # Yalın kısaltma yerine açık biçim görünsün ('MLM' değil
+            # 'masked language model'); kısaltma 'variants'a taşınır.
+            if _is_bare_acronym(canonical) and not _is_bare_acronym(variant_name):
+                canonical, variant_name = variant_name, canonical
+            if canonical != existing["term"]:
+                existing["term"] = canonical
                 if base["context"]:
                     existing["context"] = base["context"]
+            variants = [str(v) for v in (existing.get("variants") or [])]
+            if variant_name != canonical and variant_name not in variants:
+                variants.append(variant_name)
+            if variants:
+                existing["variants"] = sorted(dict.fromkeys(variants))
+            if not str(existing.get("context") or "").strip() and base["context"]:
+                existing["context"] = base["context"]
+            for key in concept_keys:
+                seen_missing[key] = existing
         else:
             # Öncelik derecelendirmesi: Çok sözcüklü ve tekrar edenler yüksek öncelik
             words = term.split()
@@ -187,7 +262,8 @@ def analyze_pdf(
                 base["review_priority"] = "high"
             else:
                 base["review_priority"] = "medium"
-            seen_missing[sing_key] = base
+            for key in concept_keys:
+                seen_missing[key] = base
             missing.append(base)
 
     found.sort(key=lambda item: str(item["term"]).casefold())

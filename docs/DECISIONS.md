@@ -38,7 +38,7 @@ teslim belgesindeki kurumsal güvenceler bunlara dayanır.
 - **ADR-030** — Tek paket, tek giriş noktası.
 
 Kalan kayıtlar (ADR-003, 023, 024, 026, 027, 029, 032, 033, 034, 035, 037, 038,
-039, 040, 041) yürürlüktedir.
+039, 040, 041, 042) yürürlüktedir.
 
 ## ADR-001 — V1'i koruyarak yan yana V2 geliştirme
 
@@ -678,3 +678,34 @@ Kalan kayıtlar (ADR-003, 023, 024, 026, 027, 029, 032, 033, 034, 035, 037, 038,
   yasakladığı türden bir aday eleme sezgiseli değildir. `nonce`, `blockchain`
   gibi doğru eşleşen tek sözcüklü terimler de işaretlenir; bu bilinçlidir —
   işaret "yanlış" demez, "denetlenmeli" der.
+
+## ADR-042 — Eksik terimlerde kavram bazında birleştirme (belge kanıtlı)
+
+- Tarih: 2026-08-22
+- Durum: Kabul edildi
+- Karar: Eksik terim tekilleştirmesi üç deterministik anahtarla yapılır:
+  1. Tekil/çoğul anahtarı (mevcut, ADR-032).
+  2. Ayraç duyarsız sıkıştırılmış anahtar (`condensed_key`): tire ve boşluk
+     yazım farkları (`over-fitting` ↔ `overfitting`, `pre-condition` ↔
+     `precondition`). Yalnızca ayraç farklılığı kavram ayrımı değildir.
+  3. Belge içi kısaltma ↔ açılım eşleri (`document_acronyms`): metinde
+     `uzun biçim (KISALTMA)` kalıbında geçen ve baş harfleri birebir
+     örtüşen çiftler (`masked language model (MLM)`, `proof of work
+     (PoW)`). Eşitlik kararı belgenin kendi tanımına dayanır; modelden
+     veya sözlükten bilgi gelmez (ADR-002 korunur).
+  Birleşen yüzey biçimleri raporda `variants` alanında korunur; **hiçbir
+  terim gizlenmez** (ADR-041 ile aynı sunum ilkesi). Açılım biçimi görünür
+  ad olur; yalın kısaltma `variants`'a taşınır.
+- Gerekçe: Ölçüm (2026-08-22, internal_draft etiketiyle 14 belgedeki
+  1.853 eksik terimin sınıflandırılması) gürültünün %72,5 olduğunu ve
+  bunun %8,9'luk diliminin aynı kavramın yinelenen biçimleri olduğunu
+  gösterdi. Bu birleştirme filtre değildir: yeni kavram üretmez, terim
+  elemez, geçiş sayısı ve sayfa bilgisi harmanlanır.
+- Sınır: Anlamsal varyantlar (`masked LM` ↔ `MLM` zincirleri, `BLEU score`
+  ↔ `BLEU`, öbek-içi kapsama varyantları) bilinçli olarak birleştirilmez;
+  bunlar ADR-028'in yasakladığı türden bir sezgisel eşleşme gerektirir.
+- Ölçülen etki (mevcut deepseek-v4-flash koşusu üzerinde simülasyon):
+  1.853 → 1.845 satır (-8, %0,4). Etki küçüktür; kaydın amacı bu
+  birleştirmenin güvenli üst sınırını dürüstçe belgelemektir. Kalan
+  varyant gürültüsü istem tarafı (ADR-033 uzantısı) ve sunum düzeyinde
+  gruplama ile ele alınmalıdır.
