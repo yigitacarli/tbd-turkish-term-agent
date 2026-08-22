@@ -26,6 +26,8 @@ from terim_etmeni.dictionary import (
     normalized_key,
     relaxed_key,
     singular_key,
+    term_tokens,
+    _singular_token,
 )
 
 
@@ -98,6 +100,9 @@ class TermDictionary:
         self._exact: dict[str, list[dict[str, object]]] = {}
         self._relaxed: dict[str, list[dict[str, object]]] = {}
         self._singular: dict[str, list[dict[str, object]]] = {}
+        # 2-6 sözcüklük başlıklar için belirteç dizisi indeksi; belge metninde
+        # modelin önermediği kayıtlı terimleri bulan süpürmede kullanılır (ADR-045).
+        self._phrases: dict[tuple[str, ...], list[dict[str, object]]] = {}
         for entry in terms:
             if not isinstance(entry, dict):
                 continue
@@ -111,6 +116,9 @@ class TermDictionary:
                 self._relaxed.setdefault(rel, []).append(item)
                 if sing:
                     self._singular.setdefault(sing, []).append(item)
+                words = term_tokens(english)
+                if 2 <= len(words) <= 6:
+                    self._phrases.setdefault(words, []).append(item)
 
     def lookup(self, term: str) -> tuple[bool, list[dict[str, object]], str]:
         """Sözlükte tam, gevşek ve tekil/çoğul normalizasyonuyla arama yapar.
@@ -138,6 +146,49 @@ class TermDictionary:
 
     def __len__(self) -> int:
         return len(self._exact)
+
+    def sweep_phrases(self, pages) -> dict[str, dict[str, object]]:
+        """Metinde geçen kayıtlı çok sözcüklü başlıkları doğrudan bulur (ADR-045).
+
+        Modelden bağımsız deterministik taramadır: yalnızca doğrulanmış
+        sözlükteki 2-6 sözcüklük başlıklar, kesin/tekil-çoğul eşleşmeyle
+        aranır. Dönen değer: normalize edilmiş terim -> bilgi sözlüğü.
+        """
+        hits: dict[str, dict[str, object]] = {}
+        for page in pages:
+            tokens = term_tokens(page.text)
+            for start in range(len(tokens)):
+                max_length = min(6, len(tokens) - start)
+                for length in range(2, max_length + 1):
+                    window = tokens[start : start + length]
+                    entries = self._phrases.get(window)
+                    observed = None
+                    if not entries:
+                        singular_window = window[:-1] + (
+                            _singular_token(window[-1]),
+                        )
+                        if singular_window != window:
+                            entries = self._phrases.get(singular_window)
+                            if entries:
+                                observed = " ".join(window)
+                    if not entries:
+                        continue
+                    # Kayıt, gözlenen yüzey biçimiyle değil sözlük başlığının
+                    # kanonik anahtarıyla tutulur; aksi hâlde tekil/çoğul
+                    # yüzeyler ayrı satırlar üretir.
+                    english = str(entries[0]["en"])
+                    canon_key = normalized_key(english)
+                    info = hits.setdefault(
+                        canon_key,
+                        {"term": english, "count": 0, "pages": set()},
+                    )
+                    info["count"] = int(info["count"]) + 1
+                    info["pages"].add(page.page)
+        return {
+            key: {"term": info["term"], "count": int(info["count"]),
+                  "pages": sorted(info["pages"])}
+            for key, info in hits.items()
+        }
 
 
 
@@ -289,6 +340,39 @@ def analyze_pdf(
             for key in concept_keys:
                 seen_missing[key] = base
             missing.append(base)
+
+    # Deterministik sözlük süpürmesi (ADR-045): modelin önermediği kayıtlı
+    # çok sözcüklü başlıklar belge metninden bulunup sözlük eşleşmelerine
+    # eklenir. Yalnızca doğrulanmış sözlükle kesin eşleşme; halüsinasyon
+    # riski yoktur ve hiçbir model adayı silinmez.
+    reported_norm = {
+        normalized_key(str(item.get("term", "")))
+        for collection in (found, possible, missing, rejected)
+        for item in collection
+        if isinstance(item, dict) and str(item.get("term", "")).strip()
+    }
+    for key, info in sorted(dictionary.sweep_phrases(pages).items()):
+        if key in reported_norm:
+            continue
+        _, entries, _match_type = dictionary.lookup(info["term"])
+        sweep_entry: dict[str, object] = {
+            "term": info["term"],
+            "found_in_dictionary": True,
+            "context": find_context(info["term"], pages),
+            "pages": info["pages"],
+            "occurrence_count": info["count"],
+            "match_type": "exact",
+            "match_source": "dictionary_sweep",
+            "translations": list(
+                dict.fromkeys(
+                    str(entry["tr"])
+                    for entry in entries
+                    if isinstance(entry.get("tr"), str)
+                )
+            ),
+        }
+        seen_found[key] = sweep_entry
+        found.append(sweep_entry)
 
     found.sort(key=lambda item: str(item["term"]).casefold())
     possible.sort(key=lambda item: str(item["term"]).casefold())

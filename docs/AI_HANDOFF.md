@@ -33,6 +33,14 @@ aşağıda korunmuştur.
    `variants` 42 maddede doldu. Kopya PDF'ler dosya karmasıyla ayıklandı;
    kirli `8_ebpf` atlandı. Eski raporlar depo dışında
    `yedek-output-20260822` klasörüne yedeklendi.
+6. **Recall analizi yapıldı ve ADR-045 uygulandı.** Ölçüm: model belge
+   başına ~16 gerçek sözlük başlığını önermiyor (`access control`,
+   `data integrity`...; toplam ~377); `_is_low_quality_line` ise metnin
+   yalnızca %1-6'sını siliyor (çoğunlukla şekil altyazısı — küçük kayıp).
+   Çözüm: deterministik sözlük süpürmesi (ADR-045) — modelin kaçırdığı
+   kayıtlı başlıklar `dictionary_sweep` etiketiyle bilgi sekmesine
+   ekleniyor (simülasyon: +1.360/22 belge). Sözlükte OLMAYAN yeni
+   terimlerin kaçıp kaçmadığı ancak uzman altın kümesiyle ölçülebilir.
 
 ### Doğrulanmış durum (2026-08-22)
 

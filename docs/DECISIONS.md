@@ -757,3 +757,29 @@ Kalan kayıtlar (ADR-003, 023, 024, 026, 027, 029, 032, 033, 034, 035, 037, 038,
   ise sık geçen genel tek sözcüğü bile "yüksek öncelik" yapıyordu
   (örn. 'model' ×200). Uzman incelemesinin baştan itibaren gerçek
   adaylara odaklanması için liste sırasının kendisi triyaj aracıdır.
+
+## ADR-045 — Deterministik sözlük süpürmesi (model önermediyse bile kayıtlı terimler rapora girer)
+
+- Tarih: 2026-08-22
+- Durum: Kabul edildi
+- Karar: Aday döngüsü bittikten sonra belge metni, doğrulanmış sözlükteki
+  2-6 sözcüklük başlıklar için kesin/tekil-çoğul eşleşmeyle taranır
+  (`TermDictionary.sweep_phrases`). Modelin hiç önermediği ve raporda
+  bulunmayan başlıklar `dictionary_matches` grubuna
+  `match_source: "dictionary_sweep"` etiketiyle eklenir. Kayıtlar
+  sözlüğün kanonik başlık anahtarıyla tekilleştirilir.
+- Gerekçe: Recall ölçümü (2026-08-22) modelin belge başına ~16 gerçek
+  sözlük başlığını önermediğini gösterdi (`access control`,
+  `data integrity`, `operating system` gibi): istem, yeni/spesifik
+  adaylara yönlendirdiği için yerleşik dağarcığı atlıyor. Bu tarama tamamen
+  deterministiktir; halüsinasyon riski yoktur (ADR-002 korunur), hiçbir
+  model adayı silinmez (ADR-028 korunur) ve API maliyeti sıfırdır.
+- Ölçüm: 22 belge üzerinde simülasyon — mevcut 741 sözlük eşleşmesine
+  ~1.360 süpürme eşleşmesi ekleniyor. Örneklem denetimi: önemli bölümü
+  gerçek kaçırılmış başlıklar (`Access Control List`, `authentication
+  token`, `Byzantine fault`); kalanı genel maddeler (`all data`,
+  `business case`). Bunlar uzman inceleme listesine değil bilgi sekmesine
+  gittiği için kabul edildi; kaynak etiketi ayırt etmeyi sağlar.
+- Sınır: Süpürme yalnızca "sözlükte bulunanlar" tarafını tamamlatır;
+  sözlükte olmayan gerçek yeni terimlerin kaçıp kaçmadığını ancak uzman
+  altın kümesi yanıtlayabilir.
