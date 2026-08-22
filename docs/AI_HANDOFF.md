@@ -10,49 +10,46 @@ aşağıda korunmuştur.
 1. **Eksik terim gürültü taksonomisi ölçüldü (internal_draft).** 14 belgedeki
    1.853 eksik terimin tamamı sınıflandırıldı (yapay zekâ iç etiketi,
    ADR-008/009 ruhunda; uzman onayı değildir). Sonuç: **%26,8 gerçek aday**
-   (489), **%72,5 gürültü** (1.324). Gürültünün dağılımı: tanımlayıcı öbek
-   %46,1, kavram tekrarı %8,9, sistem özel adı %7,1, kod tanımlayıcısı %3,9,
-   kaynakça/başlık/metrik/genel sözcük kalanı. **Sonuç: gürültünün büyük
-   bölümü hat yapısından geliyor; model değiştirmek bu tabloyu düzeltmez.**
-   Ölçüm notu ve etiket verisi depo dışındadır (geçici çalışma dizini).
+   (489), **%72,5 gürültü** (1.324): tanımlayıcı öbek %46,1, kavram tekrarı
+   %8,9, sistem özel adı %7,1, kod tanımlayıcısı %3,9, kalanı
+   kaynakça/başlık/metrik/genel sözcük. **Sonuç: gürültünün büyük bölümü
+   hat yapısından geliyor; model değiştirmek bu tabloyu düzeltmez.**
 2. **ADR-042 uygulandı:** eksik terimlerde kavram bazında birleştirme
    (`condensed_key` + belge kanıtlı kısaltma eşleri + `variants` alanı).
    Mevcut koşu üzerinde simüle edilen etki dürüstçe küçük: -8 satır (%0,4).
    Değer, güvenli deterministik birleştirmenin üst sınırını belgeler.
-3. **Kaynak PDF'lerin yeri belirlendi:** `Desktop\PROJELER\Makaleler`
-   (depo dışı) altında eski 14 makale + ~13 yeni makale (Dynamo, Spanner,
-   GFS, MapReduce, Bitcoin, IDS survey, TensorFlow, Zero Trust vb.) mevcut.
-   Recall tarafı analizi artık mümkün.
+3. **ADR-043 uygulandı ve canlı ölçümle doğrulandı:** STRICT EXCLUSIONS
+   genişletmesi (özel adlar, metrikler, kod tanımlayıcıları).
+   `12_webassembly` üzerinde her istemle ikişer koşum: kararlı kümelerde
+   net -29 gürültü satırı (~%13); gerçek terim dengesi değişmedi (3 kayıp /
+   3 kazanım). Toplam maliyet birkaç sent.
+4. **ADR-044 uygulandı:** eksik terimlerde deterministik öncelik puanı ve
+   puana göre sıralama (sunum amaçlı, eleme yok). Tek genel sözcükler
+   "yasak değil, sona at" ilkesiyle listenin sonuna düşer.
+5. **Kaynak PDF'lerin yeri belirlendi ve yeni makaleler tarandı:**
+   `Desktop\PROJELER\Makaleler` (depo dışı). 9 benzersiz yeni belge
+   birleştirilmiş hatla analiz edildi: 162 sayfa, 1.574 aday, 999 eksik
+   terim, 390 sözlük eşleşmesi (~293 sn). Kod sızıntısı %1,4'e indi;
+   `variants` 42 maddede doldu. Kopya PDF'ler dosya karmasıyla ayıklandı;
+   kirli `8_ebpf` atlandı. Eski raporlar depo dışında
+   `yedek-output-20260822` klasörüne yedeklendi.
 
 ### Doğrulanmış durum (2026-08-22)
 
-- **Testler:** `tests/` altındaki **115 testin tamamı geçmektedir**
+- **Testler:** `tests/` altındaki **120 testin tamamı geçmektedir**
   (Windows, Python 3.14, ~0,16 sn); `compileall` temiz.
-- **Dal:** çalışma `feat/variant-merging` dalında; main'e birleştirme ve
-  push henüz yapılmadı.
+- **Dal:** tüm çalışmalar main'e birleştirildi (`feat/variant-merging`
+  fast-forward); origin/main'in 5 commit önünde, push yapılmadı.
 
 ### Bekleyen işler (öncelik sırasıyla)
 
-1. **İstem genişletmesi canlı ölçümle doğrulandı ve uygulandı
-   (ADR-043).** `12_webassembly` üzerinde her istemle ikişer koşum:
-   kararlı kümelerde net -29 gürültü satırı (~%13), gerçek terim dengesi
-   değişmedi (3 kayıp / 3 kazanım). Kullanıcının DeepSeek anahtarıyla 6
-   koşum yapıldı; toplam maliyet birkaç sent. Eski raporlar depo dışında
-   `yedek-output-20260822` klasörüne yedeklendi.
-2. Kaynakça temizliğinin belge sonuna yayınması (bilinen sınır #3);
+1. Kaynakça temizliğinin belge sonuna yayınması (bilinen sınır #3);
    PDF'ler bulunduğu için etkisi artık ölçülebilir.
-3. Kalan öbek gürültüsü (%46) için eleme değil sıralama/gruplama sunumu.
-4. Uzman etiketli altın küme hâlâ açık; internal_draft etiketleri yalnızca
-   geliştirme sinyali olarak kullanılmalıdır.
-5. **Yeni makaleler tarandı (2026-08-22).** `Desktop\PROJELER\Makaleler`
-   altındaki 9 benzersiz yeni belge birleştirilmiş hatla
-   (ADR-042 + ADR-043) analiz edildi: 162 sayfa, 1.574 aday, 999 eksik
-   terim, 390 sözlük eşleşmesi, toplam 293 sn (~1,8 sn/sayfa). Kod
-   tanımlayıcı sızıntısı 14/999 (%1,4) ile tarihsel düzeyin çok altında;
-   ADR-042 `variants` alanı 42 maddede doldu. Kopya PDF'ler dosya karması
-   ile ayıklandı (attention×3, bert×2, raft×2, rag×2, bitcoin×2 tekil).
-   Kirli `8_ebpf` belgesi bilinçli atlandı. Raporlar
-   `output/deepseek-v4-flash/<belge>/` altında. Kalan bakiye ~0,46 USD.
+2. Recall analizi: kaçan terimlerin kaynağı (`_is_low_quality_line`,
+   parça sınırları) PDF'ler elimizdeyken ölçülebilir.
+3. Uzman etiketli altın küme hâlâ açık; internal_draft etiketleri
+   yalnızca geliştirme sinyali olarak kullanılmalıdır.
+4. `origin/main` 5 commit geride; push ve uzak yedekleme sahibin kararı.
 
 ---
 

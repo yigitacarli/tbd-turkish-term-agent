@@ -737,3 +737,23 @@ Kalan kayıtlar (ADR-003, 023, 024, 026, 027, 029, 032, 033, 034, 035, 037, 038,
   genel adaylar girebiliyor. Tek belge derinlemesine + ikinci belgede tek
   çift koşuma dayanır; altın küme oluştuğunda tekrar ölçülmelidir.
   Maliyet: 6 koşumun toplamı birkaç sent.
+
+## ADR-044 — Eksik terimlerde öncelik puanı ve puana göre sıralama
+
+- Tarih: 2026-08-22
+- Durum: Kabul edildi
+- Yerine geçtiği karar: Önceki kuralın ("çok sözcüklü VEYA 2+ geçiş ->
+  yüksek öncelik" davranışı) yerine geçer.
+- Karar: Her eksik terim için deterministik bir `priority_score` üretilir:
+  çok sözcüklük +2, tek sözcük -1, sıklık 2 geçiş +1 / 3+ geçiş +2.
+  Puan bantları: >=2 yüksek, 1 orta, <=0 düşük (`review_priority`).
+  Eksik terimler raporda puan azalan, puan eşitliğinde alfabetik dizilir.
+- Sınır: Bu yalnızca sunumdur; hiçbir terim listeden çıkarılmaz veya
+  Excel'de gizlenmez (ADR-028/041 ilkeleri korunur). Tek sözcükler düşük
+  banta düşer ama listede kalır — istem düzeyindeki tek-sözcük caydırması
+  bu kararla aşağı akışta "yasak değil, sona at" ilkesine bağlanmıştır.
+- Gerekçe: Taksonomi ölçümü (2026-08-22) gürültünün büyük bölümünün tek
+  genel sözcükler ve tanımlayıcı öbekler olduğunu gösterdi; eski kural
+  ise sık geçen genel tek sözcüğü bile "yüksek öncelik" yapıyordu
+  (örn. 'model' ×200). Uzman incelemesinin baştan itibaren gerçek
+  adaylara odaklanması için liste sırasının kendisi triyaj aracıdır.

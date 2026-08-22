@@ -40,6 +40,26 @@ def _is_bare_acronym(name: object) -> bool:
     )
 
 
+def _priority_score(term: str, occurrences: int) -> int:
+    """Eksik terimin inceleme sırası puanı (ADR-044).
+
+    Deterministiktir ve yalnızca sunumu belirler: hiçbir aday elenmez.
+    - Çok sözcüklü başlıklar +2 (bağımsız sözlük maddesi olma eğilimi)
+    - Tek sözcük -1 (bağlam denetimi gerektirme eğilimi; yasak değil)
+    - Belge içi sıklık: 2 geçiş +1, 3+ geçiş +2
+    """
+    score = 0
+    if len(term.split()) >= 2:
+        score += 2
+    else:
+        score -= 1
+    if occurrences >= 3:
+        score += 2
+    elif occurrences == 2:
+        score += 1
+    return score
+
+
 def _missing_concept_keys(
     term: str, pairs: dict[str, str], reverse_pairs: dict[str, str]
 ) -> list[str]:
@@ -256,19 +276,30 @@ def analyze_pdf(
             for key in concept_keys:
                 seen_missing[key] = existing
         else:
-            # Öncelik derecelendirmesi: Çok sözcüklü ve tekrar edenler yüksek öncelik
-            words = term.split()
-            if len(words) >= 2 or occurrences >= 2:
+            # Öncelik puanı (ADR-044): sunum amaçlı sıralamadır, eleme değildir.
+            # Çok sözcüklük ve belge içi sıklık yükseltir; tek sözcük düşürür.
+            score = _priority_score(term, occurrences)
+            if score >= 2:
                 base["review_priority"] = "high"
-            else:
+            elif score == 1:
                 base["review_priority"] = "medium"
+            else:
+                base["review_priority"] = "low"
+            base["priority_score"] = score
             for key in concept_keys:
                 seen_missing[key] = base
             missing.append(base)
 
     found.sort(key=lambda item: str(item["term"]).casefold())
     possible.sort(key=lambda item: str(item["term"]).casefold())
-    missing.sort(key=lambda item: str(item["term"]).casefold())
+    # Eksik terimler öncelik puanına göre dizilir; uzman listeye baştan
+    # girer. Hiçbir terim listeden çıkarılmaz.
+    missing.sort(
+        key=lambda item: (
+            -int(item.get("priority_score", 0)),
+            str(item["term"]).casefold(),
+        )
+    )
 
     processed_chunk_count = len(chunks) - len(extraction_warnings)
     if not chunks or processed_chunk_count == 0:
