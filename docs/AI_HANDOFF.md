@@ -33,17 +33,20 @@ aşağıda korunmuştur.
 
 ### Bekleyen işler (öncelik sırasıyla)
 
-1. **İstem genişletmesi (ADR-033 uzantısı):** STRICT EXCLUSIONS'a
-   sistem/aracı özel adları, metrik adları ve başlık/tablo kalıntılarının
-   eklenmesi. Taksonomi ölçümüne göre beklenen kazanç en büyük kalem
-   (~%13+ gürültü). **Engel: canlı ölçüm için API anahtarı** (kullanıcının
-   DeepSeek kredisi ~0,50 USD; küçük bir belge alt kümesinde önce/sonra
-   koşusu planlanmalı).
+1. **İstem genişletmesi canlı ölçümle doğrulandı ve uygulandı
+   (ADR-043).** `12_webassembly` üzerinde her istemle ikişer koşum:
+   kararlı kümelerde net -29 gürültü satırı (~%13), gerçek terim dengesi
+   değişmedi (3 kayıp / 3 kazanım). Kullanıcının DeepSeek anahtarıyla 6
+   koşum yapıldı; toplam maliyet birkaç sent. Eski raporlar depo dışında
+   `yedek-output-20260822` klasörüne yedeklendi.
 2. Kaynakça temizliğinin belge sonuna yayınması (bilinen sınır #3);
    PDF'ler bulunduğu için etkisi artık ölçülebilir.
 3. Kalan öbek gürültüsü (%46) için eleme değil sıralama/gruplama sunumu.
 4. Uzman etiketli altın küme hâlâ açık; internal_draft etiketleri yalnızca
    geliştirme sinyali olarak kullanılmalıdır.
+5. Yeni makaleler (`Desktop\PROJELER\Makaleler`: Dynamo, Spanner, GFS,
+   MapReduce, Bitcoin, IDS survey, TensorFlow, Zero Trust vb.) henüz
+   analiz edilmedi; birleştirilmiş istemle toplu koşu adaydır.
 
 ---
 
