@@ -709,3 +709,31 @@ Kalan kayıtlar (ADR-003, 023, 024, 026, 027, 029, 032, 033, 034, 035, 037, 038,
   birleştirmenin güvenli üst sınırını dürüstçe belgelemektir. Kalan
   varyant gürültüsü istem tarafı (ADR-033 uzantısı) ve sunum düzeyinde
   gruplama ile ele alınmalıdır.
+
+## ADR-043 — STRICT EXCLUSIONS genişletmesi: özel adlar, metrikler, kod tanımlayıcıları
+
+- Tarih: 2026-08-22
+- Durum: Kabul edildi
+- Yerine geçtiği karar: ADR-033'ün yalnızca genişletilen maddeleri;
+  kalan hükümleri yürürlüktedir.
+- Karar: `USER_TASK` içindeki STRICT EXCLUSIONS listesine üç sınıf eklendi:
+  1. Belirli yazılım sistemi/araç/kitaplık/ürün/veri kümesi/çerçeve özel
+     adları (HElib, SEAL, Docker, TensorFlow, GLUE, SQuAD); genel kavram
+     adı varsa onun döndürülmesi istenir.
+  2. Değerlendirme metrik adları ve tablo sütunu / şekil altyazısı
+     parçaları (validation loss, win rate, BLEU score).
+  3. Harf durumu gözetmeksizin kod/protokol tanımlayıcıları: değişken/
+     fonksiyon adları, komut mnemonikleri, yapılandırma anahtarları
+     (candidateId, commitIndex, i32.add, br_if, warmup_steps).
+- Gerekçe: Ölçüm (2026-08-22 taksonomisi) bu üç sınıfın eksik terim
+  gürültüsünün ~%16'sı olduğunu gösterdi. Canlı doğrulama: `12_webassembly`
+  belgesi üzerinde her istemle ikişer koşum (deepseek-v4-flash). Kararlı
+  kümeler karşılaştırıldığında hedeflenen sınıflar çöktü (kod benzeri
+  adaylar 18 → 10; özel adlar 26 → 8) ve **net -29 gürültü satırı**
+  (listenin ~%13'ü) elde edildi. Gerçek terim dengesi değişmedi: 3 kararlı
+  kayıp, 3 farklı kararlı kazanım. Yeni istemle iki koşum birebir aynı
+  sonucu verdi (eski istemde jaccard 0,83).
+- Sınır: Model uyumu kusursuz değil; yasağa rağmen yeni tek sözcüklü
+  genel adaylar girebiliyor. Tek belge derinlemesine + ikinci belgede tek
+  çift koşuma dayanır; altın küme oluştuğunda tekrar ölçülmelidir.
+  Maliyet: 6 koşumun toplamı birkaç sent.

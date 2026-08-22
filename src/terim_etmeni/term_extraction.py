@@ -155,6 +155,14 @@ STRICT EXCLUSIONS (never return these):
 - Ordinary single English words (e.g., incentive, acting, dependencies, causality, tools, seeds).
 - Narrative explanatory phrases or definition clauses (e.g., chain of digital signatures, public history of transactions, block broadcasts).
 - Benchmark statistics, code identifiers, section titles, or math notations.
+- Proper names of specific software systems, tools, libraries, products,
+  datasets, or frameworks (e.g., HElib, SEAL, Docker, TensorFlow, GLUE,
+  SQuAD). If a generic concept name exists for it, return the concept.
+- Evaluation metric names and table-column or figure-caption fragments
+  (e.g., validation loss, win rate, BLEU score, attention runtime).
+- Code or protocol identifiers in any letter case: variable or function
+  names, instruction mnemonics, configuration keys (e.g., candidateId,
+  commitIndex, i32.add, br_if, warmup_steps).
 
 If there are no qualifying technical terms in the text, return an empty list: {{"terms": []}}.
 
