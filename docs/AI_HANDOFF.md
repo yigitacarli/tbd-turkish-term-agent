@@ -44,9 +44,15 @@ aşağıda korunmuştur.
 3. Kalan öbek gürültüsü (%46) için eleme değil sıralama/gruplama sunumu.
 4. Uzman etiketli altın küme hâlâ açık; internal_draft etiketleri yalnızca
    geliştirme sinyali olarak kullanılmalıdır.
-5. Yeni makaleler (`Desktop\PROJELER\Makaleler`: Dynamo, Spanner, GFS,
-   MapReduce, Bitcoin, IDS survey, TensorFlow, Zero Trust vb.) henüz
-   analiz edilmedi; birleştirilmiş istemle toplu koşu adaydır.
+5. **Yeni makaleler tarandı (2026-08-22).** `Desktop\PROJELER\Makaleler`
+   altındaki 9 benzersiz yeni belge birleştirilmiş hatla
+   (ADR-042 + ADR-043) analiz edildi: 162 sayfa, 1.574 aday, 999 eksik
+   terim, 390 sözlük eşleşmesi, toplam 293 sn (~1,8 sn/sayfa). Kod
+   tanımlayıcı sızıntısı 14/999 (%1,4) ile tarihsel düzeyin çok altında;
+   ADR-042 `variants` alanı 42 maddede doldu. Kopya PDF'ler dosya karması
+   ile ayıklandı (attention×3, bert×2, raft×2, rag×2, bitcoin×2 tekil).
+   Kirli `8_ebpf` belgesi bilinçli atlandı. Raporlar
+   `output/deepseek-v4-flash/<belge>/` altında. Kalan bakiye ~0,46 USD.
 
 ---
 
