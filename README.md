@@ -1,4 +1,4 @@
-# Türkiye Bilişim Derneği — Türkçe Terim Etmeni
+﻿# Türkiye Bilişim Derneği — Türkçe Terim Etmeni
 
 İngilizce bilişim makalelerindeki (PDF) teknik terimleri yapay zekâ ile çıkaran, **TBD Bilişim Terimleri Sözlüğü** ile deterministik olarak karşılaştıran ve sözlükte henüz yer almayan eksik terimleri tespit eden açık kaynaklı denetim sistemi.
 
@@ -15,6 +15,10 @@
 ---
 
 ### 2. Terminal ile Başlatma
+
+Gereksinim: yalnızca **Python 3.9+**. İlk çalıştırmada eksik kütüphaneler
+(`pdfplumber`, `openpyxl`) başlatıcı tarafından sorulup otomatik kurulur
+(bu tek seferlik adım internet bağlantısı gerektirir).
 
 ```bash
 # Bağımlılıkları yükleyin
@@ -50,7 +54,7 @@ python3 run.py
 ├── src/terim_etmeni/      # Uygulama çekirdek paketi ve web sunucusu
 ├── data/                  # TBD Sözlüğü ve Kısaltmalar veri tabanı
 ├── docs/                  # Mimari kararlar (ADR) ve devir belgeleri
-├── tests/                 # Otomatik doğrulama testleri (102 birim testi)
+├── tests/                 # Otomatik doğrulama testleri (123 birim testi)
 ├── output/                # Üretilen Excel, CSV ve JSON raporları (Git dışı)
 ├── run.py                 # Ana çalıştırma dosyası
 ├── BASLAT_APPLE.command   # macOS tek tık başlatıcısı

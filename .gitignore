@@ -9,6 +9,7 @@ output/*
 data/runtime/
 data/chunks_for_gemini/
 data/live_benchmarks/
+data/silver_set/
 *.zip
 
 # Derleme çıktısı

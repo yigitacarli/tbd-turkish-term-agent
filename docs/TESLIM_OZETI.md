@@ -1,6 +1,6 @@
 # Türkçe Terim Etmeni — Teslim Özeti
 
-**Tarih:** 19 Ağustos 2026 · **Sürüm:** 1.0.1 · **Kurum:** Türkiye Bilişim Derneği,
+**Tarih:** 24 Ağustos 2026 · **Sürüm:** 1.1.0 · **Kurum:** Türkiye Bilişim Derneği,
 Bilişimde Özenli Türkçe Çalışma Grubu
 
 ---
@@ -32,7 +32,7 @@ Bu, ürünün en önemli özelliğidir ve kod düzeyinde garanti altındadır:
 
 | Ölçüt | Değer |
 |---|---|
-| Otomatik test | 102 test, tamamı geçiyor |
+| Otomatik test | 123 test, tamamı geçiyor |
 | Sözlük | 30.247 kayıt · 28.492 benzersiz terim (sürüm 2026-07-20) |
 | Kısaltma kaynağı | 1.199 resmî TBD kısaltması, ana sözlükten ayrı |
 | Canlı kıyaslama | 14 ileri makale · 318 sayfa · 2.544 terim adayı · 509 saniye |
@@ -61,8 +61,9 @@ Kullanıcının teknik bilgisine gerek yoktur:
 Program tarayıcıda otomatik açılır. Yalnızca kullanıcının kendi bilgisayarında
 çalışır; dışarıdan erişime kapalıdır.
 
-**Kurulum gereksinimi:** Python 3.9+ ve iki kütüphane (`pdfplumber`, `openpyxl`).
-Temiz bir bilgisayarda önce `pip install -e .` komutu çalıştırılmalıdır.
+**Kurulum gereksinimi:** Python 3.9+. Başlatıcıya çift tıklamak yeterlidir;
+eksik kütüphaneler ilk çalıştırmada kullanıcıya sorulup otomatik kurulur
+(tek seferlik, internet bağlantısı gerektirir).
 
 ## Maliyet
 

@@ -1,7 +1,7 @@
 # Türkçe Terim Etmeni — Proje Bağlamı
 
 > Bu dosya projenin kalıcı bağlamıdır. Yeni bir sohbet, geliştirici veya yapay
-> zekâ önce bu dosyayı, ardından `docs/DECISIONS.md` ve `docs/ROADMAP.md`
+> zekâ önce bu dosyayı, ardından `docs/DECISIONS.md`
 > dosyalarını okumalıdır. Sohbet içinde alınan kararlar burada yazmıyorsa kalıcı
 > karar sayılmaz.
 
@@ -75,7 +75,7 @@ PDF → metin çıkarımı (pdf_reader) → parçalama (chunker)
 
 ## Yeni geliştirici için çalışma kuralı
 
-1. `README.md`, `docs/PROJECT_CONTEXT.md`, `docs/DECISIONS.md`, `docs/ROADMAP.md`
+1. `README.md`, `docs/PROJECT_CONTEXT.md`, `docs/DECISIONS.md`
    ve `docs/AI_HANDOFF.md` oku.
 2. `git status --short --branch` ile dalı ve değişiklikleri kontrol et.
 3. Testleri çalıştır.

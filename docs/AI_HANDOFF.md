@@ -1,5 +1,75 @@
 # Yapay Zekâ / Geliştirici Devir Notu (AI Hand-off)
 
+## Teslim Durumu (2026-08-24)
+
+### Yapılan işler
+
+1. **Teslim öncesi doğrulama ve doküman tazeleme.** `tests/` altındaki
+   **123 testin tamamı geçmektedir** (~0,15 sn); `compileall` temiz.
+   README ve `docs/TESLIM_OZETI.md` test sayısı güncellendi (102 → 123);
+   kaldırılan `docs/ROADMAP.md` referansları temizlendi;
+   `data/silver_set/` `.gitignore` kapsamına alındı (gönderilmeyecek).
+2. **Sözlük seçme belgesiyle canlı doğrulama koşusu yapıldı.** TBD sözlüğünden
+   derlenmiş YZ terimleri seçmesi ("YZ-2026-02-16", 43 sayfa, ~2149 madde,
+   Tuncer Ören derlemesi) `deepseek-v4-flash` ile uçtan uca tarandı:
+   durum `complete`, başarısız parça 0; 668 aday → 2.272 sözlük eşleşmesi
+   (ADR-045 süpürmesi dahil), 15 eksik terim adayı. Seçmedeki bağımsız
+   maddelerin ~%99,3'ü etkin sözlükte (2026-07-20) kayıtlıdır; seçmede olup
+   etkin sözlükte bulunmayan **14 gerçek boşluk** ölçüldü (ör.
+   `AI-powered simulation`, `risks from AI`, `formal methods for agent-based
+   systems`). Rapor: `output/deepseek-v4-flash/yz_secme_test/`.
+   Not: Koşu sırasında süpürme ölçümünde kullanılan yardımcı betikteki bir
+   truthiness hatası ilk ölçümde "%100 kapsam" göstermişti; doğru boolean
+   kontrolüyle yeniden ölçüldü. Ürün kodunda hata yoktur.
+
+### Doğrulanmış durum
+
+- Dal: main; bu bölüm dahil tüm değişiklikler commit edilip origin/main'e
+  gönderildi.
+
+## Teslim Durumu (2026-08-23)
+
+### Yapılan işler
+
+1. **Yeni geliştirme bilgisayarında iki yerel Ollama modeli kuruldu ve
+   karşılaştırmalı PDF taraması yapıldı.** Donanım: RTX 5070 12 GB VRAM +
+   16 GB RAM, Windows. Kurulan modeller: `phi4-mini:3.8b` (2,5 GB) ve
+   `llama3.1:8b-instruct-q4_K_M` (4,9 GB). Depoda önceden kurulu olan
+   `qwen3.5:9b-q4_K_M` ve `qwen3.8:latest` (17 GB) dokunulmadı; qwen3.8 bu
+   donanım için ağır sayılır (VRAM'e sığmaz, RAM'e taşar). Ürün kodunda ve
+   varsayılan modelde değişiklik yapılmadı.
+2. **3 makalelik küme (`bitcoin-whitepaper`, `1_attention`,
+   `3_raft`) her iki modelle `scan` komutuyla tarandı**
+   (`MODEL_PROVIDER=ollama`). Raporlar `output/<model>/<belge>/` altında.
+
+   | Model | Belge | Süre (sn) | Aday | Sözlük eşleşmesi | Eksik terim | Elenen |
+   |---|---|---|---|---|---|---|
+   | phi4-mini:3.8b | bitcoin | 72,0 | 81 | 49 | 42 | 13 |
+   | phi4-mini:3.8b | attention | 41,7 | 136 | 55 | 92 | 12 |
+   | phi4-mini:3.8b | raft | 167,2 | 97 | 43 | 79 | 8 |
+   | llama3.1:8b | bitcoin | 45,8 | 92 | 49 | 49 | 10 |
+   | llama3.1:8b | attention | 79,9 | 149 | 66 | 99 | 5 |
+   | llama3.1:8b | raft | 79,2 | 162 | 59 | 120 | 8 |
+
+   Gözlemler: İki model de tüm parçaları hatasız işledi (`failed_chunk_count`
+   0), zorunlu JSON uyumu sorunsuzdu. Eksik terim kümesi kesişimi düşük
+   (Jaccard 0,25–0,33): modeller birbirinden farklı adaylar üretiyor;
+   llama3.1 sistematik olarak daha fazla aday ve sözlük eşleşmesi üretti,
+   phi4-mini daha az adayla benzer eksik terim sayısına ulaştı. Yerel
+   koşulardaki yüksek sözlük eşleşmesi sayıları, eski deepseek raporlarına
+   göre değil ADR-045 sözlük süpürmesini içeren güncel hatla
+   karşılaştırılmalıdır. Bu koşular **model seçim kararı için yeterli
+   değildir**; altın/gümüş küme ölçümü olmadan kalite sıralaması iddia
+   edilmez (ADR-046 sınırı).
+
+### Doğrulanmış durum
+
+- Testler ve derleme bu oturumda çalıştırılmadı; ürün kodu değişmediği için
+  2026-08-22 doğrulaması geçerlidir.
+- Dal: main; çalışma ağacında 2026-08-22'ye ait kaydedilmemiş
+  `docs/AI_HANDOFF.md` + `docs/DECISIONS.md` değişiklikleri ve izlenmeyen
+  `data/silver_set/` vardır.
+
 ## Teslim Durumu (2026-08-22)
 
 Bu bölüm 22 Ağustos 2026 çalışmasını kaydeder. Önceki teslim durumları
@@ -41,6 +111,20 @@ aşağıda korunmuştur.
    kayıtlı başlıklar `dictionary_sweep` etiketiyle bilgi sekmesine
    ekleniyor (simülasyon: +1.360/22 belge). Sözlükte OLMAYAN yeni
    terimlerin kaçıp kaçmadığı ancak uzman altın kümesiyle ölçülebilir.
+7. **Gümüş küme kuruldu ve ilk ölçüm yapıldı (ADR-046).** Uzman erişimi
+   kalıcı olarak olmadığı için yapay zekâ etiketli, proje sahibinin
+   belirsiz maddelerde insan kararı verdiği gümüş küme oluşturuldu
+   (`data/silver_set/`; bitcoin-whitepaper 15 terim,
+   1_attention_is_all_you_need 33 terim; süreç `data/silver_set/OKUBENI.md`
+   içinde). Proje sahibinin önemli kararları: `Transformer`, `BLEU`,
+   model özel adları terim değil; `perplexity`, `geometric progression`,
+   `Moore's Law` (çekinceyle) terim. İlk ölçüm (`evaluate-expected`,
+   deepseek-v4-flash raporları):
+   - bitcoin-whitepaper: yakalama %86,7 (13/15), isabet %30,9;
+     kaçanlar `Gambler's ruin`, `Merkle root`.
+   - attention: yakalama %100 (33/33), isabet %35,1.
+   Bu değerler **doğrulama iddiası değildir** (ADR-046 sınırı);
+   yalnızca regresyon takibi içindir.
 
 ### Doğrulanmış durum (2026-08-22)
 
@@ -55,8 +139,8 @@ aşağıda korunmuştur.
    PDF'ler bulunduğu için etkisi artık ölçülebilir.
 2. Recall analizi: kaçan terimlerin kaynağı (`_is_low_quality_line`,
    parça sınırları) PDF'ler elimizdeyken ölçülebilir.
-3. Uzman etiketli altın küme hâlâ açık; internal_draft etiketleri
-   yalnızca geliştirme sinyali olarak kullanılmalıdır.
+3. Uzman altın kümesi hedefi bırakıldı (ADR-046); gümüş küme iki belgede
+   kuruldu. İsteğe bağlı büyütme: kalan 20 belgeye aynı yöntemle genişletme.
 4. `origin/main` 5 commit geride; push ve uzak yedekleme sahibin kararı.
 
 ---

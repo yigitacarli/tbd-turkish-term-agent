@@ -783,3 +783,54 @@ Kalan kayıtlar (ADR-003, 023, 024, 026, 027, 029, 032, 033, 034, 035, 037, 038,
 - Sınır: Süpürme yalnızca "sözlükte bulunanlar" tarafını tamamlatır;
   sözlükte olmayan gerçek yeni terimlerin kaçıp kaçmadığını ancak uzman
   altın kümesi yanıtlayabilir.
+
+## ADR-046 — Uzman altın kümesi yerine yapay zekâ etiketli gümüş küme
+
+- Tarih: 2026-08-22
+- Durum: Kabul edildi
+- Karar: Alan uzmanı erişimi kalıcı olarak mümkün olmadığından uzman
+  etiketli altın küme hedefi bırakıldı. Yerine yapay zekâ tarafından
+  etiketlenen **gümüş küme** oluşturulur; belirsiz durumlarda proje
+  sahibi (kod bilgisi olmayan kullanıcı) insan gözüyle nihai kararı
+  verir. Küme `data/silver_set/` altında, kaynak belgesi ve etiket
+  tarihiyle saklanır.
+- Gerekçe: Ölçüm altyapısı (`evaluate-expected`) hazırdır ama karşılaştırma
+  anahtarı yoktur. Hiç anahtar olmamasından, mutlak doğruluğu tartışmalı olsa
+  bile tutarlı bir anahtar olması daha iyidir: değişimlerin yönü (regresyon
+  takibi) güvenilir ölçülür.
+- Sınır (kesin): Gümüş küme **doğrulama iddiası taşımaz**. Raporlarda,
+  arayüzde ve komite sunumlarında asla "uzman doğrulamalı" veya
+  "doğrulanmıştır" diye sunulmaz; yalnızca "yapay zekâ etiketli tutarlılık
+  ölçümü" olarak adlandırılır. Yapay zekânın modelin kendi kör noktalarını
+  da paylaşması nedeniyle mutlak recall/precision değerleri üst sınır
+  sayılır. Uzman erişimi ileride sağlanırsa bu karar gözden geçirilir ve
+  küme uzman etiketiyle yeniden doğrulanır.
+- İlişki: ADR-045'in "sözlükte olmayan gerçek yeni terimler" sınırına
+  kısmi yanıt verir; kesin yanıt yine yalnızca uzman kümesidir.
+
+## ADR-047 — Alternatif çıkarım yöntemleri denendi ve reddedildi (TTE_V2/V3)
+
+- Tarih: 2026-08-23
+- Durum: Reddedildi; deneme dalları silindi, kazanımlar bu kayıtta saklanır
+- Bağlam: Ana hattın precision değerini iyileştirmek için iki alternatif
+  yöntem ayrı kopyalarda (TTE_V2, TTE_V3) uygulanıp gümüş kümeyle ölçüldü.
+  Kod ana dala alınmadı.
+- TTE_V2 (hibrit aday-süzme): Metinden saf Python n-gram kurallarıyla aday
+  üret (baş/son işlev sözcüğü yasak; puan = sıklık × sözcük sayısı; parça
+  başına tavan), LLM yalnızca listeden seçsin. Sonuç (bitcoin whitepaper,
+  DeepSeek): recall %86,7 → %73,3; precision %31,0 → %13,9. Dar liste terim
+  kaçırıyor, geniş liste LLM tarafından süzülemiyor. Kesin negatif sonuç.
+- TTE_V3 (iki geçişli doğrulama): Serbest çıkarım + her adayın ikinci
+  bağımsız LLM çağrısıyla gözden geçirilmesi. Sonuç: bitcoin'de precision
+  %52,4 (+21,4 puan) ama recall %73,3 (−13,4); attention makalesinde her iki
+  ölçü de düştü. Yerel modellerde (llama3.1:8b, phi4-mini:3.8b, qwen3.5:9b)
+  doğrulama geçişi ya her şeyi eleyerek recall %0'a düşürüyor ya da işe
+  yaramıyor; yerel modellerin serbest çıkarım tabanı da DeepSeek'in çok
+  altında (recall ≤ %53).
+- Karar: Ana işlem hattı (`PDF → LLM çıkarımı → normalizasyon → sözlük
+  arama → eksik terimler`) değişmeden kalır. Güçlü bulut modeli + serbest
+  çıkarım şu an bilinen en dengeli yapıdır.
+- Gelecek koşul: Precision öncelikli "katı mod" istenirse V3 yaklaşımı en az
+  3 koşuluk ortalamayla yeniden ölçülerek değerlendirilir.
+- Ders (kalıcı): Tek koşuluk LLM ölçümleri koşudan koşua oynar; karşılaştırma
+  kararları çoklu koşu ortalamasına dayanmalıdır.

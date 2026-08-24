@@ -5,7 +5,7 @@ Bu depoda çalışmaya başlayan her insan veya yapay zekâ aşağıdaki sıray�
 1. `README.md` dosyasını oku.
 2. `docs/PROJECT_CONTEXT.md` dosyasını tamamen oku.
 3. `docs/DECISIONS.md` dosyasını tamamen oku.
-4. `docs/ROADMAP.md` ve `docs/AI_HANDOFF.md` dosyalarını oku.
+4. `docs/AI_HANDOFF.md` dosyasını oku.
 5. `git status --short --branch` ile dalı ve mevcut değişiklikleri kontrol et.
 
 ## Kapsam
