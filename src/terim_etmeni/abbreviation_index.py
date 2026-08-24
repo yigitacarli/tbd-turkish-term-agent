@@ -19,6 +19,11 @@ def abbreviation_key(value: str) -> str:
     return " ".join(value.split())
 
 
+def abbreviation_surface(value: str) -> str:
+    """Kısaltmanın yazımını (büyük/küçük harf) koruyan karşılaştırma biçimi."""
+    return " ".join(unicodedata.normalize("NFKC", value).strip().split())
+
+
 class AbbreviationIndex:
     def __init__(self, entries: Iterable[dict[str, object]], metadata=None) -> None:
         self.metadata = metadata or {}
@@ -47,6 +52,25 @@ class AbbreviationIndex:
 
     def lookup(self, abbreviation: str) -> list[dict[str, object]]:
         return list(self._entries.get(abbreviation_key(abbreviation), []))
+
+    def lookup_written_form(self, abbreviation: str) -> list[dict[str, object]]:
+        """Yalnız kısaltmanın kayıtlı yazımıyla birebir eşleşen kayıtları döndürür.
+
+        ``lookup`` büyük/küçük harfe duyarsızdır; bu, metindeki sıradan bir
+        sözcüğün (``set``, ``art``, ``as``) aynı harfleri taşıyan bir TBD
+        kısaltmasıyla (``SET``, ``ART``, ``AS``) eşleşip incelenmesi gereken
+        bir terimi kısaltma grubuna düşürmesine yol açıyordu (ADR-049).
+
+        Yazıma duyarlı eşleşme ``RAM`` → ``RAM`` ve ``AIoT`` → ``AIoT`` gibi
+        gerçek kısaltmaları korur; kayıtlı yazımı zaten küçük harf olan
+        ``aux`` gibi maddeler de küçük harfle eşleşmeye devam eder.
+        """
+        expected = abbreviation_surface(abbreviation)
+        return [
+            entry
+            for entry in self._entries.get(abbreviation_key(abbreviation), [])
+            if abbreviation_surface(str(entry["abbreviation"])) == expected
+        ]
 
     def lookup_defined(
         self, abbreviation: str, expansion: str

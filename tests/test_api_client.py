@@ -130,6 +130,7 @@ class ApiClientTests(unittest.TestCase):
         def fake_open(request, timeout):
             payload = json.loads(request.data.decode("utf-8"))
             self.assertEqual(payload["max_completion_tokens"], 4096)
+            self.assertEqual(payload["messages"][0]["role"], "developer")
             self.assertNotIn("temperature", payload)
             self.assertNotIn("response_format", payload)
             return _response(
@@ -139,6 +140,25 @@ class ApiClientTests(unittest.TestCase):
         with patch("urllib.request.urlopen", side_effect=fake_open):
             terms = client.extract_terms("text")
         self.assertEqual([t.term for t in terms], ["chain of thought"])
+
+    def test_openai_gpt56_luna_uses_max_completion_tokens(self):
+        client = ApiClient("openai", "secret", "gpt-5.6-luna", timeout=5)
+
+        def fake_open(request, timeout):
+            payload = json.loads(request.data.decode("utf-8"))
+            self.assertEqual(payload["max_completion_tokens"], 4096)
+            self.assertNotIn("max_tokens", payload)
+            self.assertNotIn("temperature", payload)
+            self.assertEqual(payload["reasoning_effort"], "none")
+            self.assertEqual(payload["messages"][0]["role"], "developer")
+            self.assertEqual(payload["response_format"], {"type": "json_object"})
+            return _response(
+                {"choices": [{"message": {"content": '{"terms": ["term extraction"]}'}}]}
+            )
+
+        with patch("urllib.request.urlopen", side_effect=fake_open):
+            terms = client.extract_terms("text")
+        self.assertEqual([term.term for term in terms], ["term extraction"])
 
     def test_deepseek_reasoner_omits_thinking_and_json_mode(self):
         client = ApiClient("deepseek", "secret", "deepseek-reasoner", timeout=5)
@@ -209,6 +229,40 @@ class ApiClientTests(unittest.TestCase):
         self.assertEqual([t.term for t in terms], ["smart contract"])
         self.assertEqual(attempts, 2)
         mock_sleep.assert_called()
+
+    def test_connection_reset_retries_and_succeeds(self):
+        import http.client
+        client = ApiClient("deepseek", "secret", "deepseek-v4-flash", timeout=5)
+        attempts = 0
+
+        def fake_open(request, timeout):
+            nonlocal attempts
+            attempts += 1
+            if attempts == 1:
+                raise ConnectionResetError(
+                    10054, "Uzak ana bilgisayar, var olan bir bağlantıyı zorla kapattı"
+                )
+            if attempts == 2:
+                raise http.client.RemoteDisconnected("Remote end closed connection")
+            return _response(
+                {"choices": [{"message": {"content": '{"terms": ["raft"]}'}}]}
+            )
+
+        with patch("urllib.request.urlopen", side_effect=fake_open), patch("time.sleep") as mock_sleep:
+            terms = client.extract_terms("text")
+        self.assertEqual([t.term for t in terms], ["raft"])
+        self.assertEqual(attempts, 3)
+        mock_sleep.assert_called()
+
+    def test_persistent_connection_reset_raises_clear_error(self):
+        client = ApiClient("deepseek", "secret", "deepseek-v4-flash", timeout=5)
+
+        def fake_open(request, timeout):
+            raise ConnectionResetError(10054, "bağlantı zorla kapatıldı")
+
+        with patch("urllib.request.urlopen", side_effect=fake_open), patch("time.sleep"):
+            with self.assertRaisesRegex(ApiClientError, "API'ye bağlanılamadı"):
+                client.extract_terms("text")
 
     def test_empty_dict_and_alternative_keys_are_recovered(self):
         client = ApiClient("openai", "secret", "model-x", timeout=5)

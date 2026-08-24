@@ -54,9 +54,10 @@ python3 run.py
 ├── src/terim_etmeni/      # Uygulama çekirdek paketi ve web sunucusu
 ├── data/                  # TBD Sözlüğü ve Kısaltmalar veri tabanı
 ├── docs/                  # Mimari kararlar (ADR) ve devir belgeleri
-├── tests/                 # Otomatik doğrulama testleri (123 birim testi)
+├── tests/                 # Otomatik doğrulama testleri (149 birim testi)
 ├── output/                # Üretilen Excel, CSV ve JSON raporları (Git dışı)
 ├── run.py                 # Ana çalıştırma dosyası
+├── LICENSE                # MIT (kod) — TBD veri dosyaları kapsam dışı
 ├── BASLAT_APPLE.command   # macOS tek tık başlatıcısı
 └── BASLAT_WINDOWS.bat     # Windows tek tık başlatıcısı
 ```
@@ -70,6 +71,16 @@ Tüm sistem bileşenlerini doğrulamak için:
 ```bash
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
+
+---
+
+## 📄 Lisans
+
+Yazılım kaynak kodu **MIT lisansı** ile açık kaynaktır.
+
+`data/` klasöründeki TBD Bilişim Terimleri Sözlüğü ve Kısaltmalar tablosu
+**bu lisansın kapsamı dışındadır**; telif hakkı Türkiye Bilişim Derneği'ne
+aittir ve yeniden dağıtımı için TBD'ye başvurulmalıdır. Ayrıntı: `LICENSE`.
 
 ---
 

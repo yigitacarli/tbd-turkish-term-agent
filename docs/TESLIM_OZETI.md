@@ -32,7 +32,7 @@ Bu, ürünün en önemli özelliğidir ve kod düzeyinde garanti altındadır:
 
 | Ölçüt | Değer |
 |---|---|
-| Otomatik test | 123 test, tamamı geçiyor |
+| Otomatik test | 149 test, tamamı geçiyor |
 | Sözlük | 30.247 kayıt · 28.492 benzersiz terim (sürüm 2026-07-20) |
 | Kısaltma kaynağı | 1.199 resmî TBD kısaltması, ana sözlükten ayrı |
 | Canlı kıyaslama | 14 ileri makale · 318 sayfa · 2.544 terim adayı · 509 saniye |
@@ -47,9 +47,13 @@ Sonuç: 399 sözlük eşleşmesi, 9 TBD kısaltma eşleşmesi ve uzman incelemes
 bekleyen 1.849 eksik terim (`output/deepseek-v4-flash/`, 19.08.2026). Ortalama
 hız sayfa başına ~1,6 saniyedir.
 
-Kümedeki `8_ebpf_xdp_packet_processing.pdf` dosyası adına rağmen fotovoltaik
-içerikli yanlış bir belgedir; bu belgenin sonuçları komiteye gönderilmemeli,
-kaynak PDF doğrusuyla değiştirilmelidir.
+`8_ebpf_xdp_packet_processing.pdf` dosyası adına rağmen fotovoltaik içerikli
+yanlış bir belgedir. **24.08.2026'da teslim kümesinden çıkarılmıştır**;
+raporu kayıt olarak `output/_hatali_belge/` altında, gerekçesiyle birlikte
+saklanmaktadır. Kaynak PDF doğrusuyla değiştirilip yeniden taranmalıdır.
+Yukarıdaki 19.08.2026 kıyaslama sayıları bu belgeyi de içeren koşuya aittir;
+teslim edilen rapor klasöründe bu belge çıkarıldıktan sonra 23 klasör vardır
+(22 makale + `yz_secme_test` sözlük seçme koşusu).
 
 ## Nasıl çalıştırılır
 
@@ -78,15 +82,22 @@ Bunlar bilinerek bu sürümün dışında bırakılmıştır:
 
 1. **Ağ erişimi açılmadan önce güvenlik katmanı gerekir.** Program şu anda
    yalnızca kullanıcının kendi bilgisayarında çalışacak biçimde tasarlanmıştır.
-   Kurum ağına veya internete açılması istenirse önce HTTPS, kimlik doğrulama
-   ve çapraz-köken koruması eklenmelidir.
+   Kurum ağına veya internete açılması istenirse önce HTTPS ve kimlik
+   doğrulama eklenmelidir. Çapraz-köken koruması ile sağlayıcı adresi
+   doğrulaması 24.08.2026'da eklenmiştir (ADR-048): uygulama açıkken
+   ziyaret edilen kötü niyetli bir sayfa artık ayarları değiştiremez ve
+   API anahtarını kendi sunucusuna yönlendiremez.
 2. **Uzun belgelerde ilerleme göstergesi yoktur.** 200 sayfanın üzerindeki
    belgelerde işlem birkaç dakika sürer ve bu sırada ekranda yalnızca bekleme
    mesajı görünür; iptal veya kaldığı yerden devam seçeneği yoktur.
-3. **Kalite ölçümü için uzman etiketli veri gerekir.** Sistemin kaç doğru terim
-   yakaladığını sayısal olarak raporlamak için 3 makalelik uzmanca işaretlenmiş
-   bir "altın küme" hazırlanmalıdır. Ölçüm altyapısı hazırdır, eksik olan
-   yalnızca etiketli veridir.
+3. **Kalite ölçümü uzman onayı beklemektedir.** Uzman etiketli "altın küme"
+   hedefi, alan uzmanına sürekli erişim mümkün olmadığı için bırakılmıştır
+   (ADR-046). Yerine iki belgede yapay zekâ etiketli, belirsiz maddelerde
+   proje sahibinin karar verdiği bir **gümüş küme** kurulmuş ve ölçülmüştür.
+   Gümüş küme yalnızca değişimlerin yönünü izlemek (regresyon takibi)
+   içindir ve **doğrulama iddiası taşımaz**. Sistemin gerçek yakalama
+   oranını raporlamak için uzman etiketli veri hâlâ gereklidir; ölçüm
+   altyapısı hazırdır.
 4. **Kurum sunucusu kararları verilmemiştir.** `docs/DEPLOYMENT_READINESS.md`
    içindeki form, kurumun donanım, erişim ve belge saklama politikası
    netleştiğinde doldurulmalıdır.

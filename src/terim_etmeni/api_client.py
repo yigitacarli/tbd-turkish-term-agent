@@ -9,6 +9,7 @@ Sağlayıcı yalnız aday üretir; sözlük üyeliği kararını deterministik k
 """
 from __future__ import annotations
 
+import http.client
 import json
 import urllib.error
 import urllib.parse
@@ -165,16 +166,31 @@ class ApiClient:
         return self._openai_compatible_chat(system, user_prompt, max_tokens)
 
     def _openai_compatible_chat(self, system: str, user_prompt: str, max_tokens: int = 4096) -> str:
+        openai_reasoning_model = self.provider == "openai" and self.model.lower().startswith(
+            ("o1", "o3", "gpt-5")
+        )
+        openai_gpt56_model = self.provider == "openai" and self.model.lower().startswith(
+            "gpt-5.6"
+        )
         payload: dict[str, object] = {
             "model": self.model,
             "messages": [
-                {"role": "system", "content": system},
+                {
+                    "role": "developer" if openai_reasoning_model else "system",
+                    "content": system,
+                },
                 {"role": "user", "content": user_prompt},
             ],
         }
-        # OpenAI o1/o3 serisi modeller için uyumluluk
-        if self.provider == "openai" and self.model.lower().startswith(("o1", "o3")):
+        # OpenAI'nin akıl yürüten o-serisi ve GPT-5 modelleri eski
+        # ``max_tokens`` alanını kabul etmez; çıktı sınırı bu alanla verilir.
+        if openai_reasoning_model:
             payload["max_completion_tokens"] = max_tokens
+            # Terim çıkarımı, araç kullanımı veya çok adımlı çıkarım gerektirmez.
+            # GPT-5.6'nın varsayılan medium düşünme düzeyi burada yalnızca gecikme
+            # ve maliyet üretir; resmi API'nin düşük gecikme ayarı kullanılır.
+            if openai_gpt56_model:
+                payload["reasoning_effort"] = "none"
         else:
             payload["temperature"] = 0
             payload["max_tokens"] = max_tokens
@@ -316,7 +332,12 @@ class ApiClient:
                     raise ApiClientError("API yanıtının biçimi beklenenden farklı.")
                 return result
             except urllib.error.HTTPError as error:
-                detail = error.read().decode("utf-8", errors="replace")
+                # HTTPError bir yanıt gövdesi taşır; okunduktan sonra kapatılmazsa
+                # bağlantı çöp toplayıcıya kalır (ResourceWarning).
+                try:
+                    detail = error.read().decode("utf-8", errors="replace")
+                finally:
+                    error.close()
                 if error.code == 429:
                     if "exceeded your current quota" in detail.casefold() or "quota exceeded" in detail.casefold():
                         raise ApiClientError(
@@ -331,7 +352,12 @@ class ApiClient:
                 raise ApiClientError(
                     "API HTTP hatası {}: {}".format(error.code, detail)
                 ) from error
-            except (urllib.error.URLError, TimeoutError) as error:
+            except (
+                urllib.error.URLError,
+                TimeoutError,
+                ConnectionResetError,
+                http.client.RemoteDisconnected,
+            ) as error:
                 last_error = error
                 if attempt < max_retries:
                     import time

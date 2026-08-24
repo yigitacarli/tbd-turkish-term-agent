@@ -5,7 +5,9 @@ import html
 import ipaddress
 import tempfile
 import threading
+import urllib.error
 import urllib.parse
+import urllib.request
 import webbrowser
 from email.parser import BytesParser
 from email.policy import default
@@ -1212,6 +1214,20 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urllib.parse.urlparse(self.path).path
+        if is_cross_origin_request(
+            self.headers.get("Origin"),
+            self.headers.get("Sec-Fetch-Site"),
+            self.headers.get("Host"),
+        ):
+            self._html(
+                index_html(
+                    self.server.service,
+                    "İstek uygulamanın kendi sayfasından gelmediği için reddedildi.",
+                    "failed",
+                ),
+                403,
+            )
+            return
         try:
             if path in {"/analyze", "/api/analyze"}:
                 fields, files = _multipart(self)
@@ -1238,7 +1254,7 @@ class Handler(BaseHTTPRequestHandler):
                     provider=fields.get("provider", "openai"),
                     api_key=final_key,
                     model=fields.get("model", "").strip(),
-                    base_url=fields.get("base_url", "").strip(),
+                    base_url=validate_provider_base_url(fields.get("base_url", "")),
                 )
                 self.server.service.save_provider_config(config)
                 self._html(settings_html(self.server.service, "API ayarları kaydedildi.", "ok")); return
@@ -1269,6 +1285,10 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as error:
             if path.startswith("/dictionary"):
                 self._html(dictionary_html(self.server.service, str(error), "failed"), 400)
+            elif path.startswith("/settings") or path == "/api/settings":
+                # Ayar hatası (ör. geçersiz sağlayıcı adresi) kullanıcının
+                # düzeltebilmesi için ayarlar sayfasında gösterilir.
+                self._html(settings_html(self.server.service, str(error), "failed"), 400)
             else:
                 self._html(index_html(self.server.service, str(error), "failed"), 400)
 
@@ -1298,7 +1318,13 @@ class Handler(BaseHTTPRequestHandler):
     def _security_headers(self) -> None:
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "DENY")
-        self.send_header("Referrer-Policy", "no-referrer")
+        # "same-origin": dışarıya hiçbir şey sızmaz (yerel uygulamada
+        # "no-referrer" ile aynı korumadır), ama tarayıcı kendi sayfamızdan
+        # gelen form gönderiminde ``Origin`` başlığını gerçek değeriyle
+        # gönderir. "no-referrer" altında Chrome ``Origin: null`` yolluyordu;
+        # bu, ``Sec-Fetch-Site`` göndermeyen eski tarayıcılarda köken
+        # denetimini karar veremez hâle getiriyordu (ADR-048).
+        self.send_header("Referrer-Policy", "same-origin")
         self.send_header(
             "Content-Security-Policy",
             "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'self'; "
@@ -1307,6 +1333,86 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, format: str, *args: object) -> None:
         return
+
+
+def validate_provider_base_url(value: str) -> str:
+    """Arayüzden girilen özel sağlayıcı adresini doğrular (ADR-048).
+
+    Analiz sırasında bu adrese kullanıcının API anahtarı ``Authorization``
+    başlığıyla gönderilir. Bu nedenle adres, anahtarı taşıyabilecek güvenilir
+    bir kanal olmalıdır:
+
+    - ``https://`` her yerde kabul edilir (aktarım şifreli).
+    - ``http://`` yalnız loopback için kabul edilir (yerel OpenAI uyumlu
+      sunucular; anahtar cihazdan çıkmaz).
+    - Diğer her şey reddedilir; şifresiz uzak adres anahtarı ağa açar.
+
+    Boş değer, sağlayıcının kendi varsayılan adresi kullanılacak demektir.
+    """
+    address = value.strip()
+    if not address:
+        return ""
+    parsed = urllib.parse.urlparse(address)
+    scheme = parsed.scheme.casefold()
+    if scheme not in {"http", "https"} or not parsed.hostname:
+        raise ValueError(
+            "Sağlayıcı adresi http:// veya https:// ile başlamalıdır."
+        )
+    if scheme == "https":
+        return address.rstrip("/")
+    host = parsed.hostname
+    if host.casefold() in LOOPBACK_HOST_NAMES:
+        return address.rstrip("/")
+    try:
+        is_loopback = ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        is_loopback = False
+    if not is_loopback:
+        raise ValueError(
+            "Şifresiz http:// adresi yalnız kendi bilgisayarınız (localhost) "
+            "için kullanılabilir; uzak adreslerde https:// gereklidir."
+        )
+    return address.rstrip("/")
+
+
+def is_cross_origin_request(
+    origin: str | None, fetch_site: str | None, host: str | None
+) -> bool:
+    """Tarayıcının bildirdiği kaynak bu sunucu değilse ``True`` döner.
+
+    Uygulama yalnız loopback dinlese de, kullanıcı program açıkken kötü niyetli
+    bir sayfayı ziyaret ederse o sayfa ``127.0.0.1``e form gönderip sağlayıcı
+    adresini değiştirebilir. Tarayıcılar böyle isteklerde ``Origin`` ve
+    ``Sec-Fetch-Site`` başlıklarını göndermek zorundadır; denetim bu iki
+    başlığa dayanır.
+
+    ``Sec-Fetch-Site`` bu iş için tasarlanmış başlıktır ve sayfa betiği
+    tarafından değiştirilemez (yasaklı başlık adı); bu yüzden varsa **tek
+    başına belirleyicidir**. ``Origin`` yalnız bu başlığı göndermeyen eski
+    tarayıcılarda yedek ölçüt olarak kullanılır.
+
+    Önemli: Bu uygulama ``Referrer-Policy: no-referrer`` gönderdiği için
+    tarayıcı, kendi sayfamızdan yapılan üst düzey form gönderiminde kökeni
+    sızdırmamak adına ``Origin: null`` yollar. Yani ``Origin: null`` tek
+    başına saldırı işareti **değildir**; bu durumda karar
+    ``Sec-Fetch-Site``e aittir. (Bu, gerçek tarayıcıda ölçülmüştür.)
+
+    Başlıkların hiçbiri yoksa istek reddedilmez: çapraz köken saldırısı tanımı
+    gereği tarayıcı üzerinden gelir. Başlıksız istekler yerel betik veya
+    ``curl`` kullanımıdır ve bu tehdit modelinin dışındadır (ADR-048).
+    """
+    if fetch_site is not None and fetch_site.strip():
+        return fetch_site.strip().casefold() not in {"same-origin", "none"}
+    if origin is None or not origin.strip():
+        return False
+    value = origin.strip()
+    if value.casefold() == "null":
+        # Sec-Fetch-Site göndermeyen bir tarayıcıda kökeni doğrulayamayız.
+        return True
+    parsed = urllib.parse.urlparse(value)
+    if not parsed.scheme or not parsed.netloc:
+        return True
+    return parsed.netloc.casefold() != (host or "").strip().casefold()
 
 
 def validate_bind_host(host: str) -> str:
@@ -1326,14 +1432,45 @@ def validate_bind_host(host: str) -> str:
     return normalized
 
 
+def already_running(url: str, timeout: float = 1.5) -> bool:
+    """Bu adreste bu uygulamanın bir kopyası zaten çalışıyor mu?
+
+    Windows'ta ``allow_reuse_address`` nedeniyle ikinci bir kopya aynı porta
+    hata vermeden bağlanabiliyor; sonuç, isteklerin hangi kopyaya gideceğinin
+    belirsiz olmasıdır. Başlatıcıya iki kez çift tıklamak bunu tetikler.
+    """
+    try:
+        with urllib.request.urlopen(url + "/healthz", timeout=timeout) as response:
+            if response.status != 200:
+                return False
+            return b'"status"' in response.read(200)
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+        return False
+
+
 def serve(
     host: str = "127.0.0.1", port: int = 8876, *, open_browser: bool = True
 ) -> None:
     host = validate_bind_host(host)
-    service = AnalysisService(Settings())
-    server = Server((host, port), service)
     url_host = "[{}]".format(host) if ":" in host else host
     url = "http://{}:{}".format(url_host, port)
+
+    if already_running(url):
+        print("Uygulama zaten çalışıyor: {}".format(url), flush=True)
+        print("İkinci bir kopya başlatılmadı; var olan pencere kullanılacak.", flush=True)
+        if open_browser:
+            webbrowser.open(url)
+        return
+
+    service = AnalysisService(Settings())
+    try:
+        server = Server((host, port), service)
+    except OSError as error:
+        print("Uygulama başlatılamadı: {} adresi kullanılamıyor.".format(url), flush=True)
+        print("Bu portu başka bir program kullanıyor olabilir.", flush=True)
+        print("Farklı bir port denemek için: python run.py serve --port 8877", flush=True)
+        raise SystemExit(1) from error
+
     print("Türkiye Bilişim Derneği — Bilişim Terimleri Denetim Sistemi: {}".format(url), flush=True)
     print("Durdurmak için Control-C tuşlarına basınız.", flush=True)
     if open_browser:
@@ -1341,6 +1478,6 @@ def serve(
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print("\nSistem kapatıldı.")
+        print(chr(10) + "Sistem kapatıldı.")
     finally:
         server.server_close()

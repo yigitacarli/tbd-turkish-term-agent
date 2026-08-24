@@ -1,5 +1,213 @@
 # Yapay Zekâ / Geliştirici Devir Notu (AI Hand-off)
 
+## Teslim Durumu (2026-08-24 — Teslim öncesi güvenlik ve tutarlılık turu)
+
+Bu tur, teslim öncesi bağımsız bir gözden geçirmeyle başladı. Aşağıdaki
+işlerin hepsi ölçülerek yapıldı; hiçbir ürün kuralı gevşetilmedi.
+
+### 1. Anahtar sızdırma zinciri kapatıldı (ADR-048) — en önemli düzeltme
+
+2026-08-18'den beri "bilinen sınırlama 1" olarak duran çapraz köken açığının
+etkisi bu turda sonuna kadar izlendi ve **düşünülenden ağırdı**. Zincir:
+
+1. `/settings/save` boş gönderilen `api_key` alanını "değiştirme" sayıp
+   kullanıcının kayıtlı anahtarını korur.
+2. Aynı formdaki `base_url` hiçbir doğrulamadan geçmiyordu.
+3. Sonraki analizde `ApiClient` bu adrese `Authorization: Bearer <anahtar>`
+   gönderir.
+
+Yani uygulama açıkken ziyaret edilen kötü niyetli bir sayfa, ayarları
+bozmakla kalmayıp **kullanıcının API anahtarını kendi sunucusuna
+yönlendirebilirdi**. Loopback dinlemek bunu engellemez; istek kullanıcının
+kendi tarayıcısından çıkar.
+
+İki bağımsız katman eklendi: (a) tüm POST uçlarında `Sec-Fetch-Site` temelli
+köken denetimi (yabancı köken → HTTP 403), (b) `base_url` doğrulaması
+(`https://` her yerde, `http://` yalnız loopback). Zinciri uçtan uca kuran ve
+her iki katmanın ayrı ayrı kırdığını gösteren bir gerileme testi yazıldı.
+
+**Bu turun en önemli dersi buradan çıktı.** İlk uygulama `Origin: null`
+değerini saldırı işareti sayıyordu ve 143 birim testin tamamı geçiyordu.
+Uygulama gerçek tarayıcıda çalıştırıldığında **ayarlar sayfası kullanılamaz
+hâle geldi**: uygulamanın kendi `Referrer-Policy: no-referrer` başlığı
+yüzünden Chrome, kendi sayfamızdan yapılan form gönderiminde `Origin: null`
+yolluyor. Testler bunu yakalayamamıştı çünkü başlıklar varsayıma göre
+üretilmişti. Kural `Sec-Fetch-Site` temelli olarak düzeltildi (bu başlık
+sayfa betiğiyle değiştirilemez) ve senaryo gerileme testiyle kilitlendi.
+
+Tarayıcıda son durum: kendi sayfamızdan ayar kaydetme başarılı ("API ayarları
+kaydedildi", anahtar korundu); kötü niyetli `base_url` taşıyan istek HTTP 400
+ile reddedildi, kayıtlı ayar değişmedi.
+
+**Kalıcı ders:** Tarayıcı davranışına dayanan bir denetim, gerçek tarayıcıda
+çalıştırılmadan doğrulanmış sayılmaz. Birim testte başlıkları kendin
+üretiyorsan, test yalnızca kendi varsayımını doğrular.
+
+### 2. Kısaltma eşlemesi yazıma duyarlı yapıldı (ADR-049)
+
+Harf duyarsız eşleşme, metindeki `set` sözcüğünü TBD kısaltması `SET` ile
+eşleştirip incelenmesi gereken bir terimi kısaltma grubuna düşürüyordu.
+Ölçüm: 2-4 harfli 808 kısaltmanın 9'u sıradan sözcükle çakışıyor.
+
+"Aday tümü büyük harf olmalı" kuralı **reddedildi**: kaynaktaki 1.199
+kısaltmanın 149'u tamamen büyük harf değil (`SaaS`, `AIoT`, `BGPsec`, `aux`).
+Onun yerine kaynağın kendi yazımıyla birebir eşleşme şartı kondu.
+
+Mevcut 22 belgelik rapor kümesinde ölçülen etki: **22 gerçek kısaltma
+korundu**, **5 yanlış eşleşme düzeldi** (`br`, `fhe`, üç belgede `FLOPs`).
+Hiçbir gerçek kısaltma kaybedilmedi.
+
+### 3. Yanlış içerikli belge teslim kümesinden çıkarıldı
+
+`8_ebpf_xdp_packet_processing` (dosya adı eBPF/XDP, içeriği fotovoltaik;
+27 sahte "eksik terim", 0 sözlük eşleşmesi) `output/_hatali_belge/` altına
+gerekçesiyle taşındı. Sorun 2026-08-18'den beri belgelerde yazılıydı ama
+klasör teslim kümesinin içinde duruyordu. Silinmedi, kayıt olarak duruyor.
+
+### 4. Derleme ve test uyarıları temizlendi
+
+- `tests/test_dictionary_update.py:29` geçersiz `\/` kaçış dizisi
+  düzeltildi. Bugün `SyntaxWarning`, Python 3.15'te **hata** olacaktı.
+- `api_client.py` `HTTPError` gövdesini okuduktan sonra kapatmıyordu
+  (`ResourceWarning`). `finally: error.close()` eklendi.
+- `compileall` artık `-W error::SyntaxWarning` altında da temiz;
+  `test_api_client` `-W error::ResourceWarning` altında da geçiyor.
+
+### 5. Belgeler gerçekle hizalandı
+
+- Test sayısı üç yerde farklıydı (README 125, teslim özeti 123, gerçek 126)
+  → hepsi **145**.
+- Sürüm iki yerde farklıydı (`pyproject.toml` 1.0.0, teslim özeti 1.1.0)
+  → **1.1.0**.
+- Teslim özeti "3 makalelik altın küme hazırlanmalı" diyordu; ADR-046 bu
+  hedefin bırakıldığını ve gümüş kümeye geçildiğini söylüyor → çelişki
+  giderildi, gümüş kümenin doğrulama iddiası taşımadığı korundu.
+- `DEPLOYMENT_READINESS.md` kaldırılmış `output_v2/` ve replay snapshot
+  mimarisini mevcutmuş gibi anlatıyordu → güncellendi.
+- Bu notun 2026-08-18 "bilinen sınırlamalar" listesindeki 9. madde
+  (başlatıcılarda bağımlılık denetimi yok) **artık geçersizdir**: denetim
+  eklenmiş ve `tests/test_launchers.py` ile kilitlenmiştir. Madde tarihsel
+  kayıt olarak yerinde bırakıldı.
+
+### 6. "Her ortamda çalışsın" turu
+
+Teslim, alan uzmanının kendi bilgisayarında **çift tıklayarak** kullanacağı bir
+programdır; bu turda o kullanımın kırıldığı yerler arandı.
+
+- **İki kopya sorunu kapatıldı (ADR-050).** Ölçüldü: Windows'ta
+  `allow_reuse_address` nedeniyle ikinci bir kopya aynı porta **hata vermeden**
+  bağlanıyordu. Başlatıcıya iki kez çift tıklamak tam olarak bunu yapar; sonuç,
+  ayarların bir kopyada değişip analizin diğerinde çalışması gibi tanısı en zor
+  arıza türüdür. Artık ikinci kopya başlatılmaz, kullanıcı var olan pencereye
+  yönlendirilir. Port başka bir programdaysa ham yığın izi yerine Türkçe
+  açıklama ve port önerisi verilir.
+- **Köken denetimi tarayıcıdan bağımsız hâle getirildi (ADR-051).**
+  `Referrer-Policy` `no-referrer` → `same-origin`. Böylece `Sec-Fetch-Site`
+  göndermeyen eski tarayıcılarda (macOS başlatıcısı teslim kapsamındadır)
+  `Origin` yedek ölçütü gerçek değeriyle gelir. Gerçek tarayıcıda doğrulandı:
+  `Origin: http://localhost:8876`, `Host` ile eşleşiyor, dışarıya sızma yok.
+- **Python sürüm aralığı genişletildi.** Yalıtılmış bir 3.11 sanal ortamı
+  kurulup **149 testin tamamı 3.11'de de çalıştırıldı** (compile dahil temiz).
+  Doğrulanan aralık artık **3.11 ve 3.14**. `pyproject.toml` `>=3.9` demeye
+  devam eder: sözdizimi taraması 3.10+ yapı bulmadı ve bağımlılıklar 3.9'u
+  destekliyor, ancak 3.9 hâlâ **fiilen sınanmamıştır**.
+- **Lisans eklendi.** Kod MIT; `data/` altındaki TBD sözlük ve kısaltma
+  dosyaları açıkça kapsam dışı bırakıldı (telif TBD'ye ait, yeniden dağıtım
+  için TBD'ye başvurulmalı). Bu ayrım önemlidir: blanket MIT, projenin sahip
+  olmadığı bir hakkı devrediyormuş gibi görünürdü.
+
+### Doğrulanmış durum
+
+- `python -m compileall -q src tests`: temiz (`SyntaxWarning` hata modunda da).
+- `python -m unittest discover -s tests`: **149 testin tamamı geçiyor**
+  (~0,17 sn; Windows). **Python 3.14 ve 3.11'de ayrı ayrı doğrulandı.**
+  Önceki tur 126 idi; +23 test.
+- **Gerçek tarayıcıda uçtan uca denendi** (yukarıdaki 1. madde).
+- Canlı API çağrısı yapılmadı; kullanıcının API kredisi harcanmadı.
+
+### Açık kalan işler (öncelik sırasıyla)
+
+1. **Teslim GitHub üzerinden yapılacaktır** (proje sahibinin kararı,
+   24.08.2026). Bu, `data/runtime/provider.json` içindeki canlı API
+   anahtarının teslim paketine **girmemesi** demektir; dosya `.gitignore`
+   kapsamındadır. Anahtar bu yüzden boşaltılmadı, uygulama çalışır kaldı.
+   *Ancak:* ileride depo klasörü doğrudan kopyalanarak/zip'lenerek
+   paylaşılırsa anahtar da gider — o durumda önce boşaltılmalıdır.
+2. **`output/` de `.gitignore` kapsamındadır.** Yani GitHub'dan indirilen
+   pakette **analiz raporları bulunmaz**; yalnızca program gelir. Teslim
+   edilen sonuç kümesi (`output/deepseek-v4-flash/`, 22 makale, ~4,5 MB)
+   komiteye ayrıca ulaştırılmalı veya bilinçli bir kararla depoya
+   eklenmelidir. **Karar bekliyor.**
+3. Doğru eBPF/XDP makalesi bulunup taranmalı (yukarıda 3. madde).
+4. Kaynakça temizliğinin sonraki sayfalara yayılmaması (aşağıdaki
+   2026-08-18 listesinde 3. madde). Ölçülmeden dokunulmadı; düzeltme
+   "References" sonrası Appendix taşıyan makalelerde içerik kaybı riski
+   taşır, bu yüzden bir ADR ve ölçüm gerektirir.
+5. Aynı adlı belgenin önceki raporu sessizce ezmesi (2026-08-18 listesi,
+   6. madde).
+6. Python 3.9 sınanmadı. Makinede 3.11 var ama `pdfplumber`/`openpyxl` o
+   yoruma kurulu değil; kurulursa doğrulanan sürüm aralığı genişletilebilir.
+7. Temiz bir Windows kurulumunda uçtan uca kabul denemesi (çift tık →
+   PDF yükleme → Excel indirme).
+
+## Teslim Durumu (2026-08-24 — Canlı model karşılaştırması)
+
+### Yapılan işler
+
+1. **Üç bulut modeli aynı makaleyle canlı ölçüldü.** Uygulamanın kendi
+   bileşenleriyle (`analyze_pdf`, aynı sözlük, aynı few-shot istem)
+   `raft_consensus_algorithm.pdf` (18 parça, 28.492 sözlük kaydı) üç modelle
+   analiz edildi; token kullanımı API yanıtından birebir alındı:
+
+   | Model | Durum | Süre | Aday | Eksik terim | Reddedilen | Maliyet |
+   |---|---|---|---|---|---|---|
+   | deepseek-v4-flash | complete | 29 sn | 144 | 109 | 7 | $0,005–0,010 |
+   | gpt-5.6-luna | complete | 39 sn | 136 | 103 | 5 | $0,002 |
+   | gpt-5.6-terra | complete | 35 sn | 109 | 83 | 4 | $0,067 |
+
+   "Reddedilen", metinde geçmeyen (halüsinasyon) adaylardır; deterministik
+   katman bunları rapordan zaten çıkarır (ürün kuralı 3 korunur). DeepSeek en
+   geniş yakalama ve en hızlı koşuyu verdi; gpt-5.6-luna en ucuzdu ve yakın
+   yakalama gösterdi; terra belirgin şekilde az yakaladı ve ~40 kat pahalıydı.
+
+2. **Karar:** Teslimde etkin model `deepseek-v4-flash` kalır.
+   `gpt-5.6-luna` doğrulanmış düşük maliyetli alternatiftir (Ayarlar'dan
+   seçilebilir). Kod tarafında ürün davranışı değişmedi; yalnızca
+   `data/runtime/provider.json` etkin sağlayıcı olarak DeepSeek'e alındı
+   (Git dışı dosya).
+
+### Doğrulanmış durum
+
+- Canlı ölçümde üç modelde de `analysis_status: complete` (0 parça hatası).
+- Birim testler: 126/126 geçiyor (bu bölümden önce doğrulandı).
+
+## Teslim Durumu (2026-08-24 — GPT-5.6 Luna uyumluluğu)
+
+### Yapılan işler
+
+1. **OpenAI GPT-5 ailesi için çıktı belirteci düzeltildi.** `ApiClient`,
+   `gpt-5.6-luna` dahil `gpt-5*` modellerinde artık eski `max_tokens` yerine
+   `max_completion_tokens` gönderir; OpenAI'nin bu modellerde kabul etmediği
+   `temperature` alanı da gönderilmez. `o1` ve `o3` için var olan davranış
+   korunur; diğer OpenAI-uyumlu sağlayıcıların istek biçimi değişmez.
+2. **GPT-5.6 ailesinde gecikme azaltıldı.** `gpt-5.6-sol`,
+   `gpt-5.6-terra` ve `gpt-5.6-luna` terim çıkarımında `reasoning_effort`
+   değerini açıkça `none` olarak alır; bu görev araç kullanımı veya çok adımlı
+   akıl yürütme gerektirmediği için varsayılan `medium` düşünme gecikmesini
+   önler. Bu ayar yalnız GPT-5.6 ailesine gönderilir; DeepSeek, Gemini ve
+   Anthropic istekleri değişmez.
+3. **Geriye dönük test eklendi.** `gpt-5.6-luna` isteğinin doğru parametreyi
+   kullandığını, `max_tokens` ve `temperature` içermediğini, `developer`
+   mesaj rolü ile `reasoning_effort: none` gönderdiğini doğrulayan birim testi
+   eklendi.
+
+### Doğrulanmış durum
+
+- `python -m compileall -q src tests` temiz.
+- `python -m unittest discover -s tests -v`: **126 testin tamamı geçti**
+  (~0,16 sn; Windows, Python 3.14).
+- Canlı API çağrısı yapılmadı; kullanıcının API kredisi harcanmadı.
+
 ## Teslim Durumu (2026-08-24)
 
 ### Yapılan işler
@@ -21,6 +229,20 @@
    Not: Koşu sırasında süpürme ölçümünde kullanılan yardımcı betikteki bir
    truthiness hatası ilk ölçümde "%100 kapsam" göstermişti; doğru boolean
    kontrolüyle yeniden ölçüldü. Ürün kodunda hata yoktur.
+
+3. **API bağlantı kopmalarına otomatik yeniden deneme eklendi.** Kullanıcı
+   bir PDF taramasında DeepSeek API bağlantısının uzak tarafça kapatılması
+   hatası gördü (bağlantı sıfırlama); hatalı turda rapor üretilmedi (tasarım
+   gereği), sonraki koşu sorunsuz tamamlandı. Kök neden: `api_client.py`
+   `_request` döngüsü `urllib.error.URLError`/`TimeoutError` yakalıyordu;
+   yanıt okunması sırasında gelen `ConnectionResetError` ve
+   `http.client.RemoteDisconnected` bu yakalama dışında kalıp tek parçayı
+   düşürüyordu. Her iki istisna da yeniden deneme döngüsüne alındı (mevcut
+   üstel bekleme korundu; tüm denemeler düşerse yine "API'ye bağlanılamadı").
+   Ürün davranışı değişmedi, yalnızca dayanıklılık arttı.
+   **Doğrulama:** `tests/test_api_client.py`'ye iki test eklendi (kurtaran
+   yeniden deneme ve kalıcı kopmada açık hata); `tests/` altındaki
+   **125 testin tamamı geçmektedir** (~0,15 sn); `compileall` temiz.
 
 ### Doğrulanmış durum
 
@@ -97,7 +319,8 @@ aşağıda korunmuştur.
    puana göre sıralama (sunum amaçlı, eleme yok). Tek genel sözcükler
    "yasak değil, sona at" ilkesiyle listenin sonuna düşer.
 5. **Kaynak PDF'lerin yeri belirlendi ve yeni makaleler tarandı:**
-   `Desktop\PROJELER\Makaleler` (depo dışı). 9 benzersiz yeni belge
+   `Desktop\Makaleler` (depo dışı; bu not önce `Desktop\PROJELER\Makaleler`
+   diyordu, 24.08.2026'da doğrulanıp düzeltildi). 9 benzersiz yeni belge
    birleştirilmiş hatla analiz edildi: 162 sayfa, 1.574 aday, 999 eksik
    terim, 390 sözlük eşleşmesi (~293 sn). Kod sızıntısı %1,4'e indi;
    `variants` 42 maddede doldu. Kopya PDF'ler dosya karmasıyla ayıklandı;

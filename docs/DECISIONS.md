@@ -37,8 +37,14 @@ teslim belgesindeki kurumsal güvenceler bunlara dayanır.
 - **ADR-022** — Yalnızca loopback erişimi.
 - **ADR-030** — Tek paket, tek giriş noktası.
 
+- **ADR-048 + ADR-051** — Çapraz köken denetimi, sağlayıcı adresi doğrulaması
+  ve denetimin dayandığı `Referrer-Policy`; ADR-022'nin loopback kuralını
+  tamamlar.
+- **ADR-050** — Aynı anda tek uygulama kopyası; ADR-021'in tek analiz
+  kuralını süreç düzeyinde tamamlar.
+
 Kalan kayıtlar (ADR-003, 023, 024, 026, 027, 029, 032, 033, 034, 035, 037, 038,
-039, 040, 041, 042) yürürlüktedir.
+039, 040, 041, 042, 043, 044, 045, 046, 047, 049) yürürlüktedir.
 
 ## ADR-001 — V1'i koruyarak yan yana V2 geliştirme
 
@@ -834,3 +840,132 @@ Kalan kayıtlar (ADR-003, 023, 024, 026, 027, 029, 032, 033, 034, 035, 037, 038,
   3 koşuluk ortalamayla yeniden ölçülerek değerlendirilir.
 - Ders (kalıcı): Tek koşuluk LLM ölçümleri koşudan koşua oynar; karşılaştırma
   kararları çoklu koşu ortalamasına dayanmalıdır.
+
+## ADR-048 — Çapraz köken denetimi ve sağlayıcı adresi doğrulaması
+
+- Tarih: 2026-08-24
+- Durum: Kabul edildi
+- Bağlam: 2026-08-18 devir notunda "bilinen sınırlama 1" olarak kaydedilen
+  çapraz köken açığının etkisi bu incelemede tam olarak izlendi ve
+  düşünülenden ağır çıktı. Zincir şuydu:
+  1. `/settings/save` boş gönderilen `api_key` alanını "değiştirme" sayıp
+     kullanıcının kayıtlı anahtarını korur.
+  2. Aynı formdaki `base_url` hiçbir doğrulamadan geçmez. `service.py`
+     içindeki düzeltme yalnız *bilinen rakip sağlayıcı* adreslerini
+     değiştirir; yabancı bir adres olduğu gibi kaydedilir.
+  3. Sonraki analizde `ApiClient` bu adrese `Authorization: Bearer <anahtar>`
+     başlığıyla istek atar.
+  Yani uygulama açıkken ziyaret edilen kötü niyetli bir sayfa, yalnız ayarları
+  bozmakla kalmayıp **kullanıcının API anahtarını kendi sunucusuna
+  yönlendirebilirdi**. Uygulamanın yalnız loopback dinlemesi bu saldırıyı
+  engellemez; istek kullanıcının kendi tarayıcısından çıkar.
+- Karar (iki bağımsız katman):
+  1. **Köken denetimi.** Tüm POST uçlarında `Sec-Fetch-Site` **varsa tek
+     başına belirleyicidir**: `same-origin`/`none` dışındaki her değer
+     HTTP 403 ile reddedilir. Bu başlık tam olarak bu iş için tasarlanmıştır
+     ve sayfa betiğiyle değiştirilemez (yasaklı başlık adı). `Origin`
+     yalnız bu başlığı göndermeyen eski tarayıcılarda yedek ölçüttür.
+     Hiçbir başlık yoksa istek reddedilmez: çapraz köken saldırısı tanımı
+     gereği tarayıcıdan gelir. Başlıksız istekler yerel betik/`curl`
+     kullanımıdır.
+
+     > **Ölçümle düzeltilen ilk tasarım.** İlk uygulama `Origin: null`
+     > değerini saldırı işareti sayıyordu. Gerçek tarayıcıda denendiğinde
+     > **uygulamanın kendi ayarlar sayfası kullanılamaz hâle geldi**:
+     > `_security_headers` `Referrer-Policy: no-referrer` gönderdiği için
+     > Chrome, kendi sayfamızdan yapılan üst düzey form gönderiminde kökeni
+     > sızdırmamak adına `Origin: null` yolluyor (`Sec-Fetch-Site:
+     > same-origin` ile birlikte). Birim testler bunu yakalayamamıştı,
+     > çünkü başlıklar varsayıma göre üretilmişti. **Ders: tarayıcı
+     > davranışına dayanan bir denetim, gerçek tarayıcıda çalıştırılmadan
+     > doğrulanmış sayılmaz.** Bu senaryo artık bir gerileme testiyle
+     > kilitlidir.
+  2. **Adres doğrulaması.** Arayüzden girilen `base_url` yalnız `https://`
+     ise (her yerde) veya `http://` ise (yalnız loopback) kabul edilir.
+     Şifresiz uzak adres reddedilir; çünkü analiz sırasında API anahtarı bu
+     adrese gönderilir.
+- Gerekçe: Tek katman yeterli görünse de ikisi farklı şeyleri korur. Köken
+  denetimi isteğin *kimden geldiğini*, adres doğrulaması anahtarın *nereye
+  gidebileceğini* sınırlar. Anahtar sızması geri alınamaz bir zarardır;
+  burada iki katman ölçülü bir maliyettir.
+- Kapsam sınırı: Bu karar CSRF belirteci (token) getirmez. Belirteç oturum
+  durumu ve form yeniden üretimi gerektirir; başlık denetimi bugünkü tehdit
+  modelini (tarayıcı üzerinden gelen çapraz köken isteği) tam olarak
+  kapatır. HTTPS ve kimlik doğrulama eklenerek ağ erişimi açılırsa bu karar
+  yeniden değerlendirilmelidir.
+- Doğrulama: 17 yeni birim testi ve **gerçek tarayıcıda uçtan uca deneme**.
+  Testler arasında anahtar sızdırma zincirini kuran ve her iki katmanın da
+  ayrı ayrı kırdığını gösteren bir gerileme testi bulunur. Tarayıcı
+  denemesinde: uygulamanın kendi sayfasından ayar kaydetme başarılı
+  ("API ayarları kaydedildi", anahtar korundu); kötü niyetli `base_url`
+  taşıyan istek HTTP 400 ile reddedildi ve kayıtlı ayar değişmedi.
+
+## ADR-049 — Kısaltma eşlemesinin kayıtlı yazıma duyarlı olması
+
+- Tarih: 2026-08-24
+- Durum: Kabul edildi
+- Bağlam: `AbbreviationIndex.lookup` büyük/küçük harfe duyarsızdı. TBD
+  kısaltma kaynağındaki 1.199 kaydın 759'u üç karakter veya daha kısadır;
+  ölçüm, 2-4 harfli 808 kısaltmanın **9'unun** sıradan bir İngilizce
+  sözcükle çakıştığını ve ana sözlükte karşılığı olmadığı için gerçekten
+  yön değiştirdiğini gösterdi (`AID, ARM, ART, AS, AT, BAD, IS, RAM, SET`).
+  Sonuç: metindeki `set` sözcüğü incelenmesi gereken "eksik terim"
+  listesinden çıkıp "TBD Kısaltması" grubuna düşüyordu.
+- Reddedilen çözüm: adayın yalın kısaltma (tümü büyük harf) olmasını şart
+  koşmak. Kaynaktaki 1.199 kısaltmanın **149'u** tamamen büyük harf
+  değildir (`SaaS`, `AIoT`, `BGPsec`, `aux`); bu kural gerçek kısaltmaları
+  eleyecekti.
+- Karar: Kısaltma eşlemesi, adayın **kaynakta kayıtlı yazımıyla birebir**
+  eşleşmesini şart koşar (`lookup_written_form`). Harf duyarsız `lookup`
+  korunur; belge içi kısaltma-açılım çiftlerini bulan `lookup_defined` bu
+  karardan etkilenmez.
+- Gerekçe: `RAM` ile `ram` aynı şey değildir. Kaynağın kendi yazımı, hangi
+  yüzey biçiminin kısaltma sayıldığına dair zaten mevcut ve deterministik
+  bir ölçüttür; yeni bir sezgisel filtre eklemez (ADR-028 uyumlu).
+- Ölçüm (22 belgelik mevcut rapor kümesi üzerinde): **22 gerçek kısaltma
+  korundu** (`SaaS`, `ZKP`, `NIDS`, `BYOD` dahil), **5 yanlış eşleşme
+  düzeldi**: `br` (WebAssembly dallanma komutu), `fhe`, ve üç belgede
+  `FLOPs`. `FLOPs` (işlem sayısı) ile kayıtlı `FLOPS` (saniyedeki işlem)
+  farklı kavramlardır; ayrılmaları doğrudur ve karar insana bırakılır.
+  Hiçbir gerçek kısaltma kaybedilmedi.
+- Doğrulama: 2 yeni birim testi; karışık yazımlı ve kayıtlı yazımı küçük
+  harf olan kısaltmalar ayrıca sınandı.
+
+## ADR-050 — İkinci kopya başlatılmaz; çalışan örneğe yönlendirilir
+
+- Tarih: 2026-08-24
+- Durum: Kabul edildi
+- Bağlam: `ThreadingHTTPServer` `allow_reuse_address = 1` ile gelir. Windows'ta
+  bu ayar, ikinci bir sürecin **aynı porta hata vermeden bağlanmasına** izin
+  verir. Ölçüldü: `run.py serve --port 8877` iki kez çalıştırıldığında ikisi de
+  başladı ve hangi kopyanın istek alacağı belirsiz kaldı. Başlatıcıya iki kez
+  çift tıklamak (teslim edilen kullanım biçimi tam olarak budur) bunu tetikler.
+- Karar: `serve()` bağlanmadan önce `GET /healthz` ile adresi yoklar.
+  - Bu uygulamanın bir kopyası yanıt veriyorsa: ikinci kopya **başlatılmaz**,
+    kullanıcı Türkçe bir bilgi mesajıyla var olan pencereye yönlendirilir ve
+    çıkış kodu 0 olur (hata değildir; kullanıcı yalnız iki kez tıklamıştır).
+  - Port başka bir program tarafından tutuluyorsa: Türkçe açıklama ve farklı
+    port önerisiyle temiz çıkış (kod 1), ham `OSError` yığın izi yerine.
+- Gerekçe: Birincil kullanıcı alan uzmanıdır ve program çift tıklamayla
+  çalıştırılır. Sessizce ikinci bir sunucu açmak, tanısı en zor arıza türüdür:
+  ayarlar bir kopyada değişir, analiz diğerinde çalışır.
+- Doğrulama: 4 birim testi ve canlı deneme (iki kez başlatıldı; ikincisi
+  "Uygulama zaten çalışıyor" diyerek çıktı).
+
+## ADR-051 — `Referrer-Policy: same-origin` (köken denetiminin dayanağı)
+
+- Tarih: 2026-08-24
+- Durum: Kabul edildi
+- Bağlam: ADR-048'in köken denetimi `Sec-Fetch-Site` yoksa `Origin` başlığına
+  düşer. `Referrer-Policy: no-referrer` altında Chrome, **kendi sayfamızdan**
+  yapılan form gönderiminde bile `Origin: null` yolluyordu; bu, eski
+  tarayıcılarda (ör. `Sec-Fetch-*` göndermeyen Safari sürümleri) yedek ölçütü
+  karar veremez hâle getiriyordu. macOS başlatıcısı teslim kapsamındadır.
+- Karar: Politika `same-origin` yapıldı.
+- Gerekçe: Yerel bir uygulamada iki politikanın dış dünyaya karşı koruması
+  aynıdır — hiçbir başvuru bilgisi dışarı sızmaz. Fark, tarayıcının kendi
+  sayfamıza yaptığı isteklerde `Origin`i gerçek değeriyle göndermesidir; bu da
+  köken denetimini tarayıcıdan bağımsız çalışır kılar.
+- Ölçüm (gerçek tarayıcı): `no-referrer` altında `Origin: null`;
+  `same-origin` altında `Origin: http://localhost:8876` (`Host` ile eşleşir),
+  `Referer` yalnız aynı köken içinde. Dışarıya sızma yok.

@@ -16,9 +16,12 @@ from terim_etmeni.web_app import (
     Server,
     dictionary_html,
     index_html,
+    is_cross_origin_request,
     result_html,
     settings_html,
+    already_running,
     validate_bind_host,
+    validate_provider_base_url,
 )
 
 
@@ -96,6 +99,103 @@ class WebAppTests(unittest.TestCase):
         handler.server = server
         return handler, statuses, response_headers
 
+    def test_settings_save_from_a_foreign_page_returns_403(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            service = self.service(Path(tmp_dir))
+            before = service.provider_store.load()
+            body = b"provider=openai&api_key=&model=kotu-model&base_url=http%3A%2F%2Fkotu.example"
+            handler, statuses, _ = self._make_handler(
+                "/settings/save",
+                method="POST",
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Origin": "https://kotu-site.example",
+                    "Sec-Fetch-Site": "cross-site",
+                    "Host": "127.0.0.1:8876",
+                },
+                body=body,
+                service=service,
+            )
+            handler.do_POST()
+            self.assertEqual(statuses, [403])
+            after = service.provider_store.load()
+            self.assertEqual(after.model, before.model)
+            self.assertEqual(after.base_url, before.base_url)
+
+    def test_settings_save_from_the_apps_own_page_still_works(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            service = self.service(Path(tmp_dir))
+            body = b"provider=openai&api_key=&model=yeni-model&base_url="
+            handler, statuses, _ = self._make_handler(
+                "/settings/save",
+                method="POST",
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Origin": "http://127.0.0.1:8876",
+                    "Sec-Fetch-Site": "same-origin",
+                    "Host": "127.0.0.1:8876",
+                },
+                body=body,
+                service=service,
+            )
+            handler.do_POST()
+            self.assertEqual(statuses, [200])
+            self.assertEqual(service.provider_store.load().model, "yeni-model")
+
+    def test_foreign_page_cannot_redirect_the_saved_api_key(self):
+        """Anahtar sızdırma zinciri: boş anahtar mevcut anahtarı korur, özel
+        adres kabul edilirse sonraki analizde anahtar o adrese gönderilir.
+        Çapraz köken denetimi ve adres doğrulaması bu zinciri kırar."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            service = self.service(Path(tmp_dir))
+            service.provider_store.save(
+                ProviderConfig(
+                    provider="deepseek",
+                    api_key="sk-gercek-anahtar",
+                    model="deepseek-v4-flash",
+                    base_url="",
+                )
+            )
+            body = b"provider=deepseek&api_key=&model=deepseek-v4-flash&base_url=http%3A%2F%2Fsaldirgan.example%2Fv1"
+
+            # 1) Yabancı sayfadan gelen istek hiç işlenmez.
+            handler, statuses, _ = self._make_handler(
+                "/settings/save",
+                method="POST",
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Origin": "https://saldirgan.example",
+                    "Sec-Fetch-Site": "cross-site",
+                    "Host": "127.0.0.1:8876",
+                },
+                body=body,
+                service=service,
+            )
+            handler.do_POST()
+            self.assertEqual(statuses, [403])
+            self.assertEqual(service.provider_store.load().base_url, "")
+
+            # 2) İstek uygulamanın kendi sayfasından gelse bile şifresiz uzak
+            #    adres kabul edilmez (ikinci savunma katmanı).
+            handler2, statuses2, _ = self._make_handler(
+                "/settings/save",
+                method="POST",
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    # Gerçek tarayıcının gönderdiği biçim (bkz. Origin: null notu).
+                    "Origin": "null",
+                    "Sec-Fetch-Site": "same-origin",
+                    "Host": "127.0.0.1:8876",
+                },
+                body=body,
+                service=service,
+            )
+            handler2.do_POST()
+            self.assertEqual(statuses2, [400])
+            saved = service.provider_store.load()
+            self.assertEqual(saved.base_url, "")
+            self.assertEqual(saved.api_key, "sk-gercek-anahtar")
+
     def test_server_rejects_non_loopback_bind_addresses(self):
         self.assertEqual(validate_bind_host("localhost"), "localhost")
         self.assertEqual(validate_bind_host("127.0.0.1"), "127.0.0.1")
@@ -117,7 +217,7 @@ class WebAppTests(unittest.TestCase):
                     self.assertEqual(json.loads(handler.wfile.getvalue()), {"status": "ok"})
                     self.assertEqual(headers["X-Frame-Options"], "DENY")
                     self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
-                    self.assertEqual(headers["Referrer-Policy"], "no-referrer")
+                    self.assertEqual(headers["Referrer-Policy"], "same-origin")
                     self.assertIn("frame-ancestors 'none'", headers["Content-Security-Policy"])
                     self.assertEqual(headers["Cache-Control"], "no-store")
 
@@ -132,7 +232,7 @@ class WebAppTests(unittest.TestCase):
                     self.assertIn("text/html", headers["Content-Type"])
                     self.assertEqual(headers["X-Frame-Options"], "DENY")
                     self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
-                    self.assertEqual(headers["Referrer-Policy"], "no-referrer")
+                    self.assertEqual(headers["Referrer-Policy"], "same-origin")
                     self.assertIn("frame-ancestors 'none'", headers["Content-Security-Policy"])
 
     def test_get_404_on_unknown_path(self):
@@ -493,6 +593,152 @@ class WebAppTests(unittest.TestCase):
         self.assertIn("Analiz Tamamlanamadı", rendered)
         self.assertIn("429 Quota Exceeded", rendered)
         self.assertIn("API Ayarlarını Kontrol Et", rendered)
+
+
+class CrossOriginProtectionTests(unittest.TestCase):
+    """ADR-048: POST uçları yalnız uygulamanın kendi sayfasından kabul edilir."""
+
+    def test_missing_browser_headers_are_allowed(self):
+        """Yerel betik/curl kullanımı bu tehdit modelinin dışındadır."""
+        self.assertFalse(is_cross_origin_request(None, None, "127.0.0.1:8876"))
+
+    def test_same_origin_request_is_allowed(self):
+        self.assertFalse(
+            is_cross_origin_request(
+                "http://127.0.0.1:8876", "same-origin", "127.0.0.1:8876"
+            )
+        )
+        self.assertFalse(
+            is_cross_origin_request(
+                "http://localhost:8876", "same-origin", "localhost:8876"
+            )
+        )
+
+    def test_foreign_page_posting_to_the_local_app_is_rejected(self):
+        self.assertTrue(
+            is_cross_origin_request(
+                "https://kotu-site.example", "cross-site", "127.0.0.1:8876"
+            )
+        )
+
+    def test_null_origin_with_same_origin_fetch_site_is_allowed(self):
+        """Gerçek tarayıcıda ölçülen davranış: ``Referrer-Policy: no-referrer``
+        altında Chrome, kendi sayfamızdan yapılan form gönderiminde bile
+        ``Origin: null`` yolluyordu ve ayarlar sayfası kullanılamaz hâle
+        geliyordu. Politika ``same-origin`` yapılarak kök neden giderildi;
+        yine de ``Sec-Fetch-Site: same-origin`` ile gelen ``Origin: null``
+        kabul edilmelidir, çünkü tarayıcı ve politika davranışı sürüme göre
+        değişebilir."""
+        self.assertFalse(
+            is_cross_origin_request("null", "same-origin", "localhost:8876")
+        )
+
+    def test_fetch_site_decides_when_present(self):
+        """Sec-Fetch-Site sayfa betiğiyle değiştirilemez; varsa belirleyicidir."""
+        self.assertFalse(is_cross_origin_request(None, "none", "localhost:8876"))
+        self.assertTrue(
+            is_cross_origin_request(
+                "http://localhost:8876", "cross-site", "localhost:8876"
+            )
+        )
+
+    def test_origin_mismatch_is_rejected_even_without_fetch_site(self):
+        """Sec-Fetch-Site göndermeyen eski tarayıcılarda Origin yedek ölçüttür."""
+        self.assertTrue(
+            is_cross_origin_request("https://kotu-site.example", None, "127.0.0.1:8876")
+        )
+
+    def test_opaque_and_malformed_origins_are_rejected_without_fetch_site(self):
+        """Sec-Fetch-Site yoksa 'null' kökeni doğrulanamaz, güvenli taraf reddetmektir."""
+        self.assertTrue(is_cross_origin_request("null", None, "127.0.0.1:8876"))
+        self.assertTrue(is_cross_origin_request("kotu-site.example", None, "127.0.0.1:8876"))
+
+    def test_same_site_is_rejected(self):
+        """Farklı port da olsa başka bir köken ayarları değiştirememeli."""
+        self.assertTrue(
+            is_cross_origin_request(
+                "http://127.0.0.1:9999", "same-site", "127.0.0.1:8876"
+            )
+        )
+
+
+class ProviderBaseUrlValidationTests(unittest.TestCase):
+    """ADR-048: analiz sırasında API anahtarı bu adrese gönderilir."""
+
+    def test_empty_value_means_the_providers_own_address(self):
+        self.assertEqual(validate_provider_base_url(""), "")
+        self.assertEqual(validate_provider_base_url("   "), "")
+
+    def test_https_addresses_are_accepted(self):
+        self.assertEqual(
+            validate_provider_base_url("https://api.deepseek.com/v1"),
+            "https://api.deepseek.com/v1",
+        )
+
+    def test_local_http_address_is_accepted(self):
+        """Yerel OpenAI uyumlu sunucularda anahtar cihazdan çıkmaz."""
+        for address in (
+            "http://localhost:1234/v1",
+            "http://127.0.0.1:1234/v1",
+            "http://[::1]:1234/v1",
+        ):
+            self.assertEqual(validate_provider_base_url(address), address)
+
+    def test_remote_plaintext_address_is_rejected(self):
+        """Şifresiz uzak adres API anahtarını ağa açar."""
+        with self.assertRaises(ValueError):
+            validate_provider_base_url("http://saldirgan.example/v1")
+
+    def test_non_http_schemes_are_rejected(self):
+        for address in ("file:///etc/passwd", "ftp://ornek.example", "saldirgan.example"):
+            with self.assertRaises(ValueError):
+                validate_provider_base_url(address)
+
+    def test_trailing_slash_is_normalised(self):
+        self.assertEqual(
+            validate_provider_base_url("https://api.ornek.example/v1/"),
+            "https://api.ornek.example/v1",
+        )
+
+
+class DuplicateInstanceTests(unittest.TestCase):
+    """Başlatıcıya iki kez çift tıklamak iki sunucu başlatmamalı.
+
+    Windows'ta ``allow_reuse_address`` nedeniyle ikinci kopya aynı porta hata
+    vermeden bağlanabiliyor; hangi kopyanın istek alacağı belirsiz kalıyor.
+    """
+
+    def test_reports_a_running_instance(self):
+        class FakeResponse:
+            status = 200
+            def read(self, n=None): return b'{"status":"ok"}'
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+
+        with patch("urllib.request.urlopen", return_value=FakeResponse()):
+            self.assertTrue(already_running("http://127.0.0.1:8876"))
+
+    def test_free_port_is_not_reported_as_running(self):
+        import urllib.error
+        with patch("urllib.request.urlopen", side_effect=urllib.error.URLError("baglanti yok")):
+            self.assertFalse(already_running("http://127.0.0.1:8876"))
+
+    def test_unrelated_service_on_the_port_is_not_mistaken_for_us(self):
+        class OtherService:
+            status = 200
+            def read(self, n=None): return b"<html>baska bir program</html>"
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+
+        with patch("urllib.request.urlopen", return_value=OtherService()):
+            self.assertFalse(already_running("http://127.0.0.1:8876"))
+
+    def test_serve_does_not_start_a_second_copy(self):
+        with patch("terim_etmeni.web_app.already_running", return_value=True),              patch("terim_etmeni.web_app.Server") as fake_server,              patch("terim_etmeni.web_app.webbrowser.open") as fake_open:
+            from terim_etmeni.web_app import serve
+            serve("127.0.0.1", 8876, open_browser=True)
+        fake_server.assert_not_called()
+        fake_open.assert_called_once_with("http://127.0.0.1:8876")
 
 
 if __name__ == "__main__":

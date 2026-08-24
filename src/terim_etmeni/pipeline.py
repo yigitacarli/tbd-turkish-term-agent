@@ -270,7 +270,7 @@ def analyze_pdf(
             found.append(base)
             continue
         if abbreviations is not None:
-            abbreviation_entries = abbreviations.lookup(term)
+            abbreviation_entries = abbreviations.lookup_written_form(term)
             if abbreviation_entries:
                 base["possible_dictionary_terms"] = [
                     {"en": str(entry["expansion"]), "tr": str(entry["turkish"])}

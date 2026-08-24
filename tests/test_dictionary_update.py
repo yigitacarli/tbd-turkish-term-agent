@@ -26,7 +26,7 @@ class DictionaryUpdateTests(unittest.TestCase):
     def test_wordpress_pdf_poster_is_preferred_over_menu_reports(self):
         html = (
             '<a href="/docs/report.pdf">report</a>'
-            '<div data-attributes=\'{&quot;file&quot;:&quot;https:\/\/example.test\/docs\/TBD-Bili\\u015fim-S\\u00f6zl\\u00fc\\u011f\\u00fc-2026.pdf&quot;}\'></div>'
+            '<div data-attributes=\'{&quot;file&quot;:&quot;https:\\/\\/example.test\\/docs\\/TBD-Bili\\u015fim-S\\u00f6zl\\u00fc\\u011f\\u00fc-2026.pdf&quot;}\'></div>'
         ).encode()
         with patch("terim_etmeni.dictionary_update._request", return_value=html):
             url = discover_pdf_url("https://example.test/dictionary/")

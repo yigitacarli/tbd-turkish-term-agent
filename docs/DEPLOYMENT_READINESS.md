@@ -9,8 +9,11 @@ veri politikasıyla vermek için kullanılır.
 - Uygulama yalnız `localhost`, `127.0.0.1` veya `::1` üzerinde dinler.
 - Aynı anda tek analiz çalışır; ikinci istek HTTP 503 ile açıkça reddedilir.
 - Yüklenen geçici PDF analiz sonunda silinir.
-- JSON, CSV, Excel ve replay için temizlenmiş sayfa metni taşıyan aday snapshot'ı
-  `output_v2/` altında kalır.
+- JSON, CSV ve Excel raporları `output/<model>/<belge>/` altında kalır.
+  (Eski "replay snapshot" katmanı ve `output_v2/` dizini kaldırılmıştır;
+  bkz. `docs/DECISIONS.md` yürürlük dizini.)
+- POST uçları yalnız uygulamanın kendi sayfasından kabul edilir ve özel
+  sağlayıcı adresi doğrulanır (ADR-048).
 - HTTP erişim günlüğü tutulmaz. HTTPS ve kullanıcı girişi henüz yoktur.
 - `GET /healthz` yalnız uygulamanın HTTP yanıtı verebildiğini gösterir; Ollama,
   sözlük veya disk sağlığını doğrulamaz.
@@ -43,8 +46,7 @@ veri politikasıyla vermek için kullanılır.
 ### 3. Belge ve rapor politikası
 
 - Kaynak PDF cihazdan veya kurum ağından çıkabilir mi:
-- Rapor ve aday snapshot'ı kaç gün saklanmalı:
-- Temizlenmiş tam sayfa metni snapshot'ta saklanabilir mi:
+- Raporlar kaç gün saklanmalı:
 - Raporları kimler indirebilir ve silebilir:
 - Yedeklenecek içerik ve yedek saklama süresi:
 - Günlüklerde belge/model/kullanıcı adlarından hangileri tutulabilir:
@@ -58,7 +60,8 @@ Bilgiler tamamlandıktan sonra aşağıdakilerin tümü doğrulanır:
    ölçülür; geliştirme bilgisayarındaki model sıralaması varsayılmaz.
 2. Eşzamanlı analiz sınırı hedef sunucuda yük testiyle belirlenir.
 3. HTTPS ve kimlik doğrulama uygulamanın ağ erişimi açılmadan önce çalışır.
-4. PDF, rapor, snapshot, günlük ve yedek saklama/silme davranışı kurum politikasıyla
+   (Çapraz köken denetimi ADR-048 ile hâlihazırda eklenmiştir.)
+4. PDF, rapor, günlük ve yedek saklama/silme davranışı kurum politikasıyla
    test edilir.
 5. Başarısız ve kısmi analizler kullanıcıya sıfır sonuç gibi gösterilmez.
 6. Etkin sözlük, kısaltma kaynağı, model ve uygulama sürümü raporda izlenebilir
