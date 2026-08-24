@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class LauncherTests(unittest.TestCase):
     def setUp(self):
-        self.apple = (ROOT / "BASLAT_APPLE.command").read_text(encoding="utf-8")
+        self.apple = (ROOT / "BASLAT_MAC.command").read_text(encoding="utf-8")
         self.windows = (ROOT / "BASLAT_WINDOWS.bat").read_text(encoding="utf-8")
 
     def test_daily_launchers_start_the_app(self):

@@ -7,7 +7,7 @@
 ## 🚀 Hızlı Başlangıç
 
 ### 1. Çift Tıklayarak Başlatma (En Kolay Yol)
-- **macOS:** Klasördeki `BASLAT_APPLE.command` dosyasına çift tıklayın.
+- **macOS:** Klasördeki `BASLAT_MAC.command` dosyasına çift tıklayın.
 - **Windows:** Klasördeki `BASLAT_WINDOWS.bat` dosyasına çift tıklayın.
 
 *(Program arka planda başlayacak ve tarayıcınızda otomatik olarak `http://127.0.0.1:8876` adresini açacaktır).*
@@ -58,7 +58,7 @@ python3 run.py
 ├── output/                # Üretilen Excel, CSV ve JSON raporları (Git dışı)
 ├── run.py                 # Ana çalıştırma dosyası
 ├── LICENSE                # MIT (kod) — TBD veri dosyaları kapsam dışı
-├── BASLAT_APPLE.command   # macOS tek tık başlatıcısı
+├── BASLAT_MAC.command     # macOS tek tık başlatıcısı
 └── BASLAT_WINDOWS.bat     # Windows tek tık başlatıcısı
 ```
 

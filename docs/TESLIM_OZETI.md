@@ -60,7 +60,7 @@ teslim edilen rapor klasöründe bu belge çıkarıldıktan sonra 23 klasör var
 Kullanıcının teknik bilgisine gerek yoktur:
 
 - **Windows:** `BASLAT_WINDOWS.bat` dosyasına çift tıklanır.
-- **macOS:** `BASLAT_APPLE.command` dosyasına çift tıklanır.
+- **macOS:** `BASLAT_MAC.command` dosyasına çift tıklanır.
 
 Program tarayıcıda otomatik açılır. Yalnızca kullanıcının kendi bilgisayarında
 çalışır; dışarıdan erişime kapalıdır.
